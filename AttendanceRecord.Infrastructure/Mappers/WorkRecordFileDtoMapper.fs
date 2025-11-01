@@ -5,37 +5,34 @@ open AttendanceRecord.Persistence.Dtos
 open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Domain.ValueObjects
 
+module private TimeDurationFileDtoMapper =
+    let fromDomain (duration: TimeDuration) : TimeDurationFileDto =
+        TimeDurationFileDto(
+            duration |> TimeDuration.getStartedAt,
+            duration |> TimeDuration.getEndedAt |> Option.toNullable
+        )
+
+    let toDomain (dto: TimeDurationFileDto) : TimeDuration =
+        TimeDuration.hydrate dto.StartedOn (dto.FinishedOn |> Option.ofNullable)
+
 module WorkRecordFileDtoMapper =
-    let fromDomain (records: WorkTimeRecord list) : IEnumerable<WorkRecordFileDto> =
+    let fromDomain (records: WorkRecord list) : IEnumerable<WorkRecordFileDto> =
         records
         |> Seq.map (fun r ->
             WorkRecordFileDto(
                 r.Id,
-                TimeDurationFileDto(
-                    r |> WorkTimeRecord.getStartedAt,
-                    r |> WorkTimeRecord.getEndedAt |> Option.toNullable
-                ),
+                TimeDurationFileDtoMapper.fromDomain r.Duration,
                 r.RestTimes
-                |> Seq.map (fun rest ->
-                    RestRecordFileDto(
-                        rest.Id,
-                        TimeDurationFileDto(
-                            rest |> RestTimeRecord.getStartedAt,
-                            rest |> RestTimeRecord.getEndedAt |> Option.toNullable
-                        )
-                    ))
+                |> Seq.map (fun r -> RestRecordFileDto(r.Id, TimeDurationFileDtoMapper.fromDomain r.Duration))
             ))
 
-    let toDomain (dtos: IEnumerable<WorkRecordFileDto>) : WorkTimeRecord list =
+    let toDomain (dtos: IEnumerable<WorkRecordFileDto>) : WorkRecord list =
         dtos
         |> Seq.map (fun dto ->
-            WorkTimeRecord.hydrate
+            WorkRecord.hydrate
                 dto.Id
-                (TimeDuration.hydrate dto.Duration.StartedOn (dto.Duration.FinishedOn |> Option.ofNullable))
+                (TimeDurationFileDtoMapper.toDomain dto.Duration)
                 (dto.RestRecords
-                 |> Seq.map (fun rDto ->
-                     RestTimeRecord.hydrate
-                         rDto.Id
-                         (TimeDuration.hydrate rDto.Duration.StartedOn (rDto.Duration.FinishedOn |> Option.ofNullable)))
+                 |> Seq.map (fun r -> RestRecord.hydrate r.Id (TimeDurationFileDtoMapper.toDomain r.Duration))
                  |> Seq.toList))
         |> Seq.toList

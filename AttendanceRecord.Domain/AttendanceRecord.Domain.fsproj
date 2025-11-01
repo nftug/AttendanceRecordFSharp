@@ -7,9 +7,9 @@
 
   <ItemGroup>
     <Compile Include="ValueObjects/TimeDuration.fs" />
-    <Compile Include="Entities/RestTimeRecord.fs" />
-    <Compile Include="Entities/WorkTimeRecord.fs" />
-    <Compile Include="Entities/WorkTimeTally.fs" />
+    <Compile Include="Entities/RestRecord.fs" />
+    <Compile Include="Entities/WorkRecord.fs" />
+    <Compile Include="Entities/WorkRecordTally.fs" />
   </ItemGroup>
 
   <ItemGroup>

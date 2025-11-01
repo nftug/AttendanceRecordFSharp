@@ -12,18 +12,18 @@ type CurrentStatusStore(timerService: TimerService, repository: WorkRecordReposi
     =
     let disposable = new CompositeDisposable()
 
-    let workRecord =
-        (new ReactiveProperty<WorkTimeRecord option>(None)).AddTo disposable
+    let workRecord = (new ReactiveProperty<WorkRecord option>(None)).AddTo disposable
 
-    let monthlyWorkRecord =
-        (new ReactiveProperty<WorkTimeRecord list>([])).AddTo disposable
+    let monthlyWorkRecord = (new ReactiveProperty<WorkRecord list>([])).AddTo disposable
 
     let currentStatus =
         workRecord
             .CombineLatest(
                 monthlyWorkRecord,
                 fun workRecord monthlyRecords ->
-                    let monthlyOvertime = WorkTimeTally.getOvertimeTotal monthlyRecords standardWorkTime
+                    let monthlyOvertime =
+                        WorkRecordTally.getOvertimeTotal monthlyRecords standardWorkTime
+
                     CurrentStatusDto.fromDomain standardWorkTime monthlyOvertime workRecord
             )
             .ToReadOnlyReactiveProperty(CurrentStatusDto.getEmpty ())
@@ -36,10 +36,10 @@ type CurrentStatusStore(timerService: TimerService, repository: WorkRecordReposi
             .AddTo(disposable)
         |> ignore
 
-    member _.WorkTime = workRecord :> ReadOnlyReactiveProperty<WorkTimeRecord option>
+    member _.WorkTime = workRecord :> ReadOnlyReactiveProperty<WorkRecord option>
 
     member _.MonthlyWorkTime =
-        monthlyWorkRecord :> ReadOnlyReactiveProperty<WorkTimeRecord list>
+        monthlyWorkRecord :> ReadOnlyReactiveProperty<WorkRecord list>
 
     member _.CurrentStatus = currentStatus
 
@@ -50,7 +50,7 @@ type CurrentStatusStore(timerService: TimerService, repository: WorkRecordReposi
             let isRecordTodays =
                 match workRecord.Value with
                 | None -> false
-                | Some record -> record |> WorkTimeRecord.getStartedAt = today
+                | Some record -> record |> WorkRecord.getStartedAt = today
 
             let! recordOption =
                 if forceReload || not isRecordTodays then
@@ -61,7 +61,7 @@ type CurrentStatusStore(timerService: TimerService, repository: WorkRecordReposi
             workRecord.Value <- recordOption
 
             let isMonthlyDataStale =
-                monthlyWorkRecord.Value |> List.exists (not << WorkTimeRecord.isTodays)
+                monthlyWorkRecord.Value |> List.exists (not << WorkRecord.isTodays)
 
             let! monthlyRecordsOption =
                 if forceReload || isMonthlyDataStale then

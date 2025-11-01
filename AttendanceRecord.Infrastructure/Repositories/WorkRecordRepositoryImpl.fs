@@ -14,7 +14,7 @@ module WorkRecordRepositoryImpl =
     let private getFilePath appDir =
         Path.Combine(appDir.AppDirectoryPath, "workRecords.json")
 
-    let private loadWorkRecords filePath : TaskResult<WorkTimeRecord list, string> =
+    let private loadWorkRecords filePath =
         taskResult {
             try
                 if not (File.Exists filePath) then
@@ -61,7 +61,7 @@ module WorkRecordRepositoryImpl =
     let private getByDate appDir date =
         taskResult {
             let! workRecords = loadWorkRecords (getFilePath appDir)
-            return workRecords |> List.tryFind (WorkTimeRecord.hasDate date)
+            return workRecords |> List.tryFind (WorkRecord.hasDate date)
         }
 
     let private getById appDir id =
@@ -77,11 +77,11 @@ module WorkRecordRepositoryImpl =
             return
                 workRecords
                 |> List.filter (fun record ->
-                    let startedAt = WorkTimeRecord.getStartedAt record
+                    let startedAt = WorkRecord.getStartedAt record
                     startedAt.Year = monthDate.Year && startedAt.Month = monthDate.Month)
         }
 
-    let private saveWorkRecord filePath (workRecord: WorkTimeRecord) =
+    let private saveWorkRecord filePath (workRecord: WorkRecord) =
         taskResult {
             let! existingRecords = loadWorkRecords filePath
 

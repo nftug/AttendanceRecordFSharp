@@ -16,19 +16,19 @@ module RestRecord =
 
     let createStart () : RestRecord = create (TimeDuration.createStart ())
 
-    let createEnd (record: RestRecord) : Result<RestRecord, string> =
-        match record.Duration |> TimeDuration.isActive with
+    let createEnd (now: DateTime) (record: RestRecord) : Result<RestRecord, string> =
+        match record.Duration |> TimeDuration.isActive now  with
         | true ->
             TimeDuration.createEnd record.Duration
             |> Result.map (fun duration -> { record with Duration = duration })
         | false -> Error "Rest time is not active"
 
     // Status getters
-    let getDuration (record: RestRecord) : TimeSpan =
-        record.Duration |> TimeDuration.getDuration
+    let getDurationAt (now: DateTime) (record: RestRecord) : TimeSpan =
+        record.Duration |> TimeDuration.getDurationAt now
 
-    let isActive (record: RestRecord) : bool =
-        record.Duration |> TimeDuration.isActive
+    let isActive (now: DateTime) (record: RestRecord) : bool =
+        record.Duration |> TimeDuration.isActive now
 
     let getStartedAt (record: RestRecord) : DateTime =
         record.Duration |> TimeDuration.getStartedAt
@@ -40,12 +40,12 @@ module RestRecord =
     let getSortedList (records: RestRecord list) : RestRecord list =
         records |> List.sortBy getStartedAt
 
-    let isRestingOfList (records: RestRecord list) : bool =
-        records |> List.filter isActive |> List.tryLast |> Option.map (fun _ -> true) |> Option.defaultValue false
+    let isRestingOfList (now: DateTime) (records: RestRecord list) : bool =
+        records |> List.tryFind (isActive now) |> Option.isSome
 
-    let getDurationOfList (records: RestRecord list) : TimeSpan =
+    let getDurationOfList (now: DateTime) (records: RestRecord list) : TimeSpan =
         records
-        |> List.sumBy (getDuration >> _.Ticks)
+        |> List.sumBy (getDurationAt now >> _.Ticks)
         |> TimeSpan.FromTicks
 
     let addToList (record: RestRecord) (records: RestRecord list) : RestRecord list =
@@ -56,16 +56,16 @@ module RestRecord =
 
     let startOfList (records: RestRecord list) : RestRecord list = records |> addToList (createStart ())
 
-    let finishOfList (records: RestRecord list) : Result<RestRecord list, string> =
+    let finishOfList (now: DateTime) (records: RestRecord list) : Result<RestRecord list, string> =
         result {
-            match records |> List.filter isActive |> List.tryLast with
+            match records |> List.filter (isActive now) |> List.tryLast with
             | Some lastActive ->
-                let! endedRest = createEnd lastActive
+                let! endedRest = lastActive |> createEnd now
                 return records |> addToList endedRest
             | None -> return records
         }
 
-    let toggleOfList (records: RestRecord list) : Result<RestRecord list, string> =
-        match isRestingOfList records with
-        | true -> finishOfList records
+    let toggleOfList (now: DateTime) (records: RestRecord list) : Result<RestRecord list, string> =
+        match records |> isRestingOfList now  with
+        | true -> records |> finishOfList now
         | false -> Ok(startOfList records)

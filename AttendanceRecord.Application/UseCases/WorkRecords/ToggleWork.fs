@@ -13,11 +13,12 @@ type ToggleWork =
 module ToggleWork =
     let private handle repository (currentStatusStore: CurrentStatusStore) =
         taskResult {
-            let! workTodayOption = repository.GetByDate DateTime.Now.Date
+            let now = DateTime.Now
+            let! workTodayOption = repository.GetByDate now.Date
 
             let! workToday =
                 match workTodayOption with
-                | Some record -> WorkRecord.toggleWork record
+                | Some record -> record |> WorkRecord.toggleWork now
                 | None -> Ok(WorkRecord.createStart ())
 
             do! repository.Save workToday

@@ -21,11 +21,10 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
             .CombineLatest(
                 workRecord,
                 monthlyRecords,
-                fun _ workRecord monthlyRecords ->
-                    let monthlyOvertime =
-                        WorkRecordTally.getOvertimeTotal monthlyRecords standardWorkTime
-
-                    CurrentStatusDto.fromDomain standardWorkTime monthlyOvertime workRecord
+                fun now workRecord monthlyRecords ->
+                    monthlyRecords
+                    |> WorkRecordTally.getOvertimeTotal now standardWorkTime
+                    |> CurrentStatusDto.fromDomain now standardWorkTime workRecord
             )
             .ToReadOnlyReactiveProperty(CurrentStatusDto.getEmpty ())
             .AddTo(disposable)

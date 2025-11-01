@@ -14,14 +14,14 @@ module TimeDuration =
             { StartedAt = startedAt
               EndedAt = endedAt }
 
-    let isActive (TimeDuration td) : bool =
+    let isActive (now: DateTime) (TimeDuration td) : bool =
         match td.StartedAt, td.EndedAt with
-        | start, None when start.Date = DateTime.Now.Date -> true
+        | start, None when start.Date = now.Date -> true
         | _ -> false
 
-    let getDuration (TimeDuration td) : TimeSpan =
+    let getDurationAt (now: DateTime) (TimeDuration td) : TimeSpan =
         match td.StartedAt, td.EndedAt with
-        | start, None when start.Date = DateTime.Now.Date -> DateTime.Now - start
+        | start, None when start.Date = now.Date -> now - start
         | start, None -> start.Date.AddDays 1 - start
         | start, Some endDt -> endDt - start
 
@@ -42,4 +42,7 @@ module TimeDuration =
         | Some _ -> Error "Duration already ended"
         | None -> create td.StartedAt (Some DateTime.Now)
 
-    let createRestart (TimeDuration _) : Result<TimeDuration, string> = create DateTime.Now None
+    let createRestart (TimeDuration td) : Result<TimeDuration, string> =
+        match td.EndedAt with
+        | None -> Error "Duration is already active"
+        | Some _ -> Ok(hydrate td.StartedAt None)

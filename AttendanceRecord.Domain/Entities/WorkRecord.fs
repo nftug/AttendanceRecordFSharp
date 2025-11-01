@@ -25,24 +25,27 @@ module WorkRecord =
     let getDate (record: WorkRecord) : DateTime =
         getStartedAt record |> fun dt -> dt.Date
 
-    let getRestDuration (record: WorkRecord) : TimeSpan =
-        record.RestRecords |> RestRecord.getDurationOfList
+    let getRestDuration (now: DateTime) (record: WorkRecord) : TimeSpan =
+        record.RestRecords |> RestRecord.getDurationOfList now
 
-    let getDuration (record: WorkRecord) : TimeSpan =
-        TimeDuration.getDuration record.Duration - getRestDuration record
+    let getDuration (now: DateTime) (record: WorkRecord) : TimeSpan =
+        let baseDur = TimeDuration.getDurationAt now record.Duration
+        let restDur = RestRecord.getDurationOfList now record.RestRecords
+        baseDur - restDur
 
-    let getOvertimeDuration (standardWorkTime: TimeSpan) (record: WorkRecord) : TimeSpan =
-        getDuration record - standardWorkTime
+    let getOvertimeDuration (now: DateTime) (standardWorkTime: TimeSpan) (record: WorkRecord) : TimeSpan =
+        getDuration now record - standardWorkTime
 
     let hasDate (date: DateTime) (record: WorkRecord) : bool = getDate record = date.Date
 
-    let isActive (record: WorkRecord) : bool = TimeDuration.isActive record.Duration
+    let isActive (now: DateTime) (record: WorkRecord) : bool =
+        record.Duration |> TimeDuration.isActive now
 
-    let isResting (record: WorkRecord) : bool =
-        record.RestRecords |> RestRecord.isRestingOfList
+    let isResting (now: DateTime) (record: WorkRecord) : bool =
+        record.RestRecords |> RestRecord.isRestingOfList now
 
-    let isWorking (record: WorkRecord) : bool =
-        isActive record && not (isResting record)
+    let isWorking (now: DateTime) (record: WorkRecord) : bool =
+        isActive now record && not (isResting now record)
 
     // Factory methods
     let create (duration: TimeDuration) (restTimes: RestRecord list) : WorkRecord =
@@ -60,28 +63,28 @@ module WorkRecord =
           Duration = TimeDuration.createStart ()
           RestRecords = [] }
 
-    let toggleRest (record: WorkRecord) : Result<WorkRecord, string> =
+    let toggleRest (now: DateTime) (record: WorkRecord) : Result<WorkRecord, string> =
         result {
-            if not (isActive record) then
+            if not (isActive now record) then
                 return! Error "Can only toggle rest for active work record"
             else
-                let! restRecords = record.RestRecords |> RestRecord.toggleOfList
+                let! restRecords = record.RestRecords |> RestRecord.toggleOfList now
 
                 return
                     { record with
                         RestRecords = restRecords }
         }
 
-    let toggleWork (record: WorkRecord) : Result<WorkRecord, string> =
+    let toggleWork (now: DateTime) (record: WorkRecord) : Result<WorkRecord, string> =
         result {
-            if not (record |> hasDate DateTime.Now) then
+            if not (record |> hasDate now) then
                 return! Error "Can only toggle work for today's record"
             else
-                match isActive record, getEndedAt record with
+                match isActive now record, getEndedAt record with
                 | true, _ ->
                     // End work
                     let! endedDuration = TimeDuration.createEnd record.Duration
-                    let! restRecords = RestRecord.finishOfList record.RestRecords
+                    let! restRecords = record.RestRecords |> RestRecord.finishOfList now
 
                     return
                         { record with
@@ -90,13 +93,16 @@ module WorkRecord =
                 | false, Some endedAt ->
                     // Restart work
                     let! restarted = TimeDuration.createRestart record.Duration
-                    let! newRestRecord = TimeDuration.create endedAt (Some DateTime.Now) |> Result.map RestRecord.create
-                    let restTimes = record.RestRecords |> RestRecord.addToList newRestRecord
+
+                    let! restRecords =
+                        TimeDuration.create endedAt (Some now)
+                        |> Result.map RestRecord.create
+                        |> Result.map (fun rr -> record.RestRecords |> RestRecord.addToList rr)
 
                     return
                         { record with
                             Duration = restarted
-                            RestRecords = restTimes }
+                            RestRecords = restRecords }
                 | false, None -> return! Error "Invalid work record state to toggle work"
         }
 

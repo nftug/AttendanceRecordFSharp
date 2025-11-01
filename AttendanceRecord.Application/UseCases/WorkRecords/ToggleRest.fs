@@ -13,11 +13,12 @@ type ToggleRest =
 module ToggleRest =
     let private handle repository (currentStatusStore: CurrentStatusStore) =
         taskResult {
-            let! workTodayOption = repository.GetByDate DateTime.Now.Date
+            let now = DateTime.Now
+            let! workTodayOption = repository.GetByDate now.Date
 
             let! workToday =
                 match workTodayOption with
-                | Some record -> WorkRecord.toggleRest record
+                | Some record -> record |> WorkRecord.toggleRest now
                 | None -> Error "No work record for today to toggle rest."
 
             do! repository.Save workToday

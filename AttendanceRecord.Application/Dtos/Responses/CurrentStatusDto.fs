@@ -25,20 +25,21 @@ module CurrentStatusDto =
           IsResting = false }
 
     let fromDomain
+        (now: DateTime)
         (standardWorkTime: TimeSpan)
-        (monthlyOvertime: TimeSpan)
         (workRecord: WorkRecord option)
+        (monthlyOvertime: TimeSpan)
         : CurrentStatusDto =
         match workRecord with
         | Some record ->
-            { CurrentTime = DateTime.Now
-              WorkDuration = WorkRecord.getDuration record
-              RestDuration = WorkRecord.getRestDuration record
-              OvertimeDuration = WorkRecord.getOvertimeDuration standardWorkTime record
+            { CurrentTime = now
+              WorkDuration = record |> WorkRecord.getDuration now
+              RestDuration = record |> WorkRecord.getRestDuration now
+              OvertimeDuration = record |> WorkRecord.getOvertimeDuration now standardWorkTime
               OvertimeMonthlyDuration = monthlyOvertime
-              IsActive = WorkRecord.isActive record
-              IsWorking = WorkRecord.isWorking record
-              IsResting = WorkRecord.isResting record }
+              IsActive = record |> WorkRecord.isActive now
+              IsWorking = record |> WorkRecord.isWorking now
+              IsResting = record |> WorkRecord.isResting now }
         | None ->
             { getEmpty () with
                 OvertimeMonthlyDuration = monthlyOvertime }

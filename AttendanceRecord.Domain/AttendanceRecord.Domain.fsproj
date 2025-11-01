@@ -6,7 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Library.fs" />
+    <Compile Include="ValueObjects/TimeDuration.fs" />
+    <Compile Include="Entities/RestTimeRecord.fs" />
+    <Compile Include="Entities/WorkTimeRecord.fs" />
+    <Compile Include="Entities/WorkTimeTally.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FsToolkit.ErrorHandling" Version="5.1.0" />
   </ItemGroup>
 
 </Project>

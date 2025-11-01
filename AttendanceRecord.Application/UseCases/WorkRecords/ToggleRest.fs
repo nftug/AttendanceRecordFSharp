@@ -1,0 +1,30 @@
+namespace AttendanceRecord.Application.UseCases.WorkRecords
+
+open System
+open FsToolkit.ErrorHandling
+open AttendanceRecord.Domain.Entities
+open AttendanceRecord.Application.Interfaces
+open AttendanceRecord.Application.Dtos.Responses
+open AttendanceRecord.Application.Services
+
+type ToggleRest =
+    { Handle: unit -> TaskResult<CurrentStatusDto, string> }
+
+module ToggleRest =
+    let private handle (repository: WorkRecordRepository) (currentStatusStore: CurrentStatusStore) =
+        taskResult {
+            let! workTodayOption = repository.GetByDate DateTime.Now.Date
+
+            let! workToday =
+                match workTodayOption with
+                | Some record -> WorkTimeRecord.toggleRest record
+                | None -> Error "No work record for today to toggle rest."
+
+            do! repository.Save workToday
+            do! currentStatusStore.Reload()
+
+            return currentStatusStore.CurrentStatus.CurrentValue
+        }
+
+    let create (repository: WorkRecordRepository) (currentStatusStore: CurrentStatusStore) : ToggleRest =
+        { Handle = fun () -> handle repository currentStatusStore }

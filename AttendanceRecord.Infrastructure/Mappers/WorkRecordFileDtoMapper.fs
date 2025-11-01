@@ -23,7 +23,7 @@ module WorkRecordFileDtoMapper =
             WorkRecordFileDto(
                 r.Id,
                 TimeDurationFileDtoMapper.fromDomain r.Duration,
-                r.RestTimes
+                r.RestRecords
                 |> Seq.map (fun r -> RestRecordFileDto(r.Id, TimeDurationFileDtoMapper.fromDomain r.Duration))
             ))
 

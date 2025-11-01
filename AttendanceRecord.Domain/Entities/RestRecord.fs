@@ -1,6 +1,7 @@
 namespace AttendanceRecord.Domain.Entities
 
 open System
+open FsToolkit.ErrorHandling
 open AttendanceRecord.Domain.ValueObjects
 
 type RestRecord = { Id: Guid; Duration: TimeDuration }
@@ -40,28 +41,31 @@ module RestRecord =
         records |> List.sortBy getStartedAt
 
     let isRestingOfList (records: RestRecord list) : bool =
-        records |> List.tryLast |> Option.map isActive |> Option.defaultValue false
+        records |> List.filter isActive |> List.tryLast |> Option.map (fun _ -> true) |> Option.defaultValue false
 
     let getDurationOfList (records: RestRecord list) : TimeSpan =
         records
         |> List.sumBy (getDuration >> _.Ticks)
         |> TimeSpan.FromTicks
 
-    let startOfList (records: RestRecord list) : RestRecord list = records @ [ createStart () ]
+    let addToList (record: RestRecord) (records: RestRecord list) : RestRecord list =
+        records
+        |> List.filter (fun r -> r.Id <> record.Id)
+        |> List.append [ record ]
+        |> getSortedList
 
-    let finishOfList (records: RestRecord list) : RestRecord list =
-        match records |> List.filter isActive |> List.tryLast with
-        | Some last ->
-            createEnd last
-            |> function
-                | Ok endedRest -> (records |> List.take (records.Length - 1)) @ [ endedRest ]
-                | Error _ -> records
-        | _ -> records
+    let startOfList (records: RestRecord list) : RestRecord list = records |> addToList (createStart ())
 
-    let toggleOfList (records: RestRecord list) : RestRecord list =
+    let finishOfList (records: RestRecord list) : Result<RestRecord list, string> =
+        result {
+            match records |> List.filter isActive |> List.tryLast with
+            | Some lastActive ->
+                let! endedRest = createEnd lastActive
+                return records |> addToList endedRest
+            | None -> return records
+        }
+
+    let toggleOfList (records: RestRecord list) : Result<RestRecord list, string> =
         match isRestingOfList records with
         | true -> finishOfList records
-        | false -> startOfList records
-
-    let addToList (record: RestRecord) (records: RestRecord list) : RestRecord list =
-        getSortedList (record :: records)
+        | false -> Ok(startOfList records)

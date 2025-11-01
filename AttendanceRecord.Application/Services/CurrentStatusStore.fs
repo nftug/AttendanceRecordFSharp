@@ -14,13 +14,14 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
 
     let workRecord = (new ReactiveProperty<WorkRecord option>(None)).AddTo disposable
 
-    let monthlyWorkRecord = (new ReactiveProperty<WorkRecord list>([])).AddTo disposable
+    let monthlyRecords = (new ReactiveProperty<WorkRecord list>([])).AddTo disposable
 
     let currentStatus =
-        workRecord
+        timerService.OneSecondTimer
             .CombineLatest(
-                monthlyWorkRecord,
-                fun workRecord monthlyRecords ->
+                workRecord,
+                monthlyRecords,
+                fun _ workRecord monthlyRecords ->
                     let monthlyOvertime =
                         WorkRecordTally.getOvertimeTotal monthlyRecords standardWorkTime
 
@@ -38,8 +39,7 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
 
     member _.WorkTime = workRecord :> ReadOnlyReactiveProperty<WorkRecord option>
 
-    member _.MonthlyWorkTime =
-        monthlyWorkRecord :> ReadOnlyReactiveProperty<WorkRecord list>
+    member _.MonthlyRecords = monthlyRecords :> ReadOnlyReactiveProperty<WorkRecord list>
 
     member _.CurrentStatus = currentStatus
 
@@ -61,15 +61,15 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
             workRecord.Value <- recordOption
 
             let isMonthlyDataStale =
-                monthlyWorkRecord.Value |> List.exists (not << WorkRecord.isTodays)
+                monthlyRecords.Value |> List.exists (not << WorkRecord.isTodays)
 
             let! monthlyRecordsOption =
                 if forceReload || isMonthlyDataStale then
                     repository.GetMonthly today
                 else
-                    Ok monthlyWorkRecord.Value |> Task.FromResult
+                    Ok monthlyRecords.Value |> Task.FromResult
 
-            monthlyWorkRecord.Value <- monthlyRecordsOption
+            monthlyRecords.Value <- monthlyRecordsOption
         }
 
     member _.Reload() : TaskResult<unit, string> = this.Update(forceReload = true)

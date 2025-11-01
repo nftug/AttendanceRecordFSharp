@@ -31,9 +31,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Common/Hooks/UseDerivedExtensions.fs" />
+    <Compile Include="Common/Hooks/UseMutationExtensions.fs" />
+
     <Compile Include="Compositions/ServiceContainer.fs" />
 
-    <Compile Include="Components/MainView.fs" />
+    <Compile Include="Features/HomePage/Hooks/HomePageHooks.fs" />
+    <Compile Include="Features/HomePage/Components/ClockView.fs" />
+    <Compile Include="Features/HomePage/Components/HomeActionsView.fs" />
+    <Compile Include="Features/HomePage/Components/HomePageView.fs" />
+
+    <Compile Include="MainView.fs" />
 
     <Compile Include="Program.fs" />
   </ItemGroup>

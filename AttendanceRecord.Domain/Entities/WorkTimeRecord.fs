@@ -31,8 +31,9 @@ module WorkTimeRecord =
     let getOvertimeDuration (standardWorkTime: TimeSpan) (record: WorkTimeRecord) : TimeSpan =
         getDuration record - standardWorkTime
 
-    let isTodays (record: WorkTimeRecord) : bool =
-        (getStartedAt record).Date = DateTime.Now.Date
+    let hasDate (date: DateTime) (record: WorkTimeRecord) : bool = (getStartedAt record).Date = date.Date
+
+    let isTodays (record: WorkTimeRecord) : bool = hasDate DateTime.Now.Date record
 
     let isActive (record: WorkTimeRecord) : bool = TimeDuration.isActive record.Duration
 

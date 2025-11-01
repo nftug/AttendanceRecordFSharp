@@ -11,7 +11,7 @@ type ToggleWork =
     { Handle: unit -> TaskResult<CurrentStatusDto, string> }
 
 module ToggleWork =
-    let private handle (repository: WorkRecordRepository) (currentStatusStore: CurrentStatusStore) =
+    let private handle repository (currentStatusStore: CurrentStatusStore) =
         taskResult {
             let! workTodayOption = repository.GetByDate DateTime.Now.Date
 

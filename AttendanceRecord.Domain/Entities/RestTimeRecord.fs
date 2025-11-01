@@ -32,6 +32,9 @@ module RestTimeRecord =
     let getStartedAt (record: RestTimeRecord) : DateTime =
         record.Duration |> TimeDuration.getStartedAt
 
+    let getEndedAt (record: RestTimeRecord) : DateTime option =
+        record.Duration |> TimeDuration.getEndedAt
+
     // List operations
     let getSortedList (records: RestTimeRecord list) : RestTimeRecord list =
         records |> List.sortBy getStartedAt

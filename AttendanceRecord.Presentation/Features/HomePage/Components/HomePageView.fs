@@ -33,7 +33,7 @@ module HomePageView =
 
                     StackPanel.create
                         [ StackPanel.margin 20.0
-                          StackPanel.spacing 10.0
+                          StackPanel.spacing 30.0
                           StackPanel.horizontalAlignment HorizontalAlignment.Center
                           StackPanel.verticalAlignment VerticalAlignment.Center
                           StackPanel.children
@@ -41,5 +41,6 @@ module HomePageView =
                                 HomeActionsView.view
                                     { Status = status
                                       OnToggleWork = props.OnToggleWork
-                                      OnToggleRest = props.OnToggleRest } ] ]
+                                      OnToggleRest = props.OnToggleRest }
+                                StatusView.view { Status = status } ] ]
         )

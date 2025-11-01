@@ -37,6 +37,7 @@
     <Compile Include="Features/HomePage/Hooks/HomePageHooks.fs" />
     <Compile Include="Features/HomePage/Components/ClockView.fs" />
     <Compile Include="Features/HomePage/Components/HomeActionsView.fs" />
+    <Compile Include="Features/HomePage/Components/StatusView.fs" />
     <Compile Include="Features/HomePage/Components/HomePageView.fs" />
 
     <Compile Include="ServiceContainer.fs" />

@@ -4,16 +4,16 @@ open System
 open System.Reflection
 open System.IO
 
-type AppDataDirectoryService =
+type AppDirectoryService =
     { AppDirectoryPath: string
       GetFilePath: string -> string }
 
-module AppDataDirectoryService =
-    let create () : AppDataDirectoryService =
+module AppDirectoryService =
+    let create () : AppDirectoryService =
         let assembly = Assembly.GetEntryAssembly()
 
         if assembly = null then
-            failwith "Unable to get entry assembly."
+            failwith "Unable to determine the entry assembly."
 
         let appName =
             assembly.GetName().Name

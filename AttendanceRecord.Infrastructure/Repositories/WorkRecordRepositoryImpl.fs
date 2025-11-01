@@ -102,7 +102,7 @@ module WorkRecordRepositoryImpl =
             do! saveWorkRecords filePath updatedRecords
         }
 
-    let create (appDir: AppDataDirectoryService) : WorkRecordRepository =
+    let create (appDir: AppDirectoryService) : WorkRecordRepository =
         { Save = saveWorkRecord (getFilePath appDir)
           Delete = deleteWorkRecord (getFilePath appDir)
           GetByDate = getByDate appDir

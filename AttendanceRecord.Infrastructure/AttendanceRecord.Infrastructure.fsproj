@@ -8,7 +8,7 @@
   <ItemGroup>
     <Compile Include="Mappers/WorkRecordFileDtoMapper.fs" />
 
-    <Compile Include="Services/AppDataDirectoryService.fs" />
+    <Compile Include="Services/AppDirectoryService.fs" />
     <Compile Include="Repositories/WorkRecordRepositoryImpl.fs" />
   </ItemGroup>
 

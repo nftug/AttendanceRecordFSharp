@@ -10,7 +10,7 @@
 
     <Compile Include="Interfaces/WorkRecordRepository.fs" />
 
-    <Compile Include="Services/TimerService.fs" />
+    <Compile Include="Services/TimerProvider.fs" />
     <Compile Include="Services/CurrentStatusStore.fs" />
 
     <Compile Include="UseCases/WorkRecords/ToggleWork.fs" />

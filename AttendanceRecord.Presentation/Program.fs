@@ -4,8 +4,6 @@ open Avalonia
 open Avalonia.Themes.Fluent
 open Avalonia.Controls.ApplicationLifetimes
 open Avalonia.FuncUI.Hosts
-open AttendanceRecord.Presentation.Compositions
-open AttendanceRecord.Presentation.Components
 
 type MainWindow(services: ServiceContainer) =
     inherit HostWindow()

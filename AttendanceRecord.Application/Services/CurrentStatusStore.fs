@@ -32,10 +32,11 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
 
     do
         timerService.OneSecondTimer
-            .Prepend(DateTime.Now)
             .Subscribe(fun _ -> this.Update false |> ignore)
             .AddTo(disposable)
         |> ignore
+
+        this.Update true |> ignore
 
     member _.WorkTime = workRecord :> ReadOnlyReactiveProperty<WorkRecord option>
 
@@ -47,13 +48,13 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
         taskResult {
             let today = DateTime.Now.Date
 
-            let isRecordTodays =
+            let isWorkRecordStale =
                 match workRecord.Value with
                 | None -> false
-                | Some record -> record |> WorkRecord.getStartedAt = today
+                | Some record -> record |> (not << WorkRecord.hasDate today)
 
             let! recordOption =
-                if forceReload || not isRecordTodays then
+                if forceReload || isWorkRecordStale then
                     repository.GetByDate today
                 else
                     Ok workRecord.Value |> Task.FromResult
@@ -61,7 +62,10 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
             workRecord.Value <- recordOption
 
             let isMonthlyDataStale =
-                monthlyRecords.Value |> List.exists (not << WorkRecord.isTodays)
+                monthlyRecords.Value
+                |> List.exists (fun wr ->
+                    WorkRecord.getDate wr
+                    |> fun dt -> dt.Year <> today.Year || dt.Month <> today.Month)
 
             let! monthlyRecordsOption =
                 if forceReload || isMonthlyDataStale then

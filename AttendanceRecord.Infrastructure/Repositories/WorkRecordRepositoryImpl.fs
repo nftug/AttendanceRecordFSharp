@@ -77,7 +77,7 @@ module WorkRecordRepositoryImpl =
             return
                 workRecords
                 |> List.filter (fun record ->
-                    let startedAt = WorkRecord.getStartedAt record
+                    let startedAt = WorkRecord.getDate record
                     startedAt.Year = monthDate.Year && startedAt.Month = monthDate.Month)
         }
 
@@ -85,21 +85,21 @@ module WorkRecordRepositoryImpl =
         taskResult {
             let! existingRecords = loadWorkRecords filePath
 
-            let updatedRecords =
+            do!
                 existingRecords
                 |> List.filter (fun wr -> wr.Id <> workRecord.Id)
                 |> List.append [ workRecord ]
-
-            do! saveWorkRecords filePath updatedRecords
+                |> saveWorkRecords filePath
         }
 
     let private deleteWorkRecord filePath id =
         taskResult {
             let! existingRecords = loadWorkRecords filePath
 
-            let updatedRecords = existingRecords |> List.filter (fun wr -> wr.Id <> id)
-
-            do! saveWorkRecords filePath updatedRecords
+            do!
+                existingRecords
+                |> List.filter (fun wr -> wr.Id <> id)
+                |> saveWorkRecords filePath
         }
 
     let create (appDir: AppDirectoryService) : WorkRecordRepository =

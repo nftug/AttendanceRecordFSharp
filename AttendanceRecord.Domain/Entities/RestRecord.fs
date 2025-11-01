@@ -62,3 +62,6 @@ module RestRecord =
         match isRestingOfList records with
         | true -> finishOfList records
         | false -> startOfList records
+
+    let addToList (record: RestRecord) (records: RestRecord list) : RestRecord list =
+        getSortedList (record :: records)

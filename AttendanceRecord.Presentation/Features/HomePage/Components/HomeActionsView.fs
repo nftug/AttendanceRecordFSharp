@@ -24,16 +24,13 @@ module HomeActionsView =
                 let toggleRestMutation = ctx.useMutation props.OnToggleRest
 
                 let workToggleLabel =
-                    ctx.useDerived1 (props.Status, (fun s -> if s.IsWorking then "勤務終了" else "勤務開始"))
+                    ctx.useDerived1 (props.Status, (fun s -> if s.IsActive then "勤務終了" else "勤務開始"))
 
                 let restToggleLabel =
                     ctx.useDerived1 (props.Status, (fun s -> if s.IsResting then "休憩終了" else "休憩開始"))
 
                 let workToggleEnabled =
-                    ctx.useDerived2 (
-                        (toggleWorkMutation.IsPending, toggleRestMutation.IsPending),
-                        fun (w, r) -> not (w || r)
-                    )
+                    ctx.useDerived1 (toggleWorkMutation.IsPending, (fun isPending -> not isPending))
 
                 let restToggleEnabled =
                     ctx.useDerived2 ((toggleRestMutation.IsPending, status), (fun (r, s) -> not r && s.IsActive))

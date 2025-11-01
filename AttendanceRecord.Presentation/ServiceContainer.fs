@@ -1,4 +1,4 @@
-namespace AttendanceRecord.Presentation.Compositions
+namespace AttendanceRecord.Presentation
 
 open AttendanceRecord.Application.Services
 open AttendanceRecord.Application.UseCases.WorkRecords

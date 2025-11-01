@@ -19,6 +19,9 @@ module WorkRecord =
     let getStartedAt (record: WorkRecord) : DateTime =
         record.Duration |> TimeDuration.getStartedAt
 
+    let getDate (record: WorkRecord) : DateTime =
+        getStartedAt record |> fun dt -> dt.Date
+
     let getEndedAt (record: WorkRecord) : DateTime option =
         record.Duration |> TimeDuration.getEndedAt
 
@@ -31,7 +34,7 @@ module WorkRecord =
     let getOvertimeDuration (standardWorkTime: TimeSpan) (record: WorkRecord) : TimeSpan =
         getDuration record - standardWorkTime
 
-    let hasDate (date: DateTime) (record: WorkRecord) : bool = (getStartedAt record).Date = date.Date
+    let hasDate (date: DateTime) (record: WorkRecord) : bool = getDate record = date.Date
 
     let isTodays (record: WorkRecord) : bool = hasDate DateTime.Now.Date record
 
@@ -81,5 +84,16 @@ module WorkRecord =
             else
                 // Restart work
                 let! restarted = TimeDuration.createRestart record.Duration
-                return { record with Duration = restarted }
+
+                let! newRestDuration = TimeDuration.create (getEndedAt record).Value None
+                let newRestRecord = RestRecord.create newRestDuration
+                let restTimes = record.RestTimes |> RestRecord.addToList newRestRecord
+
+                return
+                    { record with
+                        Duration = restarted
+                        RestTimes = restTimes }
         }
+
+    // List operations
+    let getSortedList (records: WorkRecord list) : WorkRecord list = records |> List.sortBy getStartedAt

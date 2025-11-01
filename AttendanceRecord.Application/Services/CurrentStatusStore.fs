@@ -17,11 +17,12 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
     let monthlyRecords = (new ReactiveProperty<WorkRecord list>([])).AddTo disposable
 
     let currentStatus =
-        timerService.OneSecondTimer
+        workRecord
             .CombineLatest(
-                workRecord,
                 monthlyRecords,
-                fun now workRecord monthlyRecords ->
+                fun workRecord monthlyRecords ->
+                    let now = DateTime.Now
+
                     monthlyRecords
                     |> WorkRecordTally.getOvertimeTotal now standardWorkTime
                     |> CurrentStatusDto.fromDomain now standardWorkTime workRecord
@@ -31,6 +32,7 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
 
     do
         timerService.OneSecondTimer
+            .Prepend(DateTime.Now)
             .Subscribe(fun _ -> this.Update false |> ignore)
             .AddTo(disposable)
         |> ignore
@@ -59,6 +61,7 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
                     Ok workRecord.Value |> Task.FromResult
 
             workRecord.Value <- recordOption
+            workRecord.ForceNotify()
 
             let isMonthlyDataStale =
                 monthlyRecords.Value
@@ -73,6 +76,7 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
                     Ok monthlyRecords.Value |> Task.FromResult
 
             monthlyRecords.Value <- monthlyRecordsOption
+            monthlyRecords.ForceNotify()
         }
 
     member _.Reload() : TaskResult<unit, string> = this.Update(forceReload = true)

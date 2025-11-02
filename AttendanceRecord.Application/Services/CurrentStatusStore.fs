@@ -8,7 +8,7 @@ open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Interfaces
 
-type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepository, standardWorkTime: TimeSpan) as this
+type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepository, getAppConfig: unit -> AppConfig) as this
     =
     let disposable = new CompositeDisposable()
 
@@ -22,6 +22,7 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
                 monthlyRecords,
                 fun workRecord monthlyRecords ->
                     let now = DateTime.Now
+                    let standardWorkTime = getAppConfig().StandardWorkTime
 
                     monthlyRecords
                     |> WorkRecordTally.getOvertimeTotal now standardWorkTime

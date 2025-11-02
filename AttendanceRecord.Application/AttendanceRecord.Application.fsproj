@@ -17,8 +17,10 @@
     <Compile Include="Dtos/Responses/CurrentStatusDto.fs" />
     <Compile Include="Dtos/Requests/WorkRecordSaveRequestDto.fs" />
 
+    <Compile Include="Interfaces/AppConfigRepository.fs" />
     <Compile Include="Interfaces/WorkRecordRepository.fs" />
 
+    <Compile Include="Services/AppConfigStore.fs" />
     <Compile Include="Services/TimerProvider.fs" />
     <Compile Include="Services/CurrentStatusStore.fs" />
 

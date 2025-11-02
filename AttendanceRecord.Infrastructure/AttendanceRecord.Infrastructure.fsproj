@@ -11,9 +11,11 @@
 
   <ItemGroup>
     <Compile Include="Mappers/WorkRecordFileDtoMapper.fs" />
+    <Compile Include="Mappers/AppConfigFileDtoMapper.fs" />
 
     <Compile Include="Services/AppDirectoryService.fs" />
     <Compile Include="Repositories/WorkRecordRepositoryImpl.fs" />
+    <Compile Include="Repositories/AppConfigRepositoryImpl.fs" />
   </ItemGroup>
 
   <ItemGroup>

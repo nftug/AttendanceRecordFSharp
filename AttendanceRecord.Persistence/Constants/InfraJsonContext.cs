@@ -5,6 +5,7 @@ using AttendanceRecord.Persistence.Dtos;
 namespace AttendanceRecord.Persistence.Constants;
 
 [JsonSerializable(typeof(IEnumerable<WorkRecordFileDto>))]
+[JsonSerializable(typeof(AppConfigFileDto))]
 public partial class InfraJsonContext : JsonSerializerContext
 {
     public static InfraJsonContext Intended { get; } =

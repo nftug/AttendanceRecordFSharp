@@ -12,7 +12,7 @@ open AttendanceRecord.Infrastructure.Mappers
 
 module WorkRecordRepositoryImpl =
     let private getFilePath appDir =
-        Path.Combine(appDir.AppDirectoryPath, "workRecords.json")
+        Path.Combine(appDir.Value, "workRecords.json")
 
     let private loadWorkRecords filePath =
         taskResult {

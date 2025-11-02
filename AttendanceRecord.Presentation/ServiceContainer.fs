@@ -19,13 +19,15 @@ module ServiceContainer =
         // Infrastructure Services
         let appDirService = AppDirectoryService.create ()
         let workRecordRepository = WorkRecordRepositoryImpl.create appDirService
+        let appConfigRepository = AppConfigRepositoryImpl.create appDirService
 
         // Application Services and Use Cases
         let timerProvider = TimerProvider.create ()
-        let standardWorkTime = System.TimeSpan.FromHours 8.0
+        let appConfigStore = AppConfigStore appConfigRepository
+        let getAppConfig () = appConfigStore.Current
 
         let currentStatusStore =
-            new CurrentStatusStore(timerProvider, workRecordRepository, standardWorkTime)
+            new CurrentStatusStore(timerProvider, workRecordRepository, getAppConfig)
 
         let toggleWorkUseCase = ToggleWork.create workRecordRepository currentStatusStore
         let toggleRestUseCase = ToggleRest.create workRecordRepository currentStatusStore
@@ -37,10 +39,10 @@ module ServiceContainer =
             DeleteWorkRecord.create workRecordRepository currentStatusStore
 
         let getMonthlyWorkRecordsUseCase =
-            GetMonthlyWorkRecords.create workRecordRepository standardWorkTime
+            GetMonthlyWorkRecords.create workRecordRepository getAppConfig
 
         let getWorkRecordDetailsUseCase =
-            GetWorkRecordDetails.create workRecordRepository standardWorkTime
+            GetWorkRecordDetails.create workRecordRepository getAppConfig
 
         { CurrentStatusStore = currentStatusStore
           ToggleWorkUseCase = toggleWorkUseCase

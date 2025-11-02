@@ -4,9 +4,7 @@ open System
 open System.Reflection
 open System.IO
 
-type AppDirectoryService =
-    { AppDirectoryPath: string
-      GetFilePath: string -> string }
+type AppDirectoryService = { Value: string }
 
 module AppDirectoryService =
     let create () : AppDirectoryService =
@@ -24,5 +22,4 @@ module AppDirectoryService =
         let appDataPath = Path.Combine(basePath, appName)
         Directory.CreateDirectory appDataPath |> ignore
 
-        { AppDirectoryPath = appDataPath
-          GetFilePath = fun fileName -> Path.Combine(appDataPath, fileName) }
+        { Value = appDataPath }

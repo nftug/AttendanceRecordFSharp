@@ -5,8 +5,6 @@ open Avalonia.Controls.ApplicationLifetimes
 open Avalonia.Themes.Fluent
 open Avalonia.FuncUI.Hosts
 open Material.Icons.Avalonia
-open Avalonia.Markup.Xaml.Styling
-open System
 
 type MainWindow(services: ServiceContainer) =
     inherit HostWindow()
@@ -23,7 +21,6 @@ type App() =
 
     override this.Initialize() =
         this.Styles.Add(FluentTheme())
-        this.Styles.Add(StyleInclude(baseUri = null, Source = Uri "avares://AttendanceRecord/Styles/Styles.xaml"))
         this.Styles.Add(MaterialIconStyles null)
 
     override this.OnFrameworkInitializationCompleted() =

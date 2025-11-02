@@ -53,6 +53,8 @@ module HomeActionsView =
                                   Button.height 46.0
                                   Button.fontSize 16.0
                                   Button.horizontalAlignment HorizontalAlignment.Stretch
+                                  Button.horizontalContentAlignment HorizontalAlignment.Center
+                                  Button.verticalContentAlignment VerticalAlignment.Center
                                   Button.margin (Thickness(0, 0, 10.0, 0)) ]
                             ToggleButton.create
                                 [ Grid.column 1
@@ -66,6 +68,8 @@ module HomeActionsView =
                                   ToggleButton.isChecked status.Current.IsResting
                                   Button.height 46.0
                                   Button.fontSize 16.0
+                                  Button.horizontalContentAlignment HorizontalAlignment.Center
+                                  Button.verticalContentAlignment VerticalAlignment.Center
                                   Button.horizontalAlignment HorizontalAlignment.Stretch ] ] ]
 
         )

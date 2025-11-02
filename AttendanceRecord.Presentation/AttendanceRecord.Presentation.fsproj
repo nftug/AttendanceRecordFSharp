@@ -44,8 +44,6 @@
     <Compile Include="ServiceContainer.fs" />
     <Compile Include="MainView.fs" />
     <Compile Include="Program.fs" />
-
-     <AvaloniaResource Include="**\*.xaml" />
   </ItemGroup>
 
    <ItemGroup>

@@ -7,7 +7,6 @@ open Avalonia.FuncUI.DSL
 open Avalonia.Controls
 open Avalonia.Layout
 open AttendanceRecord.Application.Dtos.Responses
-open AttendanceRecord.Presentation.Features.HomePage.Hooks
 
 type HomePageViewProps =
     { StatusObservable: Observable<CurrentStatusDto>
@@ -19,8 +18,7 @@ module HomePageView =
         Component.create (
             "HomePageView",
             fun ctx ->
-                let hooks = useHomePageHooks props.StatusObservable ctx
-                let status = hooks.Status
+                let status = ctx.useObservableState props.StatusObservable
 
                 if status.Current.IsNone then
                     TextBlock.create

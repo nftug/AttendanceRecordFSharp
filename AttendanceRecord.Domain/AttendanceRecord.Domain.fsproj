@@ -10,10 +10,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Entities/AppConfig.fs" />
+
     <Compile Include="ValueObjects/TimeDuration.fs" />
     <Compile Include="Entities/RestRecord.fs" />
     <Compile Include="Entities/WorkRecord.fs" />
     <Compile Include="Entities/WorkRecordTally.fs" />
+
+    <Compile Include="ValueObjects/Alarms/AlarmType.fs" />
+    <Compile Include="ValueObjects/Alarms/Alarm.fs" />
+    <Compile Include="ValueObjects/Alarms/WorkEndAlarm.fs" />
+    <Compile Include="ValueObjects/Alarms/RestStartAlarm.fs" />
   </ItemGroup>
 
   <ItemGroup>

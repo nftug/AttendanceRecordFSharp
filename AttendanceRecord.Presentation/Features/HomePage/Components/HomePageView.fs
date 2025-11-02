@@ -2,7 +2,6 @@ namespace AttendanceRecord.Presentation.Features.HomePage.Components
 
 open R3
 open FsToolkit.ErrorHandling
-open Avalonia
 open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.Controls
@@ -33,13 +32,7 @@ module HomePageView =
                     DockPanel.create
                         [ DockPanel.lastChildFill true
                           DockPanel.children
-                              [ TextBlock.create
-                                    [ DockPanel.dock Dock.Top
-                                      TextBlock.text "Attendance Record"
-                                      TextBlock.fontSize 22.0
-                                      TextBlock.horizontalAlignment HorizontalAlignment.Left
-                                      TextBlock.margin (Thickness(20.0, 20.0, 0.0, 10.0)) ]
-                                StackPanel.create
+                              [ StackPanel.create
                                     [ DockPanel.dock Dock.Bottom
                                       StackPanel.margin 20.0
                                       StackPanel.spacing 25.0

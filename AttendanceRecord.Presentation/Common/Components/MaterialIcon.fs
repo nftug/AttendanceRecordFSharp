@@ -7,7 +7,7 @@ open Avalonia.FuncUI.Builder
 
 [<AutoOpen>]
 module MaterialIcon =
-    let create (attrs: IAttr<MaterialIcon> list) : IView<MaterialIcon> = ViewBuilder.Create<MaterialIcon>(attrs)
+    let create (attrs: IAttr<MaterialIcon> list) : IView<MaterialIcon> = ViewBuilder.Create<MaterialIcon> attrs
 
     type MaterialIcon with
 

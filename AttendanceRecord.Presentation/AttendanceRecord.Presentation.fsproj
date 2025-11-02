@@ -35,11 +35,14 @@
     <Compile Include="Common/Hooks/UseObservableExtensions.fs" />
     <Compile Include="Common/Components/CjkTextBlock.fs" />
     <Compile Include="Common/Components/MaterialIcon.fs" />
+    <Compile Include="Common/Components/SplitView.fs" />
 
     <Compile Include="Features/HomePage/Components/ClockView.fs" />
     <Compile Include="Features/HomePage/Components/HomeActionsView.fs" />
     <Compile Include="Features/HomePage/Components/StatusView.fs" />
+
     <Compile Include="Features/HomePage/Components/HomePageView.fs" />
+    <Compile Include="Features/Layout/Components/DrawerView.fs" />
 
     <Compile Include="ServiceContainer.fs" />
     <Compile Include="MainView.fs" />

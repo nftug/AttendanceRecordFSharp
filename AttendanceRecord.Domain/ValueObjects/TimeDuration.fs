@@ -19,7 +19,7 @@ module TimeDuration =
         | start, None when start.Date = now.Date -> true
         | _ -> false
 
-    let getDurationAt (now: DateTime) (TimeDuration td) : TimeSpan =
+    let getDuration (now: DateTime) (TimeDuration td) : TimeSpan =
         match td.StartedAt, td.EndedAt with
         | start, None when start.Date = now.Date -> now - start
         | start, None -> start.Date.AddDays 1 - start
@@ -32,6 +32,8 @@ module TimeDuration =
     let create (startedAt: DateTime) (endedAt: DateTime option) : Result<TimeDuration, string> =
         if endedAt.IsSome && endedAt.Value < startedAt then
             Error "Invalid time duration"
+        else if endedAt.IsSome && endedAt.Value.Date <> startedAt.Date then
+            Error "EndedAt must be on the same date as StartedAt"
         else
             Ok(hydrate startedAt endedAt)
 

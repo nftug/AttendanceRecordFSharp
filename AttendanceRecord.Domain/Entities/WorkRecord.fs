@@ -29,7 +29,7 @@ module WorkRecord =
         record.RestRecords |> RestRecord.getDurationOfList now
 
     let getDuration (now: DateTime) (record: WorkRecord) : TimeSpan =
-        let baseDur = TimeDuration.getDurationAt now record.Duration
+        let baseDur = TimeDuration.getDuration now record.Duration
         let restDur = RestRecord.getDurationOfList now record.RestRecords
         baseDur - restDur
 

@@ -24,8 +24,8 @@ module RestRecord =
         | false -> Error "Rest time is not active"
 
     // Status getters
-    let getDurationAt (now: DateTime) (record: RestRecord) : TimeSpan =
-        record.Duration |> TimeDuration.getDurationAt now
+    let getDuration (now: DateTime) (record: RestRecord) : TimeSpan =
+        record.Duration |> TimeDuration.getDuration now
 
     let isActive (now: DateTime) (record: RestRecord) : bool =
         record.Duration |> TimeDuration.isActive now
@@ -36,6 +36,9 @@ module RestRecord =
     let getEndedAt (record: RestRecord) : DateTime option =
         record.Duration |> TimeDuration.getEndedAt
 
+    let getDate (record: RestRecord) : DateTime =
+        getStartedAt record |> fun dt -> dt.Date
+
     // List operations
     let getSortedList (records: RestRecord list) : RestRecord list =
         records |> List.sortBy getStartedAt
@@ -45,7 +48,7 @@ module RestRecord =
 
     let getDurationOfList (now: DateTime) (records: RestRecord list) : TimeSpan =
         records
-        |> List.sumBy (getDurationAt now >> _.Ticks)
+        |> List.sumBy (getDuration now >> _.Ticks)
         |> TimeSpan.FromTicks
 
     let addToList (record: RestRecord) (records: RestRecord list) : RestRecord list =

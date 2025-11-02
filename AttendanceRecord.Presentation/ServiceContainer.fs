@@ -8,7 +8,11 @@ open AttendanceRecord.Infrastructure.Services
 type ServiceContainer =
     { CurrentStatusStore: CurrentStatusStore
       ToggleWorkUseCase: ToggleWork
-      ToggleRestUseCase: ToggleRest }
+      ToggleRestUseCase: ToggleRest
+      SaveWorkRecordUseCase: SaveWorkRecord
+      DeleteWorkRecordUseCase: DeleteWorkRecord
+      GetMonthlyWorkRecordsUseCase: GetMonthlyWorkRecords
+      GetWorkRecordDetailsUseCase: GetWorkRecordDetails }
 
 module ServiceContainer =
     let create () : ServiceContainer =
@@ -26,6 +30,22 @@ module ServiceContainer =
         let toggleWorkUseCase = ToggleWork.create workRecordRepository currentStatusStore
         let toggleRestUseCase = ToggleRest.create workRecordRepository currentStatusStore
 
+        let saveWorkRecordUseCase =
+            SaveWorkRecord.create workRecordRepository currentStatusStore
+
+        let deleteWorkRecordUseCase =
+            DeleteWorkRecord.create workRecordRepository currentStatusStore
+
+        let getMonthlyWorkRecordsUseCase =
+            GetMonthlyWorkRecords.create workRecordRepository standardWorkTime
+
+        let getWorkRecordDetailsUseCase =
+            GetWorkRecordDetails.create workRecordRepository standardWorkTime
+
         { CurrentStatusStore = currentStatusStore
           ToggleWorkUseCase = toggleWorkUseCase
-          ToggleRestUseCase = toggleRestUseCase }
+          ToggleRestUseCase = toggleRestUseCase
+          SaveWorkRecordUseCase = saveWorkRecordUseCase
+          DeleteWorkRecordUseCase = deleteWorkRecordUseCase
+          GetMonthlyWorkRecordsUseCase = getMonthlyWorkRecordsUseCase
+          GetWorkRecordDetailsUseCase = getWorkRecordDetailsUseCase }

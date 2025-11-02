@@ -1,0 +1,45 @@
+namespace AttendanceRecord.Application.UseCases.WorkRecords
+
+open FsToolkit.ErrorHandling
+open AttendanceRecord.Application.Interfaces
+open AttendanceRecord.Application.Dtos.Requests
+open AttendanceRecord.Application.Services
+open AttendanceRecord.Domain.Entities
+open AttendanceRecord.Domain.ValueObjects
+
+type SaveWorkRecord =
+    { Handle: WorkRecordSaveRequestDto -> TaskResult<unit, string> }
+
+module SaveWorkRecord =
+    let private handle
+        (repository: WorkRecordRepository)
+        (currentStatusStore: CurrentStatusStore)
+        (request: WorkRecordSaveRequestDto)
+        =
+        taskResult {
+            let! restRecords = request.RestRecords |> RestRecordSaveRequestDto.tryToDomainOfList
+            let! duration = TimeDuration.create request.StartedAt request.EndedAt
+
+            let! workRecord =
+                match request.Id with
+                | Some id ->
+                    taskResult {
+                        let! recordOption = repository.GetById id
+                        let! record = recordOption |> Result.requireSome $"Work record with ID {id} not found."
+                        return WorkRecord.update duration restRecords record
+                    }
+                | None -> WorkRecord.create duration restRecords |> TaskResult.ok
+
+            let! existingWorkRecord = repository.GetByDate(WorkRecord.getDate workRecord)
+
+            match existingWorkRecord with
+            | Some existingRecord when existingRecord.Id <> workRecord.Id ->
+                return! Error "A work record for the specified date already exists."
+            | _ -> ()
+
+            do! repository.Save workRecord
+            do! currentStatusStore.Reload()
+        }
+
+    let create (repository: WorkRecordRepository) (currentStatusStore: CurrentStatusStore) : SaveWorkRecord =
+        { Handle = fun request -> handle repository currentStatusStore request }

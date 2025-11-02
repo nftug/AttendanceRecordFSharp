@@ -10,7 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Dtos/Responses/TimeDurationDto.fs" />
+    <Compile Include="Dtos/Responses/RestRecordDetailsDto.fs" />
+    <Compile Include="Dtos/Responses/WorkRecordListDto.fs" />
+    <Compile Include="Dtos/Responses/WorkRecordDetailsDto.fs" />
     <Compile Include="Dtos/Responses/CurrentStatusDto.fs" />
+    <Compile Include="Dtos/Requests/WorkRecordSaveRequestDto.fs" />
 
     <Compile Include="Interfaces/WorkRecordRepository.fs" />
 
@@ -19,6 +24,10 @@
 
     <Compile Include="UseCases/WorkRecords/ToggleWork.fs" />
     <Compile Include="UseCases/WorkRecords/ToggleRest.fs" />
+    <Compile Include="UseCases/WorkRecords/GetMonthlyWorkRecords.fs" />
+    <Compile Include="UseCases/WorkRecords/GetWorkRecordDetails.fs" />
+    <Compile Include="UseCases/WorkRecords/SaveWorkRecord.fs" />
+    <Compile Include="UseCases/WorkRecords/DeleteWorkRecord.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,6 +3,8 @@ namespace AttendanceRecord.Domain.ValueObjects.Alarms
 open System
 open AttendanceRecord.Domain.Entities
 
+type RestStartAlarm = Alarm<WorkRecord>
+
 module RestStartAlarm =
     let private rule: AlarmRule<WorkRecord> =
         { AlarmType = AlarmType.RestStart
@@ -14,5 +16,5 @@ module RestStartAlarm =
                 && wr |> WorkRecord.getDuration now >= cfg.RestStartAlarmConfig.BeforeStartDuration
           GetSnoozeDuration = _.RestStartAlarmConfig.SnoozeDuration }
 
-    let createInitialAlarm () : Alarm<WorkRecord> =
+    let createInitialAlarm () : RestStartAlarm =
         Alarm.initial rule

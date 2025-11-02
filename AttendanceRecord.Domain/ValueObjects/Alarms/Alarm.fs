@@ -29,17 +29,15 @@ module Alarm =
         | _ -> false
 
     let tryTrigger (now: DateTime) (r: 'r) (cfg: AppConfig) (a: Alarm<'r>) : Alarm<'r> =
-        if a.Rule.ShouldTrigger r cfg now && not (isSnoozed now a) then
+        if a.Rule.ShouldTrigger r cfg now && not (a |> isSnoozed now) then
             { a with
-                State =
-                    { IsTriggered = true
-                      SnoozedUntil = None } }
+                State.IsTriggered = true
+                State.SnoozedUntil = None }
         else
-            { a with
-                State = { a.State with IsTriggered = false } }
+            { a with State.IsTriggered = false }
 
     let snooze (now: DateTime) (cfg: AppConfig) (a: Alarm<'r>) : Alarm<'r> =
-        if isSnoozed now a then
+        if a |> isSnoozed now then
             a
         else
             { a with

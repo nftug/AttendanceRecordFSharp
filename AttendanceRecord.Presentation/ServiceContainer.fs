@@ -7,6 +7,7 @@ open AttendanceRecord.Infrastructure.Services
 
 type ServiceContainer =
     { CurrentStatusStore: CurrentStatusStore
+      AlarmService: AlarmService
       ToggleWorkUseCase: ToggleWork
       ToggleRestUseCase: ToggleRest
       SaveWorkRecordUseCase: SaveWorkRecord
@@ -29,6 +30,8 @@ module ServiceContainer =
         let currentStatusStore =
             new CurrentStatusStore(timerProvider, workRecordRepository, getAppConfig)
 
+        let alarmService = new AlarmService(currentStatusStore, getAppConfig)
+
         let toggleWorkUseCase = ToggleWork.create workRecordRepository currentStatusStore
         let toggleRestUseCase = ToggleRest.create workRecordRepository currentStatusStore
 
@@ -45,6 +48,7 @@ module ServiceContainer =
             GetWorkRecordDetails.create workRecordRepository getAppConfig
 
         { CurrentStatusStore = currentStatusStore
+          AlarmService = alarmService
           ToggleWorkUseCase = toggleWorkUseCase
           ToggleRestUseCase = toggleRestUseCase
           SaveWorkRecordUseCase = saveWorkRecordUseCase

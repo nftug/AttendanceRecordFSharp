@@ -40,7 +40,7 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
 
         this.Update true |> ignore
 
-    member _.WorkTime = workRecord :> ReadOnlyReactiveProperty<WorkRecord option>
+    member _.WorkRecord = workRecord :> ReadOnlyReactiveProperty<WorkRecord option>
 
     member _.MonthlyRecords = monthlyRecords :> ReadOnlyReactiveProperty<WorkRecord list>
 

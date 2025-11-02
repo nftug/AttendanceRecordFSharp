@@ -99,7 +99,7 @@ module WorkRecord =
                 match isActive now record, getEndedAt record with
                 | true, _ ->
                     // End work
-                    let! endedDuration = TimeDuration.createEnd record.Duration
+                    let! endedDuration = TimeDuration.tryCreateEnd record.Duration
                     let! restRecords = record.RestRecords |> RestRecord.finishOfList now
 
                     return
@@ -108,10 +108,10 @@ module WorkRecord =
                             RestRecords = restRecords }
                 | false, Some endedAt ->
                     // Restart work
-                    let! restarted = TimeDuration.createRestart record.Duration
+                    let! restarted = TimeDuration.tryCreateRestart record.Duration
 
                     let! restRecords =
-                        TimeDuration.create endedAt (Some now)
+                        TimeDuration.tryCreate endedAt (Some now)
                         |> Result.map RestRecord.create
                         |> Result.map (fun rr -> record.RestRecords |> RestRecord.addToList rr)
 

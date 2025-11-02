@@ -18,7 +18,7 @@ type WorkRecordSaveRequestDto =
 
 module RestRecordSaveRequestDto =
     let tryToDomain (dto: RestRecordSaveRequestDto) : Result<RestRecord, string> =
-        TimeDuration.create dto.StartedAt dto.EndedAt
+        TimeDuration.tryCreate dto.StartedAt dto.EndedAt
         |> Result.map (fun duration ->
             match dto.Id with
             | Some id -> RestRecord.hydrate id duration

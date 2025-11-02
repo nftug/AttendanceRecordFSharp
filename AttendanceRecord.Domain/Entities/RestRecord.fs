@@ -19,7 +19,7 @@ module RestRecord =
     let tryCreateEnd (now: DateTime) (record: RestRecord) : Result<RestRecord, string> =
         match record.Duration |> TimeDuration.isActive now  with
         | true ->
-            TimeDuration.createEnd record.Duration
+            TimeDuration.tryCreateEnd record.Duration
             |> Result.map (fun duration -> { record with Duration = duration })
         | false -> Error "Rest time is not active"
 

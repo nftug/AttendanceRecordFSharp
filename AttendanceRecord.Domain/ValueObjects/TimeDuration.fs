@@ -31,22 +31,20 @@ module TimeDuration =
 
     let getDate (TimeDuration td) : DateTime = td.StartedAt.Date
 
-    let create (startedAt: DateTime) (endedAt: DateTime option) : Result<TimeDuration, string> =
-        if endedAt.IsSome && endedAt.Value < startedAt then
-            Error "Invalid time duration"
-        else if endedAt.IsSome && endedAt.Value.Date <> startedAt.Date then
-            Error "EndedAt must be on the same date as StartedAt"
-        else
-            Ok(hydrate startedAt endedAt)
+    let tryCreate (startedAt: DateTime) (endedAt: DateTime option) : Result<TimeDuration, string> =
+        match endedAt with
+        | Some endDt when endDt < startedAt -> Error "EndedAt is earlier than StartedAt"
+        | Some endDt when endDt.Date <> startedAt.Date -> Error "EndedAt must be on the same date as StartedAt"
+        | _ -> Ok(hydrate startedAt endedAt)
 
     let createStart () : TimeDuration = hydrate DateTime.Now None
 
-    let createEnd (TimeDuration td) : Result<TimeDuration, string> =
+    let tryCreateEnd (TimeDuration td) : Result<TimeDuration, string> =
         match td.EndedAt with
         | Some _ -> Error "Duration already ended"
-        | None -> create td.StartedAt (Some DateTime.Now)
+        | None -> tryCreate td.StartedAt (Some DateTime.Now)
 
-    let createRestart (TimeDuration td) : Result<TimeDuration, string> =
+    let tryCreateRestart (TimeDuration td) : Result<TimeDuration, string> =
         match td.EndedAt with
         | None -> Error "Duration is already active"
         | Some _ -> Ok(hydrate td.StartedAt None)

@@ -18,7 +18,7 @@ module SaveWorkRecord =
         =
         taskResult {
             let! restRecords = request.RestRecords |> RestRecordSaveRequestDto.tryToDomainOfList
-            let! duration = TimeDuration.create request.StartedAt request.EndedAt
+            let! duration = TimeDuration.tryCreate request.StartedAt request.EndedAt
 
             let! workRecord =
                 match request.Id with

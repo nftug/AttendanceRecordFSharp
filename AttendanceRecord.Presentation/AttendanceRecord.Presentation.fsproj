@@ -42,10 +42,10 @@
     <Compile Include="Features/HomePage/Components/StatusView.fs" />
 
     <Compile Include="Features/HomePage/Components/HomePageView.fs" />
-    <Compile Include="Features/Layout/Components/DrawerView.fs" />
 
     <Compile Include="ServiceContainer.fs" />
-    <Compile Include="MainView.fs" />
+    <Compile Include="Layout/Components/NavigationView.fs" />
+    <Compile Include="Layout/Components/MainView.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

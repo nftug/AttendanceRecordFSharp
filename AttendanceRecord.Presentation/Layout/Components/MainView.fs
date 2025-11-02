@@ -1,4 +1,4 @@
-namespace AttendanceRecord.Presentation
+namespace AttendanceRecord.Presentation.Layout.Components
 
 open Avalonia.FuncUI
 open Material.Icons
@@ -6,7 +6,7 @@ open Avalonia.FuncUI.DSL
 open Avalonia.Controls
 open Avalonia.Layout
 open AttendanceRecord.Presentation.Features.HomePage.Components
-open AttendanceRecord.Presentation.Features.Layout.Components
+open AttendanceRecord.Presentation
 
 module MainView =
     type private PageKeys =
@@ -42,7 +42,7 @@ module MainView =
                       TextBlock.horizontalAlignment HorizontalAlignment.Center
                       TextBlock.verticalAlignment VerticalAlignment.Center ]
 
-            DrawerView.view
+            NavigationView.view
                 { PageKey = page
                   PageItems =
                     Map

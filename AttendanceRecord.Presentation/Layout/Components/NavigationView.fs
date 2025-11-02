@@ -1,4 +1,4 @@
-namespace AttendanceRecord.Presentation.Features.Layout.Components
+namespace AttendanceRecord.Presentation.Layout.Components
 
 open Avalonia
 open Avalonia.FuncUI
@@ -16,19 +16,19 @@ type PageItem<'key when 'key: comparison> =
       Title: string
       Content: IView }
 
-type DrawerViewProps<'key when 'key: comparison> =
+type NavigationViewProps<'key when 'key: comparison> =
     { PageItems: Map<'key, PageItem<'key>>
       PageKey: IWritable<'key> }
 
-type private PaneViewProps<'key when 'key: comparison> =
+type private DrawerViewProps<'key when 'key: comparison> =
     { IsOpen: IWritable<bool>
       PageItems: Map<'key, PageItem<'key>>
       PageKey: IWritable<'key> }
 
-module DrawerView =
-    let private paneView (props: PaneViewProps<'key>) =
+module NavigationView =
+    let private drawerView (props: DrawerViewProps<'key>) =
         Component.create (
-            "DrawerPaneView",
+            "DrawerView",
             fun ctx ->
                 let isOpen = props.IsOpen |> ctx.usePassed
                 let pageKey = props.PageKey |> ctx.usePassed
@@ -72,9 +72,9 @@ module DrawerView =
                                   ListBox.background (null :> Brush) ] ] ]
         )
 
-    let view (props: DrawerViewProps<'key>) =
+    let view (props: NavigationViewProps<'key>) =
         Component.create (
-            "DrawerContainerView",
+            "NavigationView",
             fun ctx ->
                 let isOpen = ctx.useState false
                 let pageKey = props.PageKey |> ctx.usePassed
@@ -90,7 +90,7 @@ module DrawerView =
                       SplitView.compactPaneLengthProperty 55.0
                       SplitView.isPaneOpen isOpen.Current
                       SplitView.pane (
-                          paneView
+                          drawerView
                               { IsOpen = isOpen
                                 PageItems = props.PageItems
                                 PageKey = pageKey }

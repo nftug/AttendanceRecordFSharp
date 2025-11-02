@@ -7,6 +7,7 @@ open Avalonia.FuncUI.DSL
 open Avalonia.Controls
 open Avalonia.Layout
 open Avalonia.Controls.Primitives
+open Material.Icons
 open AttendanceRecord.Application.Dtos.Responses
 
 type HomeActionsViewProps =
@@ -23,11 +24,11 @@ module HomeActionsView =
                 let toggleWorkMutation = ctx.useMutation props.OnToggleWork
                 let toggleRestMutation = ctx.useMutation props.OnToggleRest
 
-                let workToggleLabel =
-                    ctx.useDerived1 (props.Status, (fun s -> if s.IsActive then "勤務終了" else "勤務開始"))
+                let workButtonLabel =
+                    ctx.useDerived1 (status, (fun s -> if s.IsActive then "勤務終了" else "勤務開始"))
 
-                let restToggleLabel =
-                    ctx.useDerived1 (props.Status, (fun s -> if s.IsResting then "休憩終了" else "休憩開始"))
+                let restButtonLabel =
+                    ctx.useDerived1 (status, (fun s -> if s.IsResting then "休憩終了" else "休憩開始"))
 
                 let workToggleEnabled =
                     ctx.useDerived1 (toggleWorkMutation.IsPending, (fun isPending -> not isPending))
@@ -41,26 +42,30 @@ module HomeActionsView =
                       Grid.children
                           [ ToggleButton.create
                                 [ Grid.column 0
-                                  Button.content (CjkTextBlock.create [ TextBlock.text workToggleLabel.Current ])
+                                  Button.content (
+                                      MaterialIconLabel.create
+                                          MaterialIconKind.Work
+                                          [ CjkTextBlock.create [ TextBlock.text workButtonLabel.Current ] ]
+                                  )
                                   Button.onClick (fun _ -> toggleWorkMutation.Mutate())
                                   Button.isEnabled workToggleEnabled.Current
                                   ToggleButton.isChecked status.Current.IsWorking
-                                  Button.height 50.0
-                                  Button.horizontalAlignment HorizontalAlignment.Stretch
-                                  Button.horizontalContentAlignment HorizontalAlignment.Center
-                                  Button.verticalContentAlignment VerticalAlignment.Center
+                                  Button.height 46.0
                                   Button.fontSize 16.0
+                                  Button.horizontalAlignment HorizontalAlignment.Stretch
                                   Button.margin (Thickness(0, 0, 10.0, 0)) ]
                             ToggleButton.create
                                 [ Grid.column 1
-                                  Button.content (CjkTextBlock.create [ TextBlock.text restToggleLabel.Current ])
+                                  Button.content (
+                                      MaterialIconLabel.create
+                                          MaterialIconKind.Coffee
+                                          [ CjkTextBlock.create [ TextBlock.text restButtonLabel.Current ] ]
+                                  )
                                   Button.onClick (fun _ -> toggleRestMutation.Mutate())
                                   Button.isEnabled restToggleEnabled.Current
                                   ToggleButton.isChecked status.Current.IsResting
-                                  Button.height 50.0
-                                  Button.horizontalAlignment HorizontalAlignment.Stretch
-                                  Button.horizontalContentAlignment HorizontalAlignment.Center
-                                  Button.verticalContentAlignment VerticalAlignment.Center
-                                  Button.fontSize 16.0 ] ] ]
+                                  Button.height 46.0
+                                  Button.fontSize 16.0
+                                  Button.horizontalAlignment HorizontalAlignment.Stretch ] ] ]
 
         )

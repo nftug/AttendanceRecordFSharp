@@ -34,6 +34,7 @@
     <Compile Include="Common/Hooks/UseMutationExtensions.fs" />
     <Compile Include="Common/Hooks/UseObservableExtensions.fs" />
     <Compile Include="Common/Components/CjkTextBlock.fs" />
+    <Compile Include="Common/Components/MaterialIcon.fs" />
 
     <Compile Include="Features/HomePage/Components/ClockView.fs" />
     <Compile Include="Features/HomePage/Components/HomeActionsView.fs" />
@@ -43,6 +44,8 @@
     <Compile Include="ServiceContainer.fs" />
     <Compile Include="MainView.fs" />
     <Compile Include="Program.fs" />
+
+     <AvaloniaResource Include="**\*.xaml" />
   </ItemGroup>
 
    <ItemGroup>
@@ -50,6 +53,7 @@
     <PackageReference Include="Avalonia.FuncUI" Version="1.5.1" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.7" />
     <PackageReference Include="FsToolkit.ErrorHandling" Version="5.1.0" />
+    <PackageReference Include="Material.Icons.Avalonia" Version="3.0.0-preview3.1" />
     <PackageReference Include="R3" Version="1.3.0" />
   </ItemGroup>
 

@@ -1,9 +1,12 @@
 ﻿namespace AttendanceRecord.Presentation
 
 open Avalonia
-open Avalonia.Themes.Fluent
 open Avalonia.Controls.ApplicationLifetimes
+open Avalonia.Themes.Fluent
 open Avalonia.FuncUI.Hosts
+open Material.Icons.Avalonia
+open Avalonia.Markup.Xaml.Styling
+open System
 
 type MainWindow(services: ServiceContainer) =
     inherit HostWindow()
@@ -18,7 +21,10 @@ type MainWindow(services: ServiceContainer) =
 type App() =
     inherit Application()
 
-    override this.Initialize() = this.Styles.Add(FluentTheme())
+    override this.Initialize() =
+        this.Styles.Add(FluentTheme())
+        this.Styles.Add(StyleInclude(baseUri = null, Source = Uri "avares://AttendanceRecord/Styles/Styles.xaml"))
+        this.Styles.Add(MaterialIconStyles null)
 
     override this.OnFrameworkInitializationCompleted() =
         let services = ServiceContainer.create ()

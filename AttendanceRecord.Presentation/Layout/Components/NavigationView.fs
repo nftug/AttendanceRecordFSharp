@@ -6,10 +6,9 @@ open Avalonia.FuncUI.DSL
 open Avalonia.Controls
 open Avalonia.Media
 open Material.Icons
-open Material.Icons.Avalonia
 open Avalonia.FuncUI.Types
 open Avalonia.Layout
-open Avalonia.Input
+open Avalonia.Controls.Primitives
 
 type PageItem<'key when 'key: comparison> =
     { Icon: MaterialIconKind
@@ -44,32 +43,30 @@ module NavigationView =
                                     TextBlock.verticalAlignment VerticalAlignment.Center ] ]
                     | None -> TextBlock.create [ TextBlock.text "Unknown" ]
 
-                let handleSelectedItemChanged (args: obj) =
-                    isOpen.Set false
-                    pageKey.Set(args :?> 'key)
-
                 DockPanel.create
                     [ DockPanel.lastChildFill true
                       DockPanel.margin 12.0
                       DockPanel.children
-                          [ Button.create
-                                [ DockPanel.dock Dock.Top
-                                  Button.content (MaterialIcon.create [ MaterialIcon.kind MaterialIconKind.Menu ])
-                                  Button.background (null :> Brush)
-                                  Button.onClick (fun _ -> isOpen.Set(not isOpen.Current))
-                                  Button.width 35.0
-                                  Button.height 35.0
-                                  Button.fontSize 18.0
-                                  Button.cursor (Cursor.Parse "Hand") ]
-                            ListBox.create
-                                [ DockPanel.dock Dock.Bottom
-                                  ListBox.isVisible isOpen.Current
-                                  ListBox.margin (Thickness(0.0, 10.0, 0.0, 0.0))
-                                  ListBox.selectedItem pageKey.Current
-                                  ListBox.onSelectedItemChanged handleSelectedItemChanged
-                                  ListBox.dataItems (props.PageItems |> Map.keys |> List.ofSeq)
-                                  ListBox.itemTemplate (DataTemplateView<'key>.create (fun item -> createMenuItem item))
-                                  ListBox.background (null :> Brush) ] ] ]
+                          [ StackPanel.create
+                                [ StackPanel.children (
+                                      props.PageItems
+                                      |> Map.keys
+                                      |> Seq.map (fun key ->
+                                          ToggleButton.create
+                                              [ ToggleButton.content (createMenuItem key)
+                                                ToggleButton.isChecked (pageKey.Current = key)
+                                                ToggleButton.height 40.0
+                                                ToggleButton.margin (Thickness(0.0, 5.0, 0.0, 5.0))
+                                                ToggleButton.horizontalContentAlignment HorizontalAlignment.Left
+                                                ToggleButton.horizontalAlignment HorizontalAlignment.Stretch
+                                                ToggleButton.background Brushes.Transparent
+                                                ToggleButton.borderBrush Brushes.Transparent
+                                                ToggleButton.onChecked (fun _ ->
+                                                    isOpen.Set false
+                                                    pageKey.Set key) ]
+                                          :> IView)
+                                      |> List.ofSeq
+                                  ) ] ] ]
         )
 
     let view (props: NavigationViewProps<'key>) =
@@ -84,29 +81,46 @@ module NavigationView =
                     | Some item -> item.Title
                     | None -> "Unknown"
 
+                let pageContent =
+                    match props.PageItems |> Map.tryFind pageKey.Current with
+                    | Some item -> item.Content
+                    | None -> TextBlock.create [ TextBlock.text "Page not found" ]
+
+                let content =
+                    DockPanel.create
+                        [ DockPanel.lastChildFill true
+                          DockPanel.children
+                              [ StackPanel.create
+                                    [ DockPanel.dock Dock.Top
+                                      StackPanel.orientation Orientation.Horizontal
+                                      StackPanel.height 50.0
+                                      StackPanel.margin 5.0
+                                      StackPanel.children
+                                          [ Button.create
+                                                [ Button.content (MaterialIconLabel.create MaterialIconKind.Menu [])
+                                                  Button.width 50.0
+                                                  Button.height 50.0
+                                                  Button.fontSize 18.0
+                                                  Button.background Brushes.Transparent
+                                                  Button.borderBrush Brushes.Transparent
+                                                  Button.onClick (fun _ -> isOpen.Set true) ]
+                                            TextBlock.create
+                                                [ TextBlock.text pageTitle
+                                                  TextBlock.fontSize 21.0
+                                                  TextBlock.verticalAlignment VerticalAlignment.Center
+                                                  TextBlock.margin (Thickness(20.0, 0.0, 0.0, 0.0)) ] ] ]
+                                pageContent ] ]
+
                 SplitView.create
-                    [ SplitView.displayMode SplitViewDisplayMode.CompactInline
+                    [ SplitView.displayMode SplitViewDisplayMode.Overlay
                       SplitView.openPaneLength 250.0
-                      SplitView.compactPaneLengthProperty 55.0
                       SplitView.isPaneOpen isOpen.Current
+                      SplitView.onPaneClosed (fun _ -> isOpen.Set false)
                       SplitView.pane (
                           drawerView
                               { IsOpen = isOpen
                                 PageItems = props.PageItems
                                 PageKey = pageKey }
                       )
-                      SplitView.content (
-                          DockPanel.create
-                              [ DockPanel.lastChildFill true
-                                DockPanel.children
-                                    [ TextBlock.create
-                                          [ DockPanel.dock Dock.Top
-                                            TextBlock.text pageTitle
-                                            TextBlock.fontSize 22.0
-                                            TextBlock.horizontalAlignment HorizontalAlignment.Left
-                                            TextBlock.margin (Thickness(20.0, 20.0, 0.0, 10.0)) ]
-                                      match props.PageItems |> Map.tryFind pageKey.Current with
-                                      | Some item -> item.Content
-                                      | None -> TextBlock.create [ TextBlock.text "Page not found" ] ] ]
-                      ) ]
+                      SplitView.content content ]
         )

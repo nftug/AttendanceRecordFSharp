@@ -48,24 +48,40 @@ module WorkRecord =
         isActive now record && not (isResting now record)
 
     // Factory methods
-    let create (duration: TimeDuration) (restTimes: RestRecord list) : WorkRecord =
-        { Id = Guid.NewGuid()
-          Duration = duration
-          RestRecords = restTimes |> RestRecord.getSortedList }
+    let private checkDurationAndRests (duration: TimeDuration) (restTimes: RestRecord list) : Result<unit, string> =
+        let date = duration |> TimeDuration.getDate
 
-    let update (newDuration: TimeDuration) (newRestTimes: RestRecord list) (record: WorkRecord) : WorkRecord =
-        { record with
-            Duration = newDuration
-            RestRecords = newRestTimes |> RestRecord.getSortedList }
+        if restTimes |> List.exists (fun rt -> rt |> RestRecord.getDate <> date) then
+            Error "All rest records must be on the same date as the work record"
+        else
+            Ok()
+
+    let tryCreate (duration: TimeDuration) (restTimes: RestRecord list) : Result<WorkRecord, string> =
+        checkDurationAndRests duration restTimes
+        |> Result.map (fun () ->
+            { Id = Guid.NewGuid()
+              Duration = duration
+              RestRecords = restTimes |> RestRecord.getSortedList })
+
+    let tryUpdate
+        (newDuration: TimeDuration)
+        (newRestTimes: RestRecord list)
+        (record: WorkRecord)
+        : Result<WorkRecord, string> =
+        checkDurationAndRests newDuration newRestTimes
+        |> Result.map (fun () ->
+            { record with
+                Duration = newDuration
+                RestRecords = newRestTimes |> RestRecord.getSortedList })
 
     let createStart () : WorkRecord =
         { Id = Guid.NewGuid()
           Duration = TimeDuration.createStart ()
           RestRecords = [] }
 
-    let toggleRest (now: DateTime) (record: WorkRecord) : Result<WorkRecord, string> =
+    let tryToggleRest (now: DateTime) (record: WorkRecord) : Result<WorkRecord, string> =
         result {
-            if not (isActive now record) then
+            if not (record |> isActive now) then
                 return! Error "Can only toggle rest for active work record"
             else
                 let! restRecords = record.RestRecords |> RestRecord.toggleOfList now
@@ -75,7 +91,7 @@ module WorkRecord =
                         RestRecords = restRecords }
         }
 
-    let toggleWork (now: DateTime) (record: WorkRecord) : Result<WorkRecord, string> =
+    let tryToggleWork (now: DateTime) (record: WorkRecord) : Result<WorkRecord, string> =
         result {
             if not (record |> hasDate now) then
                 return! Error "Can only toggle work for today's record"

@@ -29,20 +29,3 @@ module RestRecordSaveRequestDto =
         |> List.map tryToDomain
         |> List.sequenceResultA
         |> Result.mapError (String.concat "; ")
-
-module WorkRecordSaveRequestDto =
-    let tryToDomain (dto: WorkRecordSaveRequestDto) : Result<WorkRecord, string> =
-        result {
-            let! restRecords =
-                dto.RestRecords
-                |> List.map RestRecordSaveRequestDto.tryToDomain
-                |> List.sequenceResultA
-                |> Result.mapError (String.concat "; ")
-
-            let! duration = TimeDuration.create dto.StartedAt dto.EndedAt
-
-            return
-                match dto.Id with
-                | Some id -> WorkRecord.hydrate id duration restRecords
-                | None -> WorkRecord.create duration restRecords
-        }

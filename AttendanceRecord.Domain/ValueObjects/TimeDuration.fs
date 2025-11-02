@@ -29,6 +29,8 @@ module TimeDuration =
 
     let getEndedAt (TimeDuration td) : DateTime option = td.EndedAt
 
+    let getDate (TimeDuration td) : DateTime = td.StartedAt.Date
+
     let create (startedAt: DateTime) (endedAt: DateTime option) : Result<TimeDuration, string> =
         if endedAt.IsSome && endedAt.Value < startedAt then
             Error "Invalid time duration"

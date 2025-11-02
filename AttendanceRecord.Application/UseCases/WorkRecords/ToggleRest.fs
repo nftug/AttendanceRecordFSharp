@@ -18,7 +18,7 @@ module ToggleRest =
 
             let! workToday =
                 match workTodayOption with
-                | Some record -> record |> WorkRecord.toggleRest now
+                | Some record -> record |> WorkRecord.tryToggleRest now
                 | None -> Error "No work record for today to toggle rest."
 
             do! repository.Save workToday

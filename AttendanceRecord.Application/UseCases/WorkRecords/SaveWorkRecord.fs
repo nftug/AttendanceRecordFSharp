@@ -26,9 +26,9 @@ module SaveWorkRecord =
                     taskResult {
                         let! recordOption = repository.GetById id
                         let! record = recordOption |> Result.requireSome $"Work record with ID {id} not found."
-                        return WorkRecord.update duration restRecords record
+                        return! WorkRecord.tryUpdate duration restRecords record
                     }
-                | None -> WorkRecord.create duration restRecords |> TaskResult.ok
+                | None -> taskResult { return! WorkRecord.tryCreate duration restRecords }
 
             let! existingWorkRecord = repository.GetByDate(WorkRecord.getDate workRecord)
 

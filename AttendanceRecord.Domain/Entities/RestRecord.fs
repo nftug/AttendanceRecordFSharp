@@ -16,7 +16,7 @@ module RestRecord =
 
     let createStart () : RestRecord = create (TimeDuration.createStart ())
 
-    let createEnd (now: DateTime) (record: RestRecord) : Result<RestRecord, string> =
+    let tryCreateEnd (now: DateTime) (record: RestRecord) : Result<RestRecord, string> =
         match record.Duration |> TimeDuration.isActive now  with
         | true ->
             TimeDuration.createEnd record.Duration
@@ -63,7 +63,7 @@ module RestRecord =
         result {
             match records |> List.filter (isActive now) |> List.tryLast with
             | Some lastActive ->
-                let! endedRest = lastActive |> createEnd now
+                let! endedRest = lastActive |> tryCreateEnd now
                 return records |> addToList endedRest
             | None -> return records
         }

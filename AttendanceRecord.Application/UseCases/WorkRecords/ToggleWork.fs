@@ -18,8 +18,8 @@ module ToggleWork =
 
             let! workToday =
                 match workTodayOption with
-                | Some record -> record |> WorkRecord.toggleWork now
-                | None -> Ok(WorkRecord.createStart ())
+                | Some record -> record |> WorkRecord.tryToggleWork now
+                | None -> WorkRecord.createStart () |> Ok
 
             do! repository.Save workToday
             do! currentStatusStore.Reload()

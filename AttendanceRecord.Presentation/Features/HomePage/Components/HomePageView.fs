@@ -2,6 +2,7 @@ namespace AttendanceRecord.Presentation.Features.HomePage.Components
 
 open R3
 open FsToolkit.ErrorHandling
+open Avalonia
 open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.Controls
@@ -29,16 +30,26 @@ module HomePageView =
                 else
                     let status = ctx.useDerived1 (status, Option.get)
 
-                    StackPanel.create
-                        [ StackPanel.margin 20.0
-                          StackPanel.spacing 30.0
-                          StackPanel.horizontalAlignment HorizontalAlignment.Center
-                          StackPanel.verticalAlignment VerticalAlignment.Center
-                          StackPanel.children
-                              [ ClockView.view { Status = status }
-                                HomeActionsView.view
-                                    { Status = status
-                                      OnToggleWork = props.OnToggleWork
-                                      OnToggleRest = props.OnToggleRest }
-                                StatusView.view { Status = status } ] ]
+                    DockPanel.create
+                        [ DockPanel.lastChildFill true
+                          DockPanel.children
+                              [ TextBlock.create
+                                    [ DockPanel.dock Dock.Top
+                                      TextBlock.text "Attendance Record"
+                                      TextBlock.fontSize 22.0
+                                      TextBlock.horizontalAlignment HorizontalAlignment.Left
+                                      TextBlock.margin (Thickness(20.0, 20.0, 0.0, 10.0)) ]
+                                StackPanel.create
+                                    [ DockPanel.dock Dock.Bottom
+                                      StackPanel.margin 20.0
+                                      StackPanel.spacing 25.0
+                                      StackPanel.horizontalAlignment HorizontalAlignment.Stretch
+                                      StackPanel.verticalAlignment VerticalAlignment.Center
+                                      StackPanel.children
+                                          [ HomeActionsView.view
+                                                { Status = status
+                                                  OnToggleWork = props.OnToggleWork
+                                                  OnToggleRest = props.OnToggleRest }
+                                            StatusView.view { Status = status } ] ]
+                                ClockView.view { Status = status } ] ]
         )

@@ -1,12 +1,12 @@
 namespace AttendanceRecord.Presentation.Features.HomePage.Components
 
 open FsToolkit.ErrorHandling
+open Avalonia
 open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.Controls
 open Avalonia.Layout
-open Avalonia
-
+open Avalonia.Controls.Primitives
 open AttendanceRecord.Application.Dtos.Responses
 
 type HomeActionsViewProps =
@@ -36,27 +36,31 @@ module HomeActionsView =
                     ctx.useDerived2 ((toggleRestMutation.IsPending, status), (fun (r, s) -> not r && s.IsActive))
 
                 Grid.create
-                    [ Grid.width 300.0
-                      Grid.rowDefinitions "Auto"
+                    [ Grid.rowDefinitions "Auto"
                       Grid.columnDefinitions "*,*"
                       Grid.children
-                          [ Button.create
+                          [ ToggleButton.create
                                 [ Grid.column 0
-                                  Button.content workToggleLabel.Current
+                                  Button.content (CjkTextBlock.create [ TextBlock.text workToggleLabel.Current ])
                                   Button.onClick (fun _ -> toggleWorkMutation.Mutate())
                                   Button.isEnabled workToggleEnabled.Current
+                                  ToggleButton.isChecked status.Current.IsWorking
+                                  Button.height 50.0
                                   Button.horizontalAlignment HorizontalAlignment.Stretch
                                   Button.horizontalContentAlignment HorizontalAlignment.Center
-                                  Button.padding (Thickness(0, 8.0, 0, 0))
-                                  Button.margin (Thickness(5.0, 0.0)) ]
-                            Button.create
+                                  Button.verticalContentAlignment VerticalAlignment.Center
+                                  Button.fontSize 16.0
+                                  Button.margin (Thickness(0, 0, 10.0, 0)) ]
+                            ToggleButton.create
                                 [ Grid.column 1
-                                  Button.content restToggleLabel.Current
+                                  Button.content (CjkTextBlock.create [ TextBlock.text restToggleLabel.Current ])
                                   Button.onClick (fun _ -> toggleRestMutation.Mutate())
                                   Button.isEnabled restToggleEnabled.Current
+                                  ToggleButton.isChecked status.Current.IsResting
+                                  Button.height 50.0
                                   Button.horizontalAlignment HorizontalAlignment.Stretch
                                   Button.horizontalContentAlignment HorizontalAlignment.Center
-                                  Button.padding (Thickness(0, 8.0, 0, 0))
-                                  Button.margin (Thickness(5.0, 0.0)) ] ] ]
+                                  Button.verticalContentAlignment VerticalAlignment.Center
+                                  Button.fontSize 16.0 ] ] ]
 
         )

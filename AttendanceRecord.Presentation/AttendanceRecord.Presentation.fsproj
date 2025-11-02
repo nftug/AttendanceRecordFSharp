@@ -33,6 +33,7 @@
     <Compile Include="Common/Hooks/UseDerivedExtensions.fs" />
     <Compile Include="Common/Hooks/UseMutationExtensions.fs" />
     <Compile Include="Common/Hooks/UseObservableExtensions.fs" />
+    <Compile Include="Common/Components/CjkTextBlock.fs" />
 
     <Compile Include="Features/HomePage/Components/ClockView.fs" />
     <Compile Include="Features/HomePage/Components/HomeActionsView.fs" />

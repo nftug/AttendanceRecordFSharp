@@ -31,14 +31,16 @@ module StatusView =
                 Border.create
                     [ Border.borderThickness (Thickness 1.0)
                       Border.borderBrush "Gray"
-                      Border.padding 30.0
+                      Border.padding 25.0
+                      Border.height 250.0
                       Border.child (
                           StackPanel.create
-                              [ StackPanel.spacing 5.0
+                              [ StackPanel.spacing 8.0
+                                StackPanel.verticalAlignment VerticalAlignment.Center
                                 StackPanel.children (
                                     statusInfo.Current
                                     |> List.map (fun item ->
-                                        TextBlock.create
+                                        CjkTextBlock.create
                                             [ TextBlock.text $"{item.Label}: {item.Value}"
                                               TextBlock.fontSize 16.0
                                               TextBlock.horizontalAlignment HorizontalAlignment.Left ])

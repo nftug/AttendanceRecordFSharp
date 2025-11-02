@@ -10,8 +10,8 @@ type MainWindow(services: ServiceContainer) =
 
     do
         base.Title <- "Attendance Record"
-        base.Width <- 800.0
-        base.Height <- 600.0
+        base.Width <- 1200.0
+        base.Height <- 820.0
         base.WindowStartupLocation <- Controls.WindowStartupLocation.CenterScreen
         base.Content <- MainView.view services
 

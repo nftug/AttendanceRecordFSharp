@@ -32,16 +32,13 @@ module NavigationView =
                 let isOpen = props.IsOpen |> ctx.usePassed
                 let pageKey = props.PageKey |> ctx.usePassed
 
-                let createMenuItem (key: 'key) : IView =
-                    match props.PageItems |> Map.tryFind key with
-                    | Some item ->
-                        MaterialIconLabel.create
-                            item.Icon
-                            [ CjkTextBlock.create
-                                  [ TextBlock.text item.Title
-                                    TextBlock.fontSize 16.0
-                                    TextBlock.verticalAlignment VerticalAlignment.Center ] ]
-                    | None -> CjkTextBlock.create [ TextBlock.text "Unknown" ]
+                let createMenuItem (item: PageItem<'key>) : IView =
+                    MaterialIconLabel.create
+                        item.Icon
+                        [ CjkTextBlock.create
+                              [ TextBlock.text item.Title
+                                TextBlock.fontSize 16.0
+                                TextBlock.verticalAlignment VerticalAlignment.Center ] ]
 
                 DockPanel.create
                     [ DockPanel.lastChildFill true
@@ -50,10 +47,9 @@ module NavigationView =
                           [ StackPanel.create
                                 [ StackPanel.children (
                                       props.PageItems
-                                      |> Map.keys
-                                      |> Seq.map (fun key ->
+                                      |> Map.map (fun key item ->
                                           ToggleButton.create
-                                              [ ToggleButton.content (createMenuItem key)
+                                              [ ToggleButton.content (createMenuItem item)
                                                 ToggleButton.isChecked (pageKey.Current = key)
                                                 ToggleButton.height 40.0
                                                 ToggleButton.margin (Thickness(0.0, 5.0, 0.0, 5.0))
@@ -65,7 +61,8 @@ module NavigationView =
                                                     isOpen.Set false
                                                     pageKey.Set key) ]
                                           :> IView)
-                                      |> List.ofSeq
+                                      |> Map.toList
+                                      |> List.map snd
                                   ) ] ] ]
         )
 

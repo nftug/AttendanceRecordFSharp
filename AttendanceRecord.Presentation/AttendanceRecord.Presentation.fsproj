@@ -50,6 +50,7 @@
     <Compile Include="ServiceContainer.fs" />
     <Compile Include="Layout/Components/NavigationView.fs" />
     <Compile Include="Layout/Components/MainView.fs" />
+    <Compile Include="AppStyles.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

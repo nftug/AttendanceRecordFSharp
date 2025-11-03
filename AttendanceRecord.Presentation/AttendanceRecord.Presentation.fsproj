@@ -39,6 +39,7 @@
     <Compile Include="Common/Components/CjkTextBlock.fs" />
     <Compile Include="Common/Components/MaterialIcon.fs" />
     <Compile Include="Common/Components/SplitView.fs" />
+    <Compile Include="Common/Components/Notification.fs" />
 
     <Compile Include="Features/HomePage/Components/ClockView.fs" />
     <Compile Include="Features/HomePage/Components/HomeActionsView.fs" />

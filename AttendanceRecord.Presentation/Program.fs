@@ -9,17 +9,22 @@ open Avalonia.Styling
 open Avalonia.Controls
 open Avalonia.Layout
 open Material.Icons.Avalonia
+open Avalonia.Controls.Notifications
 open AttendanceRecord.Presentation.Layout.Components
 
-type MainWindow(services: ServiceContainer) =
+type MainWindow(services: ServiceContainer) as this =
     inherit HostWindow()
 
     do
-        base.Title <- "Attendance Record"
-        base.Width <- 1200.0
-        base.Height <- 820.0
-        base.WindowStartupLocation <- WindowStartupLocation.CenterScreen
-        base.Content <- MainView.view services
+        this.Title <- "Attendance Record"
+        this.Width <- 1200.0
+        this.Height <- 820.0
+        this.WindowStartupLocation <- WindowStartupLocation.CenterScreen
+        this.Content <- MainView.view services
+
+        Notification.initWindowNotificationManager this (fun manager ->
+            manager.Position <- NotificationPosition.BottomCenter
+            manager.MaxItems <- 1)
 
 type App() =
     inherit Application()

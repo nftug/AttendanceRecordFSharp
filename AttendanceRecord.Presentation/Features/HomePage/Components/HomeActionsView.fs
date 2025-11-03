@@ -7,6 +7,7 @@ open Avalonia.FuncUI.DSL
 open Avalonia.Controls
 open Avalonia.Layout
 open Avalonia.Controls.Primitives
+open Avalonia.Controls.Notifications
 open Material.Icons
 open AttendanceRecord.Application.Dtos.Responses
 
@@ -36,6 +37,32 @@ module HomeActionsView =
                 let restToggleEnabled =
                     ctx.useDerived2 ((toggleRestMutation.IsPending, status), (fun (r, s) -> not r && s.IsActive))
 
+                let handleClickToggleWork () =
+                    task {
+                        let! result = toggleWorkMutation.MutateTask()
+
+                        match result with
+                        | Ok status ->
+                            let message = if status.IsActive then "勤務を開始しました。" else "勤務を終了しました。"
+
+                            Notification.showWindowNotification "勤怠状態更新" message NotificationType.Information
+                        | Error error -> Notification.showWindowNotification "勤怠状態更新" error NotificationType.Error
+                    }
+                    |> ignore
+
+                let handleClickToggleRest () =
+                    task {
+                        let! result = toggleRestMutation.MutateTask()
+
+                        match result with
+                        | Ok status ->
+                            let message = if status.IsResting then "休憩を開始しました。" else "休憩を終了しました。"
+
+                            Notification.showWindowNotification "勤怠状態更新" message NotificationType.Information
+                        | Error error -> Notification.showWindowNotification "勤怠状態更新" error NotificationType.Error
+                    }
+                    |> ignore
+
                 Grid.create
                     [ Grid.rowDefinitions "Auto"
                       Grid.columnDefinitions "*,*"
@@ -47,7 +74,7 @@ module HomeActionsView =
                                           MaterialIconKind.Work
                                           [ CjkTextBlock.create [ TextBlock.text workButtonLabel.Current ] ]
                                   )
-                                  Button.onClick (fun _ -> toggleWorkMutation.Mutate())
+                                  Button.onClick (fun _ -> handleClickToggleWork ())
                                   Button.isEnabled workToggleEnabled.Current
                                   ToggleButton.isChecked status.Current.IsWorking
                                   Button.height 46.0
@@ -61,7 +88,7 @@ module HomeActionsView =
                                           MaterialIconKind.Coffee
                                           [ CjkTextBlock.create [ TextBlock.text restButtonLabel.Current ] ]
                                   )
-                                  Button.onClick (fun _ -> toggleRestMutation.Mutate())
+                                  Button.onClick (fun _ -> handleClickToggleRest ())
                                   Button.isEnabled restToggleEnabled.Current
                                   ToggleButton.isChecked status.Current.IsResting
                                   Button.height 46.0

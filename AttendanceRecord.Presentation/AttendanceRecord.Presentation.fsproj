@@ -30,6 +30,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Common/Utils/ViewUtils.fs" />
+
     <Compile Include="Common/Hooks/UseDerivedExtensions.fs" />
     <Compile Include="Common/Hooks/UseMutationExtensions.fs" />
     <Compile Include="Common/Hooks/UseObservableExtensions.fs" />

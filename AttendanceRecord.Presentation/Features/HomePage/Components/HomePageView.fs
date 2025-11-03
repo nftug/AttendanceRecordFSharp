@@ -21,7 +21,7 @@ module HomePageView =
                 let status = ctx.useObservableState props.StatusObservable
 
                 if status.Current.IsNone then
-                    TextBlock.create
+                    CjkTextBlock.create
                         [ TextBlock.text "Loading..."
                           TextBlock.fontSize 24.0
                           TextBlock.horizontalAlignment HorizontalAlignment.Center
@@ -34,7 +34,7 @@ module HomePageView =
                           DockPanel.children
                               [ StackPanel.create
                                     [ DockPanel.dock Dock.Bottom
-                                      StackPanel.margin 20.0
+                                      StackPanel.margin 30.0
                                       StackPanel.spacing 25.0
                                       StackPanel.horizontalAlignment HorizontalAlignment.Stretch
                                       StackPanel.verticalAlignment VerticalAlignment.Center

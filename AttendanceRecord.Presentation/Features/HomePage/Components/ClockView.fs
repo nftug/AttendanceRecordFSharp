@@ -17,7 +17,7 @@ module ClockView =
             fun ctx ->
                 let now = ctx.useDerived1 (props.Status, _.CurrentTime)
 
-                TextBlock.create
+                CjkTextBlock.create
                     [ TextBlock.text (now.Current.ToString "HH:mm:ss")
                       TextBlock.fontSize 68.0
                       TextBlock.margin 20.0

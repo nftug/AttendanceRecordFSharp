@@ -29,15 +29,15 @@ module MainView =
                       OnToggleRest = toggleRest }
 
             let settingPageContent =
-                TextBlock.create
-                    [ TextBlock.text "Settings Page"
+                CjkTextBlock.create
+                    [ TextBlock.text "設定"
                       TextBlock.fontSize 24.0
                       TextBlock.horizontalAlignment HorizontalAlignment.Center
                       TextBlock.verticalAlignment VerticalAlignment.Center ]
 
             let aboutPageContent =
-                TextBlock.create
-                    [ TextBlock.text "About Page"
+                CjkTextBlock.create
+                    [ TextBlock.text "このアプリについて"
                       TextBlock.fontSize 24.0
                       TextBlock.horizontalAlignment HorizontalAlignment.Center
                       TextBlock.verticalAlignment VerticalAlignment.Center ]
@@ -48,13 +48,13 @@ module MainView =
                     Map
                         [ HomePage,
                           { Icon = MaterialIconKind.HomeOutline
-                            Title = "Home"
+                            Title = "ホーム"
                             Content = homePageContent }
                           SettingsPage,
                           { Icon = MaterialIconKind.CogOutline
-                            Title = "Settings"
+                            Title = "設定"
                             Content = settingPageContent }
                           AboutPage,
                           { Icon = MaterialIconKind.InformationOutline
-                            Title = "About"
+                            Title = "このアプリについて"
                             Content = aboutPageContent } ] })

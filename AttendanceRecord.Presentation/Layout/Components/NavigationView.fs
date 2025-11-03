@@ -37,11 +37,11 @@ module NavigationView =
                     | Some item ->
                         MaterialIconLabel.create
                             item.Icon
-                            [ TextBlock.create
+                            [ CjkTextBlock.create
                                   [ TextBlock.text item.Title
                                     TextBlock.fontSize 16.0
                                     TextBlock.verticalAlignment VerticalAlignment.Center ] ]
-                    | None -> TextBlock.create [ TextBlock.text "Unknown" ]
+                    | None -> CjkTextBlock.create [ TextBlock.text "Unknown" ]
 
                 DockPanel.create
                     [ DockPanel.lastChildFill true
@@ -84,7 +84,7 @@ module NavigationView =
                 let pageContent =
                     match props.PageItems |> Map.tryFind pageKey.Current with
                     | Some item -> item.Content
-                    | None -> TextBlock.create [ TextBlock.text "Page not found" ]
+                    | None -> CjkTextBlock.create [ TextBlock.text "Page not found" ]
 
                 let content =
                     DockPanel.create
@@ -104,7 +104,7 @@ module NavigationView =
                                                   Button.background Brushes.Transparent
                                                   Button.borderBrush Brushes.Transparent
                                                   Button.onClick (fun _ -> isOpen.Set true) ]
-                                            TextBlock.create
+                                            CjkTextBlock.create
                                                 [ TextBlock.text pageTitle
                                                   TextBlock.fontSize 21.0
                                                   TextBlock.verticalAlignment VerticalAlignment.Center

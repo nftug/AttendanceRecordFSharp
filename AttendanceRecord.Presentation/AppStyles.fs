@@ -10,6 +10,7 @@ type AppStyles() as this =
 
     do
         let buttonStyle = Style(fun x -> x.OfType<Button>())
+
         buttonStyle.Add(Setter(Button.HorizontalContentAlignmentProperty, HorizontalAlignment.Center))
         buttonStyle.Add(Setter(Button.VerticalContentAlignmentProperty, VerticalAlignment.Center))
         this.Add buttonStyle

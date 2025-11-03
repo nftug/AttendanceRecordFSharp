@@ -6,7 +6,6 @@ open Avalonia.Themes.Fluent
 open Avalonia.FuncUI.Hosts
 open Avalonia.Controls
 open Material.Icons.Avalonia
-open Avalonia.Controls.Notifications
 open AttendanceRecord.Presentation.Layout.Components
 
 type MainWindow(services: ServiceContainer) as this =
@@ -18,10 +17,6 @@ type MainWindow(services: ServiceContainer) as this =
         this.Height <- 820.0
         this.WindowStartupLocation <- WindowStartupLocation.CenterScreen
         this.Content <- MainView.view services
-
-        Notification.initWindowNotificationManager this (fun manager ->
-            manager.Position <- NotificationPosition.BottomCenter
-            manager.MaxItems <- 1)
 
 type App() =
     inherit Application()

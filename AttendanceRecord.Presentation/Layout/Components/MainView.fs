@@ -5,10 +5,12 @@ open Material.Icons
 open Avalonia.FuncUI.DSL
 open Avalonia.Controls
 open Avalonia.Layout
+open Avalonia.Controls.Notifications
 open AttendanceRecord.Presentation.Features.HomePage.Components
 open AttendanceRecord.Presentation
 
 module MainView =
+
     type private PageKeys =
         | HomePage
         | SettingsPage
@@ -42,19 +44,29 @@ module MainView =
                       TextBlock.horizontalAlignment HorizontalAlignment.Center
                       TextBlock.verticalAlignment VerticalAlignment.Center ]
 
-            NavigationView.view
-                { PageKey = page
-                  PageItems =
-                    Map
-                        [ HomePage,
-                          { Icon = MaterialIconKind.HomeOutline
-                            Title = "ホーム"
-                            Content = homePageContent }
-                          SettingsPage,
-                          { Icon = MaterialIconKind.CogOutline
-                            Title = "設定"
-                            Content = settingPageContent }
-                          AboutPage,
-                          { Icon = MaterialIconKind.InformationOutline
-                            Title = "このアプリについて"
-                            Content = aboutPageContent } ] })
+            let navigationView =
+                NavigationView.view
+                    { PageKey = page
+                      PageItems =
+                        Map
+                            [ HomePage,
+                              { Icon = MaterialIconKind.HomeOutline
+                                Title = "ホーム"
+                                Content = homePageContent }
+                              SettingsPage,
+                              { Icon = MaterialIconKind.CogOutline
+                                Title = "設定"
+                                Content = settingPageContent }
+                              AboutPage,
+                              { Icon = MaterialIconKind.InformationOutline
+                                Title = "このアプリについて"
+                                Content = aboutPageContent } ] }
+
+
+
+            Grid.create
+                [ Grid.children
+                      [ navigationView
+                        WindowNotificationManager.create
+                            [ WindowNotificationManager.position NotificationPosition.BottomCenter
+                              WindowNotificationManager.maxItems 1 ] ] ])

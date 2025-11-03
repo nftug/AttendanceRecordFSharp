@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <Compile Include="Common/Utils/ViewUtils.fs" />
+    <Compile Include="Common/Utils/ApplicationUtils.fs" />
 
     <Compile Include="Common/Hooks/UseDerivedExtensions.fs" />
     <Compile Include="Common/Hooks/UseMutationExtensions.fs" />

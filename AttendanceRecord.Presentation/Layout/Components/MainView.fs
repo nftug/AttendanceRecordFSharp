@@ -10,7 +10,6 @@ open AttendanceRecord.Presentation.Features.HomePage.Components
 open AttendanceRecord.Presentation
 
 module MainView =
-
     type private PageKeys =
         | HomePage
         | SettingsPage
@@ -62,11 +61,10 @@ module MainView =
                                 Title = "このアプリについて"
                                 Content = aboutPageContent } ] }
 
-
-
             Grid.create
                 [ Grid.children
                       [ navigationView
                         WindowNotificationManager.create
                             [ WindowNotificationManager.position NotificationPosition.BottomCenter
-                              WindowNotificationManager.maxItems 1 ] ] ])
+                              WindowNotificationManager.maxItems 1 ]
+                        DialogHost.create [] ] ])

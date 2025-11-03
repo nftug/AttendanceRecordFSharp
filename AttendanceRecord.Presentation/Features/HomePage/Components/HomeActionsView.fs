@@ -1,5 +1,6 @@
 namespace AttendanceRecord.Presentation.Features.HomePage.Components
 
+open System.Threading.Tasks
 open FsToolkit.ErrorHandling
 open Avalonia
 open Avalonia.FuncUI
@@ -10,6 +11,7 @@ open Avalonia.Controls.Primitives
 open Avalonia.Controls.Notifications
 open Material.Icons
 open AttendanceRecord.Application.Dtos.Responses
+open AttendanceRecord.Presentation.Common.Components
 
 type HomeActionsViewProps =
     { Status: IReadable<CurrentStatusDto>
@@ -39,14 +41,25 @@ module HomeActionsView =
 
                 let handleClickToggleWork () =
                     task {
-                        let! result = toggleWorkMutation.MutateTask()
+                        let! confirmed =
+                            if status.Current.IsActive then
+                                ConfirmDialogView.show
+                                    { Title = "勤務終了の確認"
+                                      Message = "勤務を終了しますか？" }
+                            else
+                                true |> Task.FromResult
 
-                        match result with
-                        | Ok status ->
-                            let message = if status.IsActive then "勤務を開始しました。" else "勤務を終了しました。"
+                        if not confirmed then
+                            return ()
+                        else
+                            let! result = toggleWorkMutation.MutateTask()
 
-                            Notification.showWindowNotification "勤怠状態更新" message NotificationType.Information
-                        | Error error -> Notification.showWindowNotification "勤怠状態更新" error NotificationType.Error
+                            match result with
+                            | Ok status ->
+                                let message = if status.IsActive then "勤務を開始しました。" else "勤務を終了しました。"
+
+                                Notification.showWindowNotification "勤怠状態更新" message NotificationType.Information
+                            | Error error -> Notification.showWindowNotification "勤怠状態更新" error NotificationType.Error
                     }
                     |> ignore
 

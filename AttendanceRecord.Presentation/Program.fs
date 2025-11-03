@@ -6,6 +6,7 @@ open Avalonia.Themes.Fluent
 open Avalonia.FuncUI.Hosts
 open Avalonia.Controls
 open Material.Icons.Avalonia
+open DialogHostAvalonia
 open AttendanceRecord.Presentation.Layout.Components
 
 type MainWindow(services: ServiceContainer) as this =
@@ -24,6 +25,7 @@ type App() =
     override this.Initialize() =
         this.Styles.Add(FluentTheme())
         this.Styles.Add(MaterialIconStyles null)
+        this.Styles.Add(DialogHostStyles())
         this.Styles.Add(AppStyles())
 
     override this.OnFrameworkInitializationCompleted() =

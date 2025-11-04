@@ -82,30 +82,36 @@ module HomeActionsView =
                       Grid.children
                           [ ToggleButton.create
                                 [ Grid.column 0
-                                  Button.content (
+                                  ToggleButton.content (
                                       MaterialIconLabel.create
                                           MaterialIconKind.Work
                                           [ CjkTextBlock.create [ TextBlock.text workButtonLabel.Current ] ]
                                   )
-                                  Button.onClick (fun _ -> handleClickToggleWork ())
-                                  Button.isEnabled workToggleEnabled.Current
+                                  ToggleButton.onClick (fun _ -> handleClickToggleWork ())
+                                  ToggleButton.isEnabled workToggleEnabled.Current
                                   ToggleButton.isChecked status.Current.IsWorking
-                                  Button.height 46.0
-                                  Button.fontSize 16.0
-                                  Button.horizontalAlignment HorizontalAlignment.Stretch
-                                  Button.margin (Thickness(0, 0, 10.0, 0)) ]
+                                  ToggleButton.onIsCheckedChanged (fun e ->
+                                      let btn = e.Source :?> ToggleButton
+                                      btn.IsChecked <- status.Current.IsWorking)
+                                  ToggleButton.height 46.0
+                                  ToggleButton.fontSize 16.0
+                                  ToggleButton.horizontalAlignment HorizontalAlignment.Stretch
+                                  ToggleButton.margin (Thickness(0, 0, 10.0, 0)) ]
                             ToggleButton.create
                                 [ Grid.column 1
-                                  Button.content (
+                                  ToggleButton.content (
                                       MaterialIconLabel.create
                                           MaterialIconKind.Coffee
                                           [ CjkTextBlock.create [ TextBlock.text restButtonLabel.Current ] ]
                                   )
-                                  Button.onClick (fun _ -> handleClickToggleRest ())
-                                  Button.isEnabled restToggleEnabled.Current
+                                  ToggleButton.onClick (fun _ -> handleClickToggleRest ())
+                                  ToggleButton.isEnabled restToggleEnabled.Current
                                   ToggleButton.isChecked status.Current.IsResting
-                                  Button.height 46.0
-                                  Button.fontSize 16.0
-                                  Button.horizontalAlignment HorizontalAlignment.Stretch ] ] ]
+                                  ToggleButton.onIsCheckedChanged (fun e ->
+                                      let btn = e.Source :?> ToggleButton
+                                      btn.IsChecked <- status.Current.IsResting)
+                                  ToggleButton.height 46.0
+                                  ToggleButton.fontSize 16.0
+                                  ToggleButton.horizontalAlignment HorizontalAlignment.Stretch ] ] ]
 
         )

@@ -25,7 +25,7 @@ module ApplicationUtils =
             | Some window -> window
             | _ -> failwith "Main window not found."
 
-    let getControlFromWindow<'t when 't :> Control> () : 't =
+    let getControlFromMainWindow<'t when 't :> Control> () : 't =
         getMainWindow ()
         |> fun window ->
             match window.GetVisualDescendants() |> Seq.tryFind (fun c -> c :? 't) with

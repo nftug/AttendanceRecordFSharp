@@ -75,7 +75,7 @@ module MessageBox =
 
     let show (props: MessageBoxProps) (ct: CancellationToken option) : Task<bool> =
         task {
-            let dialogHost = getControlFromWindow<DialogHost> ()
+            let dialogHost = getControlFromMainWindow<DialogHost> ()
 
             let! result = MessageBoxView.create props dialogHost.CloseDialogCommand |> DialogHost.Show
 

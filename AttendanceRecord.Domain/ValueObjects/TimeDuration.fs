@@ -34,7 +34,8 @@ module TimeDuration =
     let tryCreate (startedAt: DateTime) (endedAt: DateTime option) : Result<TimeDuration, string> =
         match endedAt with
         | Some endDt when endDt < startedAt -> Error "EndedAt is earlier than StartedAt"
-        | Some endDt when endDt.Date <> startedAt.Date -> Error "EndedAt must be on the same date as StartedAt"
+        | Some endDt when endDt.Date <> startedAt.Date ->
+            Error "EndedAt must be on the same date as StartedAt"
         | _ -> Ok(hydrate startedAt endedAt)
 
     let createStart () : TimeDuration = hydrate DateTime.Now None

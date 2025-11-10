@@ -41,7 +41,8 @@ module NavigationView =
 
                         ToggleButton()
                             .Content(MaterialIconLabel.create item.Icon item.Title)
-                            .OnIsCheckedChangedHandler(fun ctl _ -> ctl.IsChecked <- isSelected.CurrentValue)
+                            .OnIsCheckedChangedHandler(fun ctl _ ->
+                                ctl.IsChecked <- isSelected.CurrentValue)
                             .OnClickHandler(fun _ _ ->
                                 props.SelectedKey.Value <- key
                                 props.IsOpen.Value <- false)

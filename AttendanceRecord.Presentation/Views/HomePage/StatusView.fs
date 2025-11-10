@@ -43,7 +43,8 @@ module StatusView =
                         .VerticalAlignmentCenter()
                         .Children(
                             rows
-                            |> List.map (fun row -> TextBlock().Text($"{row.Label}: {row.Value}").FontSize(16.0))
+                            |> List.map (fun row ->
+                                TextBlock().Text($"{row.Label}: {row.Value}").FontSize(16.0))
                             |> toChildren
                         ))
             |> disposables.Add

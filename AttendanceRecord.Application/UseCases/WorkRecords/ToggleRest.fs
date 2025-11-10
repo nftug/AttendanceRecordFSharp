@@ -28,5 +28,8 @@ module ToggleRest =
             return currentStatusStore.CurrentStatus.CurrentValue
         }
 
-    let create (repository: WorkRecordRepository) (currentStatusStore: CurrentStatusStore) : ToggleRest =
+    let create
+        (repository: WorkRecordRepository)
+        (currentStatusStore: CurrentStatusStore)
+        : ToggleRest =
         { Handle = fun () ct -> handle repository currentStatusStore ct }

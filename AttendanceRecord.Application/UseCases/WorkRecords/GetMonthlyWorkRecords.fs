@@ -25,5 +25,8 @@ module GetMonthlyWorkRecords =
             return monthlyRecords |> WorkRecordListDto.fromDomain monthDate now standardWorkTime
         }
 
-    let create (repository: WorkRecordRepository) (getAppConfig: unit -> AppConfig) : GetMonthlyWorkRecords =
+    let create
+        (repository: WorkRecordRepository)
+        (getAppConfig: unit -> AppConfig)
+        : GetMonthlyWorkRecords =
         { Handle = fun monthDate ct -> handle repository getAppConfig monthDate ct }

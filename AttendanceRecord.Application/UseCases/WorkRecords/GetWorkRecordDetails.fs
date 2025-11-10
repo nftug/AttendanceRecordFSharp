@@ -27,5 +27,8 @@ module GetWorkRecordDetails =
                 |> Option.map (WorkRecordDetailsDto.fromDomain now standardWorkTime)
         }
 
-    let create (repository: WorkRecordRepository) (getAppConfig: unit -> AppConfig) : GetWorkRecordDetails =
+    let create
+        (repository: WorkRecordRepository)
+        (getAppConfig: unit -> AppConfig)
+        : GetWorkRecordDetails =
         { Handle = fun workRecordId ct -> handle repository getAppConfig workRecordId ct }

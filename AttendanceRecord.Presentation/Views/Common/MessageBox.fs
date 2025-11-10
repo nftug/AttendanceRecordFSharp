@@ -77,7 +77,8 @@ module MessageBox =
         task {
             let dialogHost = getControlFromMainWindow<DialogHost> ()
 
-            let! result = MessageBoxView.create props dialogHost.CloseDialogCommand |> DialogHost.Show
+            let! result =
+                MessageBoxView.create props dialogHost.CloseDialogCommand |> DialogHost.Show
 
             match ct with
             | Some cancellationToken -> cancellationToken.ThrowIfCancellationRequested()

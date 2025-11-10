@@ -27,7 +27,11 @@ module SaveWorkRecord =
                 | Some id ->
                     taskResult {
                         let! recordOption = repository.GetById id ct
-                        let! record = recordOption |> Result.requireSome $"Work record with ID {id} not found."
+
+                        let! record =
+                            recordOption
+                            |> Result.requireSome $"Work record with ID {id} not found."
+
                         return! WorkRecord.tryUpdate duration restRecords record
                     }
                 | None -> taskResult { return! WorkRecord.tryCreate duration restRecords }
@@ -43,5 +47,8 @@ module SaveWorkRecord =
             do! currentStatusStore.Reload()
         }
 
-    let create (repository: WorkRecordRepository) (currentStatusStore: CurrentStatusStore) : SaveWorkRecord =
+    let create
+        (repository: WorkRecordRepository)
+        (currentStatusStore: CurrentStatusStore)
+        : SaveWorkRecord =
         { Handle = fun request ct -> handle repository currentStatusStore request ct }

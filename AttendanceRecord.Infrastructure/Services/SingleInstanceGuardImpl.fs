@@ -11,7 +11,12 @@ module SingleInstanceGuardImpl =
         let tryAcquireLock () : bool =
             try
                 let stream =
-                    new FileStream(lockFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None)
+                    new FileStream(
+                        lockFilePath,
+                        FileMode.OpenOrCreate,
+                        FileAccess.ReadWrite,
+                        FileShare.None
+                    )
 
                 fileStream <- Some stream
                 true

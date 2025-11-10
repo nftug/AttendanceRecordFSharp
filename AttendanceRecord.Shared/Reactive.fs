@@ -4,7 +4,8 @@ open R3
 open System
 
 module R3 =
-    let property<'T> (initialValue: 'T) : ReactiveProperty<'T> = new ReactiveProperty<'T>(initialValue)
+    let property<'T> (initialValue: 'T) : ReactiveProperty<'T> =
+        new ReactiveProperty<'T>(initialValue)
 
     let readonly (initialValue: 'T option) (source: Observable<'T>) : ReadOnlyReactiveProperty<'T> =
         source
@@ -17,7 +18,10 @@ module R3 =
 
     let command<'T> () : ReactiveCommand<'T> = new ReactiveCommand<'T>()
 
-    let disposeWith<'T when 'T :> IDisposable> (disposables: CompositeDisposable) (disposable: 'T) : 'T =
+    let disposeWith<'T when 'T :> IDisposable>
+        (disposables: CompositeDisposable)
+        (disposable: 'T)
+        : 'T =
         disposables.Add(R3.Disposable.Create(fun () -> disposable.Dispose()))
         disposable
 
@@ -27,7 +31,8 @@ module R3 =
     let map<'TIn, 'TOut> (mapper: 'TIn -> 'TOut) (source: Observable<'TIn>) : Observable<'TOut> =
         source.Select(fun v -> mapper v)
 
-    let subscribe<'T> (onNext: 'T -> unit) (source: Observable<'T>) : IDisposable = source.Subscribe(fun v -> onNext v)
+    let subscribe<'T> (onNext: 'T -> unit) (source: Observable<'T>) : IDisposable =
+        source.Subscribe(fun v -> onNext v)
 
     let combineLatest2<'T1, 'T2, 'TOut>
         (source2: Observable<'T2>)

@@ -38,8 +38,11 @@ module HomeActionsView =
                         )
                         .OnClickHandler(fun _ _ -> hooks.HandleClickToggleWork())
                         .IsEnabled(hooks.WorkToggleEnabled |> asBinding)
-                        .IsChecked(hooks.Status |> R3.map (fun s -> s.IsWorking |> Nullable) |> asBinding)
-                        .OnIsCheckedChangedHandler(fun ctl _ -> ctl.IsChecked <- hooks.Status.CurrentValue.IsWorking)
+                        .IsChecked(
+                            hooks.Status |> R3.map (fun s -> s.IsWorking |> Nullable) |> asBinding
+                        )
+                        .OnIsCheckedChangedHandler(fun ctl _ ->
+                            ctl.IsChecked <- hooks.Status.CurrentValue.IsWorking)
                         .Height(46.0)
                         .FontSize(16.0)
                         .HorizontalAlignmentStretch()
@@ -52,8 +55,11 @@ module HomeActionsView =
                         )
                         .OnClickHandler(fun _ _ -> hooks.HandleClickToggleRest())
                         .IsEnabled(hooks.RestToggleEnabled |> asBinding)
-                        .IsChecked(hooks.Status |> R3.map (fun s -> s.IsResting |> Nullable) |> asBinding)
-                        .OnIsCheckedChangedHandler(fun ctl _ -> ctl.IsChecked <- hooks.Status.CurrentValue.IsResting)
+                        .IsChecked(
+                            hooks.Status |> R3.map (fun s -> s.IsResting |> Nullable) |> asBinding
+                        )
+                        .OnIsCheckedChangedHandler(fun ctl _ ->
+                            ctl.IsChecked <- hooks.Status.CurrentValue.IsResting)
                         .Height(46.0)
                         .FontSize(16.0)
                         .HorizontalAlignmentStretch()

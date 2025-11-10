@@ -24,5 +24,8 @@ module MaterialIconLabel =
             .Spacing(10.0)
             .Children(icon, TextBlock().Text(label).FontSize(16.0).VerticalAlignmentCenter())
 
-    let createObservable (kind: MaterialIconKind) (label: Observable<string>) : Avalonia.Controls.Control =
+    let createObservable
+        (kind: MaterialIconKind)
+        (label: Observable<string>)
+        : Avalonia.Controls.Control =
         label |> toView (fun text -> create kind text)

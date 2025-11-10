@@ -14,7 +14,10 @@ module AppConfigRepositoryImpl =
     let private getFilePath appDir =
         Path.Combine(appDir.Value, "appConfig.json")
 
-    let private getConfig (appDirService: AppDirectoryService) (ct: CancellationToken) : TaskResult<AppConfig, string> =
+    let private getConfig
+        (appDirService: AppDirectoryService)
+        (ct: CancellationToken)
+        : TaskResult<AppConfig, string> =
         taskResult {
             let filePath = getFilePath appDirService
 
@@ -28,7 +31,11 @@ module AppConfigRepositoryImpl =
                         return AppConfig.initial
                     else
                         let! dto =
-                            JsonSerializer.DeserializeAsync(stream, InfraJsonContext.Intended.AppConfigFileDto, ct)
+                            JsonSerializer.DeserializeAsync(
+                                stream,
+                                InfraJsonContext.Intended.AppConfigFileDto,
+                                ct
+                            )
 
                         match dto |> Option.ofObj with
                         | None -> return AppConfig.initial
@@ -51,7 +58,13 @@ module AppConfigRepositoryImpl =
                 use stream =
                     new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None)
 
-                do! JsonSerializer.SerializeAsync(stream, dto, InfraJsonContext.Intended.AppConfigFileDto, ct)
+                do!
+                    JsonSerializer.SerializeAsync(
+                        stream,
+                        dto,
+                        InfraJsonContext.Intended.AppConfigFileDto,
+                        ct
+                    )
 
                 do! stream.FlushAsync()
             with ex ->

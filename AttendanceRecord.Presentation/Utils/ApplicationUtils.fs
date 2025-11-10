@@ -32,9 +32,13 @@ module ApplicationUtils =
             | Some control -> control :?> 't
             | None -> failwithf "Control of type %s not found." typeof<'t>.FullName
 
-    let asBinding<'T> (source: Observable<'T>) : Data.IBinding = source.AsSystemObservable().ToBinding()
+    let asBinding<'T> (source: Observable<'T>) : Data.IBinding =
+        source.AsSystemObservable().ToBinding()
 
-    let invokeTask (disposables: CompositeDisposable) (work: CancellationToken -> Task<unit>) : Task<unit> =
+    let invokeTask
+        (disposables: CompositeDisposable)
+        (work: CancellationToken -> Task<unit>)
+        : Task<unit> =
         task {
             let cts = new CancellationTokenSource()
             disposables.Add(Disposable.Create(fun () -> cts.Cancel()))
@@ -46,7 +50,9 @@ module ApplicationUtils =
             | :? ObjectDisposedException -> ()
         }
 
-    let withReactive<'t when 't :> Control> (create: CompositeDisposable -> Control -> 't) : Control =
+    let withReactive<'t when 't :> Control>
+        (create: CompositeDisposable -> Control -> 't)
+        : Control =
         let mutable disposables: CompositeDisposable option = None
         let container = ContentControl()
 

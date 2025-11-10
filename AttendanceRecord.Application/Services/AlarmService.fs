@@ -27,8 +27,12 @@ type AlarmService(currentStatusStore: CurrentStatusStore, getAppConfig: unit -> 
             match wr with
             | Some record ->
                 let now = DateTime.Now
-                workEndAlarm.Value <- workEndAlarm.Value |> Alarm.tryTrigger now record (getAppConfig ())
-                restStartAlarm.Value <- restStartAlarm.Value |> Alarm.tryTrigger now record (getAppConfig ())
+
+                workEndAlarm.Value <-
+                    workEndAlarm.Value |> Alarm.tryTrigger now record (getAppConfig ())
+
+                restStartAlarm.Value <-
+                    restStartAlarm.Value |> Alarm.tryTrigger now record (getAppConfig ())
             | None -> ())
         |> disposable.Add
 
@@ -54,7 +58,8 @@ type AlarmService(currentStatusStore: CurrentStatusStore, getAppConfig: unit -> 
 
         match alarmType with
         | AlarmType.WorkEnd -> workEndAlarm.Value <- workEndAlarm.Value |> Alarm.snooze now cfg
-        | AlarmType.RestStart -> restStartAlarm.Value <- restStartAlarm.Value |> Alarm.snooze now cfg
+        | AlarmType.RestStart ->
+            restStartAlarm.Value <- restStartAlarm.Value |> Alarm.snooze now cfg
 
     interface IDisposable with
         member _.Dispose() = disposable.Dispose()

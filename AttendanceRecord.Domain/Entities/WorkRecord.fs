@@ -33,7 +33,11 @@ module WorkRecord =
         let restDur = RestRecord.getDurationOfList now record.RestRecords
         baseDur - restDur
 
-    let getOvertimeDuration (now: DateTime) (standardWorkTime: TimeSpan) (record: WorkRecord) : TimeSpan =
+    let getOvertimeDuration
+        (now: DateTime)
+        (standardWorkTime: TimeSpan)
+        (record: WorkRecord)
+        : TimeSpan =
         getDuration now record - standardWorkTime
 
     let hasDate (date: DateTime) (record: WorkRecord) : bool = getDate record = date.Date
@@ -48,7 +52,10 @@ module WorkRecord =
         isActive now record && not (isResting now record)
 
     // Factory methods
-    let private checkDurationAndRests (duration: TimeDuration) (restTimes: RestRecord list) : Result<unit, string> =
+    let private checkDurationAndRests
+        (duration: TimeDuration)
+        (restTimes: RestRecord list)
+        : Result<unit, string> =
         let date = duration |> TimeDuration.getDate
 
         if restTimes |> List.exists (fun rt -> rt |> RestRecord.getDate <> date) then
@@ -56,7 +63,10 @@ module WorkRecord =
         else
             Ok()
 
-    let tryCreate (duration: TimeDuration) (restTimes: RestRecord list) : Result<WorkRecord, string> =
+    let tryCreate
+        (duration: TimeDuration)
+        (restTimes: RestRecord list)
+        : Result<WorkRecord, string> =
         checkDurationAndRests duration restTimes
         |> Result.map (fun () ->
             { Id = Guid.NewGuid()
@@ -123,4 +133,5 @@ module WorkRecord =
         }
 
     // List operations
-    let getSortedList (records: WorkRecord list) : WorkRecord list = records |> List.sortBy getStartedAt
+    let getSortedList (records: WorkRecord list) : WorkRecord list =
+        records |> List.sortBy getStartedAt

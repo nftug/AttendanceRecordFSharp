@@ -16,7 +16,11 @@ type WorkRecordDetailsDto =
       IsResting: bool }
 
 module WorkRecordDetailsDto =
-    let fromDomain (now: DateTime) (standardWorkTime: TimeSpan) (workRecord: WorkRecord) : WorkRecordDetailsDto =
+    let fromDomain
+        (now: DateTime)
+        (standardWorkTime: TimeSpan)
+        (workRecord: WorkRecord)
+        : WorkRecordDetailsDto =
         { Id = workRecord.Id
           Date = workRecord |> WorkRecord.getDate
           WorkTimeDuration = workRecord.Duration |> TimeDurationDto.fromDomain now

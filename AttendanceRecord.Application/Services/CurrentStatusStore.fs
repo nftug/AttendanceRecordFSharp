@@ -10,7 +10,8 @@ open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Interfaces
 
-type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepository, getAppConfig: unit -> AppConfig) as this
+type CurrentStatusStore
+    (timerService: TimerProvider, repository: WorkRecordRepository, getAppConfig: unit -> AppConfig) as this
     =
     let disposable = new CompositeDisposable()
 

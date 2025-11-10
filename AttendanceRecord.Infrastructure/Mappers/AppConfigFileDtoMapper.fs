@@ -24,9 +24,11 @@ module AppConfigFileDtoMapper =
         { StandardWorkTime = TimeSpan.FromMinutes(float dto.StandardWorkMinutes)
           WorkEndAlarmConfig =
             { IsEnabled = dto.WorkEndAlarmConfig.IsEnabled
-              BeforeEndDuration = TimeSpan.FromMinutes(float dto.WorkEndAlarmConfig.BeforeEndMinutes)
+              BeforeEndDuration =
+                TimeSpan.FromMinutes(float dto.WorkEndAlarmConfig.BeforeEndMinutes)
               SnoozeDuration = TimeSpan.FromMinutes(float dto.WorkEndAlarmConfig.SnoozeMinutes) }
           RestStartAlarmConfig =
             { IsEnabled = dto.RestStartAlarmConfig.IsEnabled
-              BeforeStartDuration = TimeSpan.FromMinutes(float dto.RestStartAlarmConfig.BeforeStartMinutes)
+              BeforeStartDuration =
+                TimeSpan.FromMinutes(float dto.RestStartAlarmConfig.BeforeStartMinutes)
               SnoozeDuration = TimeSpan.FromMinutes(float dto.RestStartAlarmConfig.SnoozeMinutes) } }

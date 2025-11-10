@@ -26,7 +26,10 @@ type HomeActionsHooks =
 
 [<AutoOpen>]
 module HomeActionsHooks =
-    let useHomeActionsHooks (props: HomeActionsHooksProps) (disposables: CompositeDisposable) : HomeActionsHooks =
+    let useHomeActionsHooks
+        (props: HomeActionsHooksProps)
+        (disposables: CompositeDisposable)
+        : HomeActionsHooks =
         let toggleWorkMutation = useMutation disposables props.OnToggleWork
         let toggleRestMutation = useMutation disposables props.OnToggleRest
 
@@ -65,7 +68,11 @@ module HomeActionsHooks =
                         | Ok status ->
                             let message = if status.IsActive then "勤務を開始しました。" else "勤務を終了しました。"
                             Notification.show "勤務状態更新" message NotificationType.Information
-                        | Error e -> Notification.show "勤務状態更新エラー" $"勤務状態の更新に失敗しました: {e}" NotificationType.Error
+                        | Error e ->
+                            Notification.show
+                                "勤務状態更新エラー"
+                                $"勤務状態の更新に失敗しました: {e}"
+                                NotificationType.Error
                 })
             |> ignore
 
@@ -76,7 +83,8 @@ module HomeActionsHooks =
                     | Ok status ->
                         let message = if status.IsResting then "休憩を開始しました。" else "休憩を終了しました。"
                         Notification.show "休憩状態更新" message NotificationType.Information
-                    | Error e -> Notification.show "休憩状態更新エラー" $"休憩状態の更新に失敗しました: {e}" NotificationType.Error
+                    | Error e ->
+                        Notification.show "休憩状態更新エラー" $"休憩状態の更新に失敗しました: {e}" NotificationType.Error
                 })
             |> ignore
 

@@ -11,7 +11,7 @@ type ClockViewProps =
     { Status: Observable<CurrentStatusDto> }
 
 module ClockView =
-    let view (props: ClockViewProps) : Avalonia.Controls.Control =
+    let create (props: ClockViewProps) : Avalonia.Controls.Control =
         withReactive (fun _ _ ->
             let now = props.Status |> R3.map _.CurrentTime
 

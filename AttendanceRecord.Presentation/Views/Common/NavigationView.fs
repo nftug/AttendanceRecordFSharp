@@ -26,7 +26,7 @@ type private DrawerViewProps<'key when 'key: comparison> =
       SelectedKey: ReactiveProperty<'key> }
 
 module NavigationView =
-    let private drawerView (props: DrawerViewProps<'key>) =
+    let private createDrawer (props: DrawerViewProps<'key>) =
         withReactive (fun disposables _ ->
             StackPanel()
                 .Margin(12.0)
@@ -112,7 +112,7 @@ module NavigationView =
                 .IsPaneOpen(isDrawerOpen |> asBinding)
                 .OnPaneClosedHandler(fun _ _ -> isDrawerOpen.Value <- false)
                 .Pane(
-                    drawerView
+                    createDrawer
                         { IsOpen = isDrawerOpen
                           Pages = props.Pages
                           SelectedKey = selectedPageKey }

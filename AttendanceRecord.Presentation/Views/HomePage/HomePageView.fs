@@ -15,7 +15,7 @@ type HomePageViewProps =
       OnToggleRest: unit -> CancellationToken -> Task<Result<CurrentStatusDto, string>> }
 
 module HomePageView =
-    let view (props: HomePageViewProps) : Avalonia.Controls.Control =
+    let create (props: HomePageViewProps) : Avalonia.Controls.Control =
         withReactive (fun _ _ ->
             DockPanel()
                 .LastChildFill(true)
@@ -27,11 +27,11 @@ module HomePageView =
                         .HorizontalAlignmentStretch()
                         .VerticalAlignmentCenter()
                         .Children(
-                            HomeActionsView.view
+                            HomeActionsView.create
                                 { Status = props.Status
                                   OnToggleWork = props.OnToggleWork
                                   OnToggleRest = props.OnToggleRest },
-                            StatusView.view { Status = props.Status }
+                            StatusView.create { Status = props.Status }
                         ),
-                    ClockView.view { Status = props.Status }
+                    ClockView.create { Status = props.Status }
                 ))

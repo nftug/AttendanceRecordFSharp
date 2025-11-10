@@ -6,7 +6,7 @@ open AttendanceRecord.Presentation.Utils
 open System.Reflection
 
 module AboutPageView =
-    let view () : Avalonia.Controls.Control =
+    let create () : Avalonia.Controls.Control =
         let version = Assembly.GetEntryAssembly().GetName().Version.ToString()
 
         withReactive (fun _ _ ->

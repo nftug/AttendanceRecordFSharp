@@ -5,7 +5,7 @@ open NXUI.Extensions
 open AttendanceRecord.Presentation.Utils
 
 module SettingsPageView =
-    let view () : Avalonia.Controls.Control =
+    let create () : Avalonia.Controls.Control =
         withReactive (fun _ _ ->
             StackPanel()
                 .HorizontalAlignmentCenter()

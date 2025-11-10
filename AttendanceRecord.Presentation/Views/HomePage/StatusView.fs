@@ -25,7 +25,7 @@ module StatusView =
           { Label = "今月の残業時間"
             Value = status.OvertimeMonthlyDuration.ToString @"hh\:mm\:ss" } ]
 
-    let view (props: StatusViewProps) : Avalonia.Controls.Control =
+    let create (props: StatusViewProps) : Avalonia.Controls.Control =
         withReactive (fun disposables _ ->
             let container =
                 Border()

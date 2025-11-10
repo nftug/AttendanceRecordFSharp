@@ -17,7 +17,7 @@ let Build () =
         .WindowStartupLocationCenterScreen()
         .Styles(AppStyles(), DialogHostStyles(), MaterialIconStyles null)
         .AddTrayIcon(services.SingleInstanceGuard)
-        .Content(MainView.view services)
+        .Content(MainView.create services)
 
 [<EntryPoint>]
 let Main argv =

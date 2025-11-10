@@ -17,7 +17,7 @@ type HomeActionsViewProps =
       OnToggleRest: unit -> CancellationToken -> Task<Result<CurrentStatusDto, string>> }
 
 module HomeActionsView =
-    let view (props: HomeActionsViewProps) : Avalonia.Controls.Control =
+    let create (props: HomeActionsViewProps) : Avalonia.Controls.Control =
         withReactive (fun disposables _ ->
             let hooks =
                 useHomeActionsHooks

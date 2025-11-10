@@ -34,11 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AttendanceRecord.Shared\AttendanceRecord.Shared.fsproj" />
     <ProjectReference Include="..\AttendanceRecord.Domain\AttendanceRecord.Domain.fsproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="R3" Version="1.3.0" />
   </ItemGroup>
 
 </Project>

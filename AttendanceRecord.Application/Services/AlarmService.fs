@@ -2,6 +2,7 @@ namespace AttendanceRecord.Application.Services
 
 open System
 open R3
+open AttendanceRecord.Shared
 open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Domain.ValueObjects.Alarms
 
@@ -13,43 +14,37 @@ type AlarmService(currentStatusStore: CurrentStatusStore, getAppConfig: unit -> 
     let disposable = new CompositeDisposable()
 
     let workEndAlarm =
-        new ReactiveProperty<WorkEndAlarm>(WorkEndAlarm.createInitialAlarm ())
+        R3.property (WorkEndAlarm.createInitialAlarm ()) |> R3.disposeWith disposable
 
     let restStartAlarm =
-        new ReactiveProperty<RestStartAlarm>(RestStartAlarm.createInitialAlarm ())
+        R3.property (RestStartAlarm.createInitialAlarm ()) |> R3.disposeWith disposable
 
-    let alarmTriggered = new ReactiveCommand<AlarmType>()
+    let alarmTriggered = R3.command<AlarmType> () |> R3.disposeWith disposable
 
     do
-        workEndAlarm.AddTo disposable |> ignore
-        restStartAlarm.AddTo disposable |> ignore
-        alarmTriggered.AddTo disposable |> ignore
-
         currentStatusStore.WorkRecord
-            .Subscribe(fun wr ->
-                match wr with
-                | Some record ->
-                    let now = DateTime.Now
-                    workEndAlarm.Value <- workEndAlarm.Value |> Alarm.tryTrigger now record (getAppConfig ())
-                    restStartAlarm.Value <- restStartAlarm.Value |> Alarm.tryTrigger now record (getAppConfig ())
-                | None -> ())
-            .AddTo(disposable)
-        |> ignore
+        |> R3.subscribe (fun wr ->
+            match wr with
+            | Some record ->
+                let now = DateTime.Now
+                workEndAlarm.Value <- workEndAlarm.Value |> Alarm.tryTrigger now record (getAppConfig ())
+                restStartAlarm.Value <- restStartAlarm.Value |> Alarm.tryTrigger now record (getAppConfig ())
+            | None -> ())
+        |> disposable.Add
 
-        Observable
-            .Merge(
-                workEndAlarm.Select(fun a ->
-                    { AlarmType = a.Rule.AlarmType
-                      IsTriggered = a.State.IsTriggered }),
-                restStartAlarm.Select(fun a ->
-                    { AlarmType = a.Rule.AlarmType
-                      IsTriggered = a.State.IsTriggered })
-            )
-            .Where(fun s -> s.IsTriggered)
-            .Delay(TimeSpan.FromMilliseconds 100.0)
-            .Subscribe(fun s -> alarmTriggered.Execute(s.AlarmType) |> ignore)
-            .AddTo(disposable)
-        |> ignore
+        R3.merge
+            [ workEndAlarm
+              |> R3.map (fun a ->
+                  { AlarmType = a.Rule.AlarmType
+                    IsTriggered = a.State.IsTriggered })
+              restStartAlarm
+              |> R3.map (fun a ->
+                  { AlarmType = a.Rule.AlarmType
+                    IsTriggered = a.State.IsTriggered }) ]
+        |> R3.filter (fun s -> s.IsTriggered)
+        |> R3.delay (TimeSpan.FromMilliseconds 100.0)
+        |> R3.subscribe (fun s -> alarmTriggered.Execute(s.AlarmType) |> ignore)
+        |> disposable.Add
 
     member _.AlarmTriggered: Observable<AlarmType> = alarmTriggered
 

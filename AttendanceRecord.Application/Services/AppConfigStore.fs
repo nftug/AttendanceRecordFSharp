@@ -3,6 +3,7 @@ namespace AttendanceRecord.Application.Services
 open FsToolkit.ErrorHandling
 open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Domain.Entities
+open System.Threading
 
 type AppConfigStore(repository: AppConfigRepository) as this =
     let mutable currentConfig = AppConfig.initial
@@ -14,14 +15,16 @@ type AppConfigStore(repository: AppConfigRepository) as this =
 
     member _.Current: AppConfig = currentConfig
 
-    member _.Load() : TaskResult<unit, string> =
+    member _.Load(?ct: CancellationToken) : TaskResult<unit, string> =
         taskResult {
-            let! config = repository.GetConfig()
+            let ct = defaultArg ct CancellationToken.None
+            let! config = repository.GetConfig ct
             currentConfig <- config
         }
 
-    member _.Save(config: AppConfig) : TaskResult<unit, string> =
+    member _.Save(config: AppConfig, ?ct: CancellationToken) : TaskResult<unit, string> =
         taskResult {
-            do! repository.SaveConfig config
+            let ct = defaultArg ct CancellationToken.None
+            do! repository.SaveConfig config ct
             currentConfig <- config
         }

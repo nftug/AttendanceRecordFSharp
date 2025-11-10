@@ -1,18 +1,24 @@
 namespace AttendanceRecord.Application.UseCases.WorkRecords
 
 open System
+open System.Threading
 open FsToolkit.ErrorHandling
 open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Application.Dtos.Responses
 
 type GetWorkRecordDetails =
-    { Handle: Guid -> TaskResult<WorkRecordDetailsDto option, string> }
+    { Handle: Guid -> CancellationToken -> TaskResult<WorkRecordDetailsDto option, string> }
 
 module GetWorkRecordDetails =
-    let private handle (repository: WorkRecordRepository) (getAppConfig: unit -> AppConfig) (workRecordId: Guid) =
+    let private handle
+        (repository: WorkRecordRepository)
+        (getAppConfig: unit -> AppConfig)
+        (workRecordId: Guid)
+        (ct: CancellationToken)
+        =
         taskResult {
-            let! workRecordOption = repository.GetById workRecordId
+            let! workRecordOption = repository.GetById workRecordId ct
             let standardWorkTime = getAppConfig().StandardWorkTime
             let now = DateTime.Now
 
@@ -22,4 +28,4 @@ module GetWorkRecordDetails =
         }
 
     let create (repository: WorkRecordRepository) (getAppConfig: unit -> AppConfig) : GetWorkRecordDetails =
-        { Handle = fun workRecordId -> handle repository getAppConfig workRecordId }
+        { Handle = fun workRecordId ct -> handle repository getAppConfig workRecordId ct }

@@ -2,6 +2,7 @@ namespace AttendanceRecord.Infrastructure.Repositories
 
 open System.IO
 open System.Text.Json
+open System.Threading
 open FsToolkit.ErrorHandling
 open AttendanceRecord.Persistence.Constants
 open AttendanceRecord.Application.Interfaces
@@ -13,7 +14,7 @@ module AppConfigRepositoryImpl =
     let private getFilePath appDir =
         Path.Combine(appDir.Value, "appConfig.json")
 
-    let getConfig (appDirService: AppDirectoryService) () : TaskResult<AppConfig, string> =
+    let private getConfig (appDirService: AppDirectoryService) (ct: CancellationToken) : TaskResult<AppConfig, string> =
         taskResult {
             let filePath = getFilePath appDirService
 
@@ -26,16 +27,21 @@ module AppConfigRepositoryImpl =
                     if stream.Length = 0L then
                         return AppConfig.initial
                     else
-                        let! dto = JsonSerializer.DeserializeAsync(stream, InfraJsonContext.Intended.AppConfigFileDto)
+                        let! dto =
+                            JsonSerializer.DeserializeAsync(stream, InfraJsonContext.Intended.AppConfigFileDto, ct)
 
-                        match dto with
-                        | null -> return AppConfig.initial
-                        | dto -> return dto |> AppConfigFileDtoMapper.toDomain
+                        match dto |> Option.ofObj with
+                        | None -> return AppConfig.initial
+                        | Some dto -> return dto |> AppConfigFileDtoMapper.toDomain
             with ex ->
                 return! Error $"Failed to load AppConfig: {ex.Message}"
         }
 
-    let saveConfig (appDirService: AppDirectoryService) (config: AppConfig) : TaskResult<unit, string> =
+    let private saveConfig
+        (appDirService: AppDirectoryService)
+        (config: AppConfig)
+        (ct: CancellationToken)
+        : TaskResult<unit, string> =
         taskResult {
             let filePath = getFilePath appDirService
 
@@ -45,7 +51,7 @@ module AppConfigRepositoryImpl =
                 use stream =
                     new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None)
 
-                do! JsonSerializer.SerializeAsync(stream, dto, InfraJsonContext.Intended.AppConfigFileDto)
+                do! JsonSerializer.SerializeAsync(stream, dto, InfraJsonContext.Intended.AppConfigFileDto, ct)
 
                 do! stream.FlushAsync()
             with ex ->

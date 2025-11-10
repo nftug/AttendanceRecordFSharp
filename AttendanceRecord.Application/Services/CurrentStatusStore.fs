@@ -1,9 +1,11 @@
 namespace AttendanceRecord.Application.Services
 
 open System
+open System.Threading
 open System.Threading.Tasks
 open FsToolkit.ErrorHandling
 open R3
+open AttendanceRecord.Shared
 open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Interfaces
@@ -12,31 +14,27 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
     =
     let disposable = new CompositeDisposable()
 
-    let workRecord = (new ReactiveProperty<WorkRecord option>(None)).AddTo disposable
+    let workRecord = R3.property (None: WorkRecord option) |> R3.disposeWith disposable
 
-    let monthlyRecords = (new ReactiveProperty<WorkRecord list>([])).AddTo disposable
+    let monthlyRecords = R3.property ([]: WorkRecord list) |> R3.disposeWith disposable
 
     let currentStatus =
         workRecord
-            .CombineLatest(
-                monthlyRecords,
-                fun workRecord monthlyRecords ->
-                    let now = DateTime.Now
-                    let standardWorkTime = getAppConfig().StandardWorkTime
+        |> R3.combineLatest2 monthlyRecords (fun workRecord monthlyRecords ->
+            let now = DateTime.Now
+            let standardWorkTime = getAppConfig().StandardWorkTime
 
-                    monthlyRecords
-                    |> WorkRecordTally.getOvertimeTotal now standardWorkTime
-                    |> CurrentStatusDto.fromDomain now standardWorkTime workRecord
-            )
-            .ToReadOnlyReactiveProperty(CurrentStatusDto.getEmpty ())
-            .AddTo(disposable)
+            monthlyRecords
+            |> WorkRecordTally.getOvertimeTotal now standardWorkTime
+            |> CurrentStatusDto.fromDomain now standardWorkTime workRecord)
+        |> R3.readonly (CurrentStatusDto.getEmpty () |> Some)
+        |> R3.disposeWith disposable
 
     do
         timerService.OneSecondTimer
-            .Prepend(DateTime.Now)
-            .Subscribe(fun _ -> this.Update false |> ignore)
-            .AddTo(disposable)
-        |> ignore
+        |> R3.prepend DateTime.Now
+        |> R3.subscribe (fun _ -> this.Update false |> ignore)
+        |> disposable.Add
 
         this.Update true |> ignore
 
@@ -57,7 +55,7 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
 
             let! recordOption =
                 if forceReload || isWorkRecordStale then
-                    repository.GetByDate today
+                    repository.GetByDate today CancellationToken.None
                 else
                     Ok workRecord.Value |> Task.FromResult
 
@@ -72,7 +70,7 @@ type CurrentStatusStore(timerService: TimerProvider, repository: WorkRecordRepos
 
             let! monthlyRecordsOption =
                 if forceReload || isMonthlyDataStale then
-                    repository.GetMonthly today
+                    repository.GetMonthly today CancellationToken.None
                 else
                     Ok monthlyRecords.Value |> Task.FromResult
 

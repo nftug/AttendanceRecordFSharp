@@ -1,18 +1,24 @@
 namespace AttendanceRecord.Application.UseCases.WorkRecords
 
 open System
+open System.Threading
 open FsToolkit.ErrorHandling
 open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Application.Dtos.Responses
 
 type GetMonthlyWorkRecords =
-    { Handle: DateTime -> TaskResult<WorkRecordListDto, string> }
+    { Handle: DateTime -> CancellationToken -> TaskResult<WorkRecordListDto, string> }
 
 module GetMonthlyWorkRecords =
-    let private handle (repository: WorkRecordRepository) (getAppConfig: unit -> AppConfig) (monthDate: DateTime) =
+    let private handle
+        (repository: WorkRecordRepository)
+        (getAppConfig: unit -> AppConfig)
+        (monthDate: DateTime)
+        (ct: CancellationToken)
+        =
         taskResult {
-            let! monthlyRecords = repository.GetMonthly monthDate
+            let! monthlyRecords = repository.GetMonthly monthDate ct
             let now = DateTime.Now
             let standardWorkTime = getAppConfig().StandardWorkTime
 
@@ -20,4 +26,4 @@ module GetMonthlyWorkRecords =
         }
 
     let create (repository: WorkRecordRepository) (getAppConfig: unit -> AppConfig) : GetMonthlyWorkRecords =
-        { Handle = fun monthDate -> handle repository getAppConfig monthDate }
+        { Handle = fun monthDate ct -> handle repository getAppConfig monthDate ct }

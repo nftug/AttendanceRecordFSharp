@@ -14,6 +14,7 @@
     <Compile Include="Mappers/AppConfigFileDtoMapper.fs" />
 
     <Compile Include="Services/AppDirectoryService.fs" />
+    <Compile Include="Services/SingleInstanceGuardImpl.fs" />
     <Compile Include="Repositories/WorkRecordRepositoryImpl.fs" />
     <Compile Include="Repositories/AppConfigRepositoryImpl.fs" />
   </ItemGroup>

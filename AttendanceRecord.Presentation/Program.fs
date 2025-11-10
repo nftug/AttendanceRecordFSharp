@@ -8,14 +8,16 @@ open DialogHostAvalonia
 open Material.Icons.Avalonia
 
 let Build () =
+    let services = ServiceContainer.create ()
+
     Window()
         .Title("Attendance Record")
         .Width(1200)
         .Height(820)
         .WindowStartupLocationCenterScreen()
         .Styles(AppStyles(), DialogHostStyles(), MaterialIconStyles null)
-        .AddTrayIcon()
-        .Content(MainView.view (ServiceContainer.create ()))
+        .AddTrayIcon(services.SingleInstanceGuard)
+        .Content(MainView.view services)
 
 [<EntryPoint>]
 let Main argv =

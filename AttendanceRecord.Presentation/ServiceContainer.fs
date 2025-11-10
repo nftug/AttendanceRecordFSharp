@@ -1,12 +1,14 @@
 namespace AttendanceRecord.Presentation
 
+open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Application.Services
 open AttendanceRecord.Application.UseCases.WorkRecords
 open AttendanceRecord.Infrastructure.Repositories
 open AttendanceRecord.Infrastructure.Services
 
 type ServiceContainer =
-    { CurrentStatusStore: CurrentStatusStore
+    { SingleInstanceGuard: SingleInstanceGuard
+      CurrentStatusStore: CurrentStatusStore
       AlarmService: AlarmService
       ToggleWorkUseCase: ToggleWork
       ToggleRestUseCase: ToggleRest
@@ -19,6 +21,7 @@ module ServiceContainer =
     let create () : ServiceContainer =
         // Infrastructure Services
         let appDirService = AppDirectoryService.create ()
+        let singleInstanceGuard = SingleInstanceGuardImpl.create appDirService
         let workRecordRepository = WorkRecordRepositoryImpl.create appDirService
         let appConfigRepository = AppConfigRepositoryImpl.create appDirService
 
@@ -47,7 +50,8 @@ module ServiceContainer =
         let getWorkRecordDetailsUseCase =
             GetWorkRecordDetails.create workRecordRepository getAppConfig
 
-        { CurrentStatusStore = currentStatusStore
+        { SingleInstanceGuard = singleInstanceGuard
+          CurrentStatusStore = currentStatusStore
           AlarmService = alarmService
           ToggleWorkUseCase = toggleWorkUseCase
           ToggleRestUseCase = toggleRestUseCase

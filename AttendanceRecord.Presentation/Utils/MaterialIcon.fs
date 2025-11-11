@@ -15,10 +15,8 @@ module MaterialIconLabel =
     let create (kind: MaterialIconKind) (label: string) : Avalonia.Controls.Control =
         let icon = Avalonia.MaterialIcon()
         icon.Kind <- kind
-        icon.FontSize <- 20.0
-        icon.VerticalAlignment <- Avalonia.Layout.VerticalAlignment.Center
 
         StackPanel()
             .OrientationHorizontal()
             .Spacing(10.0)
-            .Children(icon, TextBlock().Text(label).FontSize(16.0).VerticalAlignmentCenter())
+            .Children(icon, TextBlock().Text(label))

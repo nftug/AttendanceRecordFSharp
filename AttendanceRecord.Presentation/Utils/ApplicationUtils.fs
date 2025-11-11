@@ -30,7 +30,7 @@ module ApplicationUtils =
         |> fun window ->
             match window.GetVisualDescendants() |> Seq.tryFind (fun c -> c :? 't) with
             | Some control -> control :?> 't
-            | None -> failwithf "Control of type %s not found." typeof<'t>.FullName
+            | None -> failwith $"Control of type {typeof<'t>.FullName} not found."
 
     let asBinding<'T> (source: Observable<'T>) : Data.IBinding =
         source.AsSystemObservable().ToBinding()

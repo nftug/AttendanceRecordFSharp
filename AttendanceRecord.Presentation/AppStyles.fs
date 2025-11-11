@@ -1,4 +1,4 @@
-namespace AttendanceRecord.Presentation.Views
+namespace AttendanceRecord.Presentation
 
 open NXUI.Extensions
 open Avalonia.Styling

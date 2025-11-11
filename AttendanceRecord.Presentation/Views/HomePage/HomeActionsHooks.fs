@@ -42,7 +42,7 @@ module HomeActionsHooks =
             toggleRestMutation.IsPending
             |> R3.combineLatest2 status (fun r s -> not r && s.IsActive)
 
-        let handleClickToggleWork () =
+        let handleClickToggleWork () : unit =
             invokeTask disposables (fun ct ->
                 task {
                     let! shouldProceed =
@@ -70,7 +70,7 @@ module HomeActionsHooks =
                 })
             |> ignore
 
-        let handleClickToggleRest () =
+        let handleClickToggleRest () : unit =
             invokeTask disposables (fun ct ->
                 task {
                     match! toggleRestMutation.MutateTask () ct with

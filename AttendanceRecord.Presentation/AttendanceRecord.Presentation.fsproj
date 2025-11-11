@@ -54,8 +54,8 @@
 
     <Compile Include="ServiceContainer.fs" />
     <Compile Include="Views/MainView.fs" />
-    <Compile Include="Views/AppStyles.fs" />
-    <Compile Include="Views/MainWindow.fs" />
+    <Compile Include="AppStyles.fs" />
+    <Compile Include="MainWindow.fs" />
 
     <Compile Include="Program.fs" />
   </ItemGroup>

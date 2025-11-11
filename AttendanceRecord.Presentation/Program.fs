@@ -1,9 +1,9 @@
 ﻿open Avalonia
 open NXUI.Extensions
-open AttendanceRecord.Presentation.Views
+open AttendanceRecord.Presentation
 
 [<EntryPoint>]
-let Main argv =
+let main argv =
     AppBuilder
         .Configure<Application>()
         .UsePlatformDetect()
@@ -11,6 +11,3 @@ let Main argv =
         .UseR3()
         .WithApplicationName("Attendance Record")
         .StartWithClassicDesktopLifetime(MainWindow.create, argv)
-    |> ignore
-
-    0

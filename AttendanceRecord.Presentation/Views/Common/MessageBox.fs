@@ -19,24 +19,16 @@ module private MessageBoxView =
     open System.Windows.Input
 
     let create (props: MessageBoxProps) (closeCommand: ICommand) =
-        let createButton onClick content =
+        let createButton ret content =
             Button()
                 .Content(content)
+                .OnClickHandler(fun _ _ -> closeCommand.Execute ret)
                 .MinWidth(80.0)
+                .MaxWidth(120.0)
                 .Height(35.0)
-                .OnClickHandler(fun _ _ -> onClick ())
 
-        let okButton =
-            match props.OkContent with
-            | Some c -> c
-            | None -> "OK"
-            |> createButton (fun () -> closeCommand.Execute true)
-
-        let cancelButton =
-            match props.CancelContent with
-            | Some c -> c
-            | None -> "キャンセル"
-            |> createButton (fun () -> closeCommand.Execute false)
+        let okButton = defaultArg props.OkContent "OK" |> createButton true
+        let cancelButton = defaultArg props.CancelContent "キャンセル" |> createButton false
 
         StackPanel()
             .Margin(20.0)

@@ -48,6 +48,7 @@ module NavigationView =
                                 props.IsOpen.Value <- false)
                             .Margin(0, 5, 0, 5)
                             .Height(40.0)
+                            .FontSize(16.0)
                             .HorizontalAlignmentStretch()
                             .HorizontalContentAlignmentLeft()
                             .Background(Brushes.Transparent)

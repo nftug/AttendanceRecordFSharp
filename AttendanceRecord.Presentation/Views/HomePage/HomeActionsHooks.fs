@@ -41,8 +41,7 @@ module HomeActionsHooks =
         let restButtonLabel =
             status |> R3.map (fun s -> if s.IsResting then "休憩終了" else "休憩開始")
 
-        let workToggleEnabled =
-            toggleWorkMutation.IsPending |> R3.combineLatest2 status (fun r s -> not r)
+        let workToggleEnabled = toggleWorkMutation.IsPending |> R3.map not
 
         let restToggleEnabled =
             toggleRestMutation.IsPending

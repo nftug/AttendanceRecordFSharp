@@ -8,8 +8,6 @@ open System.Runtime.CompilerServices
 open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Presentation.Utils
 
-open System.ComponentModel
-
 module private TrayIcon =
     let createTrayIcon () : TrayIcon =
         let showAndActivateWindow () =
@@ -51,31 +49,30 @@ module private TrayIcon =
         let iconUri = Uri "avares://AttendanceRecord/Assets/tray_icon.ico"
         trayIcon.Icon <- new WindowIcon(new Bitmap(NXUI.AssetLoader.Open iconUri))
         trayIcon.Menu <- nativeMenu
+        trayIcon.Clicked.Add(fun _ -> showAndActivateWindow ())
         trayIcon
 
 [<Extension>]
 type TrayIconExtensions =
     [<Extension>]
     static member AddTrayIcon(window: Window, singleInstanceGuard: SingleInstanceGuard) : Window =
-        let handleClosingRequested (sender: obj) (e: CancelEventArgs) =
-            e.Cancel <- true
-            sender :?> Window |> _.Hide()
+        getApplicationLifetime()
+            .ShutdownRequested.Add(fun _ -> singleInstanceGuard.ReleaseLock())
 
-        getApplicationLifetime().ShutdownRequested.Add (fun _ ->
-            singleInstanceGuard.ReleaseLock()
-        )
-        window.Closing.AddHandler handleClosingRequested
+        window.Closing.AddHandler(fun sender e ->
+            e.Cancel <- true
+            sender :?> Window |> _.Hide())
 
         window.Loaded.Add(fun _ ->
             if not (singleInstanceGuard.TryAcquireLock()) then
                 task {
                     let! _ =
                         MessageBox.show
-                          { Title = "多重起動の防止"
-                            Message = "このアプリケーションは既に起動しています。"
-                            OkContent = Some "終了"
-                            CancelContent = None
-                            Buttons = MessageBoxButtons.Ok }
+                            { Title = "多重起動の防止"
+                              Message = "このアプリケーションは既に起動しています。"
+                              OkContent = Some "終了"
+                              CancelContent = None
+                              Buttons = MessageBoxButtons.Ok }
                             None
 
                     getApplicationLifetime().Shutdown()
@@ -84,7 +81,6 @@ type TrayIconExtensions =
             else
                 let trayIcons = new TrayIcons()
                 trayIcons.Add(TrayIcon.createTrayIcon ())
-                TrayIcon.SetIcons(Application.Current, trayIcons)
-        )
+                TrayIcon.SetIcons(Application.Current, trayIcons))
 
         window

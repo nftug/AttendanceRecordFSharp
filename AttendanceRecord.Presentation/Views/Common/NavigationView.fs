@@ -109,6 +109,7 @@ module NavigationView =
 
             SplitView()
                 .DisplayModeOverlay()
+                .UseLightDismissOverlayMode(true)
                 .OpenPaneLength(250.0)
                 .IsPaneOpen(isDrawerOpen |> asBinding)
                 .OnPaneClosedHandler(fun _ _ -> isDrawerOpen.Value <- false)

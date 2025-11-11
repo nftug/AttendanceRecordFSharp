@@ -7,13 +7,11 @@ open R3
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Shared
 
-type ClockViewProps =
-    { Status: Observable<CurrentStatusDto> }
-
 module ClockView =
-    let create (props: ClockViewProps) : Avalonia.Controls.Control =
-        withReactive (fun _ _ ->
-            let now = props.Status |> R3.map _.CurrentTime
+    let create () : Avalonia.Controls.Control =
+        withReactive (fun _ self ->
+            let ctx, _ = HomePageContextProvider.require self
+            let now = ctx.Status |> R3.map _.CurrentTime
 
             TextBlock()
                 .Text(now |> R3.map (fun v -> v.ToString "HH:mm:ss") |> asBinding)

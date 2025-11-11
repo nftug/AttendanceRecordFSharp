@@ -1,19 +1,12 @@
 namespace AttendanceRecord.Presentation.Views.HomePage
 
 open R3
-open System.Threading.Tasks
-open System.Threading
 open Material.Icons
 open Avalonia.Controls.Notifications
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Application.Dtos.Responses
-
-type HomeActionsHooksProps =
-    { Status: Observable<CurrentStatusDto>
-      OnToggleWork: unit -> CancellationToken -> Task<Result<CurrentStatusDto, string>>
-      OnToggleRest: unit -> CancellationToken -> Task<Result<CurrentStatusDto, string>> }
 
 type HomeActionsHooks =
     { Status: ReadOnlyReactiveProperty<CurrentStatusDto>
@@ -27,13 +20,15 @@ type HomeActionsHooks =
 [<AutoOpen>]
 module HomeActionsHooks =
     let useHomeActionsHooks
-        (props: HomeActionsHooksProps)
+        (control: Avalonia.Controls.Control)
         (disposables: CompositeDisposable)
         : HomeActionsHooks =
-        let toggleWorkMutation = useMutation disposables props.OnToggleWork
-        let toggleRestMutation = useMutation disposables props.OnToggleRest
+        let ctx, _ = HomePageContextProvider.require control
 
-        let status = props.Status |> R3.readonly None |> R3.disposeWith disposables
+        let toggleWorkMutation = useMutation disposables ctx.OnToggleWork
+        let toggleRestMutation = useMutation disposables ctx.OnToggleRest
+
+        let status = ctx.Status |> R3.readonly None |> R3.disposeWith disposables
 
         let workButtonLabel =
             status |> R3.map (fun s -> if s.IsActive then "勤務終了" else "勤務開始")

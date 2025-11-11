@@ -4,27 +4,14 @@ open type NXUI.Builders
 open NXUI.Extensions
 open R3
 open System
-open System.Threading.Tasks
-open System.Threading
 open Material.Icons
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
-open AttendanceRecord.Application.Dtos.Responses
-
-type HomeActionsViewProps =
-    { Status: Observable<CurrentStatusDto>
-      OnToggleWork: unit -> CancellationToken -> Task<Result<CurrentStatusDto, string>>
-      OnToggleRest: unit -> CancellationToken -> Task<Result<CurrentStatusDto, string>> }
 
 module HomeActionsView =
-    let create (props: HomeActionsViewProps) : Avalonia.Controls.Control =
-        withReactive (fun disposables _ ->
-            let hooks =
-                useHomeActionsHooks
-                    { Status = props.Status
-                      OnToggleWork = props.OnToggleWork
-                      OnToggleRest = props.OnToggleRest }
-                    disposables
+    let create () : Avalonia.Controls.Control =
+        withReactive (fun disposables self ->
+            let hooks = useHomeActionsHooks self disposables
 
             Grid()
                 .RowDefinitions("Auto")

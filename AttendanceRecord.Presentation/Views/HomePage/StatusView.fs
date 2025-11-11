@@ -2,15 +2,12 @@ namespace AttendanceRecord.Presentation.Views.HomePage
 
 open type NXUI.Builders
 open NXUI.Extensions
-open AttendanceRecord.Presentation.Utils
 open R3
 open Material.Icons
 open Avalonia.Media
 open AttendanceRecord.Shared
+open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Application.Dtos.Responses
-
-type StatusViewProps =
-    { Status: Observable<CurrentStatusDto> }
 
 type private StatusInfo = { Label: string; Value: string }
 
@@ -25,8 +22,10 @@ module StatusView =
           { Label = "今月の残業時間"
             Value = status.OvertimeMonthlyDuration.ToString @"hh\:mm\:ss" } ]
 
-    let create (props: StatusViewProps) : Avalonia.Controls.Control =
-        withReactive (fun disposables _ ->
+    let create () : Avalonia.Controls.Control =
+        withReactive (fun disposables self ->
+            let ctx, _ = HomePageContextProvider.require self
+
             let container =
                 Border()
                     .BorderThickness(1.0)
@@ -34,7 +33,7 @@ module StatusView =
                     .Padding(25.0)
                     .Height(250.0)
 
-            props.Status
+            ctx.Status
             |> R3.map getStatusInfo
             |> R3.subscribe (fun rows ->
                 container.Child <-

@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <Compile Include="Utils/ApplicationUtils.fs" />
+    <Compile Include="Utils/ContextProvider.fs" />
     <Compile Include="Utils/UseMutation.fs" />
     <Compile Include="Utils/GridExtensions.fs" />
     <Compile Include="Utils/MaterialIcon.fs" />
@@ -40,6 +41,7 @@
     <Compile Include="Views/Common/NavigationView.fs" />
     <Compile Include="Views/Common/TrayIconExtensions.fs" />
 
+    <Compile Include="Views/HomePage/HomePageContextProvider.fs" />
     <Compile Include="Views/HomePage/ClockView.fs" />
     <Compile Include="Views/HomePage/HomeActionsHooks.fs" />
     <Compile Include="Views/HomePage/HomeActionsView.fs" />

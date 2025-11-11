@@ -39,7 +39,7 @@
 
     <Compile Include="Views/Common/MessageBox.fs" />
     <Compile Include="Views/Common/NavigationView.fs" />
-    <Compile Include="Views/Common/TrayIconExtensions.fs" />
+    <Compile Include="Views/Common/TrayIcon.fs" />
 
     <Compile Include="Views/HomePage/HomePageContextProvider.fs" />
     <Compile Include="Views/HomePage/ClockView.fs" />
@@ -55,6 +55,7 @@
     <Compile Include="ServiceContainer.fs" />
     <Compile Include="Views/MainView.fs" />
     <Compile Include="Views/AppStyles.fs" />
+    <Compile Include="Views/MainWindow.fs" />
 
     <Compile Include="Program.fs" />
   </ItemGroup>

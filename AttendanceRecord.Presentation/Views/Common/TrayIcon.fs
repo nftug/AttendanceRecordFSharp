@@ -1,17 +1,13 @@
 namespace AttendanceRecord.Presentation.Views.Common
 
-open Avalonia
 open Avalonia.Controls
 open Avalonia.Media.Imaging
 open System
-open System.Runtime.CompilerServices
-open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Presentation.Utils
 
-module private TrayIcon =
-    let createTrayIcon () : TrayIcon =
+module TrayIcon =
+    let create (window: Window) : TrayIcon =
         let showAndActivateWindow () =
-            let window = getMainWindow ()
             window.Show()
             window.WindowState <- WindowState.Normal
             window.Activate()
@@ -51,36 +47,3 @@ module private TrayIcon =
         trayIcon.Menu <- nativeMenu
         trayIcon.Clicked.Add(fun _ -> showAndActivateWindow ())
         trayIcon
-
-[<Extension>]
-type TrayIconExtensions =
-    [<Extension>]
-    static member AddTrayIcon(window: Window, singleInstanceGuard: SingleInstanceGuard) : Window =
-        getApplicationLifetime()
-            .ShutdownRequested.Add(fun _ -> singleInstanceGuard.ReleaseLock())
-
-        window.Closing.AddHandler(fun sender e ->
-            e.Cancel <- true
-            sender :?> Window |> _.Hide())
-
-        window.Loaded.Add(fun _ ->
-            if not (singleInstanceGuard.TryAcquireLock()) then
-                task {
-                    let! _ =
-                        MessageBox.show
-                            { Title = "多重起動の防止"
-                              Message = "このアプリケーションは既に起動しています。"
-                              OkContent = Some "終了"
-                              CancelContent = None
-                              Buttons = MessageBoxButtons.Ok }
-                            None
-
-                    getApplicationLifetime().Shutdown()
-                }
-                |> ignore
-            else
-                let trayIcons = new TrayIcons()
-                trayIcons.Add(TrayIcon.createTrayIcon ())
-                TrayIcon.SetIcons(Application.Current, trayIcons))
-
-        window

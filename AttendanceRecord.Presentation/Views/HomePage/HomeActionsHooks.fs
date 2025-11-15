@@ -20,11 +20,9 @@ type HomeActionsHooks =
 [<AutoOpen>]
 module HomeActionsHooks =
     let useHomeActionsHooks
-        (control: Avalonia.Controls.Control)
+        (ctx: HomePageContext)
         (disposables: CompositeDisposable)
         : HomeActionsHooks =
-        let ctx, _ = HomePageContextProvider.require control
-
         let toggleWorkMutation = useMutation disposables ctx.OnToggleWork
         let toggleRestMutation = useMutation disposables ctx.OnToggleRest
 

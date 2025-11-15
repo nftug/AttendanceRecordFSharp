@@ -11,7 +11,8 @@ open AttendanceRecord.Presentation.Utils
 module HomeActionsView =
     let create () : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
-            let hooks = useHomeActionsHooks self disposables
+            let ctx, _ = HomePageContextProvider.require self
+            let hooks = useHomeActionsHooks ctx disposables
 
             Grid()
                 .RowDefinitions("Auto")

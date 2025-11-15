@@ -13,10 +13,7 @@ module MaterialIcon =
 
 module MaterialIconLabel =
     let create (kind: MaterialIconKind) (label: string) : Avalonia.Controls.Control =
-        let icon = Avalonia.MaterialIcon()
-        icon.Kind <- kind
-
         StackPanel()
             .OrientationHorizontal()
             .Spacing(10.0)
-            .Children(icon, TextBlock().Text(label))
+            .Children(MaterialIcon.create kind, TextBlock().Text(label))

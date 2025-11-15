@@ -2,23 +2,21 @@ namespace AttendanceRecord.Presentation.Views.HomePage
 
 open type NXUI.Builders
 open NXUI.Extensions
-open AttendanceRecord.Presentation.Utils
 open R3
 
 module HomePageView =
     let create (props: HomePageContext) : Avalonia.Controls.Control =
-        withReactive (fun _ _ ->
-            HomePageContextProvider.provide
-                props
-                (DockPanel()
-                    .LastChildFill(true)
-                    .Children(
-                        StackPanel()
-                            .DockBottom()
-                            .Margin(30.0)
-                            .Spacing(25.0)
-                            .HorizontalAlignmentStretch()
-                            .VerticalAlignmentCenter()
-                            .Children(HomeActionsView.create (), StatusView.create ()),
-                        ClockView.create ()
-                    )))
+        HomePageContextProvider.provide
+            props
+            (DockPanel()
+                .LastChildFill(true)
+                .Children(
+                    StackPanel()
+                        .DockBottom()
+                        .Margin(30.0)
+                        .Spacing(25.0)
+                        .HorizontalAlignmentStretch()
+                        .VerticalAlignmentCenter()
+                        .Children(HomeActionsView.create (), StatusView.create ()),
+                    ClockView.create ()
+                ))

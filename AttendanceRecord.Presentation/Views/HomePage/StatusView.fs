@@ -23,29 +23,25 @@ module StatusView =
             Value = status.OvertimeMonthlyDuration.ToString @"hh\:mm\:ss" } ]
 
     let create () : Avalonia.Controls.Control =
-        withReactive (fun disposables self ->
+        withReactive (fun _ self ->
             let ctx, _ = HomePageContextProvider.require self
 
-            let container =
-                Border()
-                    .BorderThickness(1.0)
-                    .BorderBrush(Brushes.Gray)
-                    .Padding(25.0)
-                    .Height(250.0)
-
-            ctx.Status
-            |> R3.map getStatusInfo
-            |> R3.subscribe (fun rows ->
-                container.Child <-
-                    StackPanel()
-                        .Spacing(8.0)
-                        .VerticalAlignmentCenter()
-                        .Children(
-                            rows
-                            |> List.map (fun row ->
-                                TextBlock().Text($"{row.Label}: {row.Value}").FontSize(16.0))
-                            |> toChildren
-                        ))
-            |> disposables.Add
-
-            container)
+            Border()
+                .BorderThickness(1.0)
+                .BorderBrush(Brushes.Gray)
+                .Padding(25.0)
+                .Height(250.0)
+                .Child(
+                    ctx.Status
+                    |> R3.map getStatusInfo
+                    |> toView (fun rows ->
+                        StackPanel()
+                            .Spacing(8.0)
+                            .VerticalAlignmentCenter()
+                            .Children(
+                                rows
+                                |> List.map (fun row ->
+                                    TextBlock().Text($"{row.Label}: {row.Value}").FontSize(16.0))
+                                |> toChildren
+                            ))
+                ))

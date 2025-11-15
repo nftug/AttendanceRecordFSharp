@@ -2,7 +2,6 @@ namespace AttendanceRecord.Presentation.Views.Common
 
 open Avalonia.Controls
 open Avalonia.Media.Imaging
-open System
 open AttendanceRecord.Presentation.Utils
 
 module TrayIcon =
@@ -42,8 +41,10 @@ module TrayIcon =
 
         let trayIcon = new TrayIcon()
         trayIcon.ToolTipText <- "AttendanceRecord"
-        let iconUri = Uri "avares://AttendanceRecord/Assets/tray_icon.ico"
-        trayIcon.Icon <- new WindowIcon(new Bitmap(NXUI.AssetLoader.Open iconUri))
+
+        let iconStream = EmbeddedResourceProvider.getFileStream "Assets/tray_icon.ico"
+        trayIcon.Icon <- new WindowIcon(new Bitmap(iconStream))
+
         trayIcon.Menu <- nativeMenu
         trayIcon.Clicked.Add(fun _ -> showAndActivateWindow ())
         trayIcon

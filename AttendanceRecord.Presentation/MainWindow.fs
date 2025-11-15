@@ -45,9 +45,7 @@ module MainWindow =
     open Material.Icons.Avalonia
     open AttendanceRecord.Presentation
 
-    let create () : Window =
-        let services = ServiceContainer.create ()
-
+    let create (services: ServiceContainer) : Window =
         Window()
             .Title("Attendance Record")
             .Width(1200)

@@ -42,7 +42,7 @@ module TrayIcon =
         let trayIcon = new TrayIcon()
         trayIcon.ToolTipText <- "AttendanceRecord"
 
-        let iconStream = EmbeddedResourceProvider.getFileStream "Assets/tray_icon.ico"
+        use iconStream = EmbeddedResourceProvider.getFileStream "Assets/tray_icon.ico"
         trayIcon.Icon <- new WindowIcon(new Bitmap(iconStream))
 
         trayIcon.Menu <- nativeMenu

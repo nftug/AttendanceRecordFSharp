@@ -2,6 +2,7 @@
 
 open R3
 open System
+open System.Collections.ObjectModel
 
 module R3 =
     let property<'T> (initialValue: 'T) : ReactiveProperty<'T> =
@@ -57,6 +58,19 @@ module R3 =
         (source1: Observable<'T1>)
         : Observable<'TOut> =
         source1.CombineLatest(source2, source3, source4, combiner)
+
+    let mapFromCollectionChanged
+        (selector: 'T[] -> 'U)
+        (defaultValue: 'U)
+        (collection: ObservableCollection<'obs :> Observable<'T>>)
+        : Observable<'U> =
+        let trigger = Observable.EveryValueChanged(collection, (fun c -> c.Count))
+
+        trigger.SelectMany(fun count ->
+            if count = 0 then
+                Observable.Return(defaultValue)
+            else
+                Observable.CombineLatest(collection |> Seq.cast).Select(selector))
 
     let merge<'T> (sources: seq<Observable<'T>>) : Observable<'T> = Observable.Merge sources
 

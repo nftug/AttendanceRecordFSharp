@@ -7,7 +7,6 @@ open Avalonia.Controls.ApplicationLifetimes
 open System
 open System.Threading
 open System.Threading.Tasks
-open System.Collections.ObjectModel
 open R3
 open AttendanceRecord.Shared
 
@@ -82,16 +81,3 @@ module ApplicationUtils =
         container.DetachedFromVisualTree.Add(fun _ -> subscription.Dispose())
 
         container
-
-    let mapFromCollectionChanged
-        (selector: 'T[] -> 'U)
-        (defaultValue: 'U)
-        (collection: ObservableCollection<'obs :> Observable<'T>>)
-        : Observable<'U> =
-        let trigger = Observable.EveryValueChanged(collection, (fun c -> c.Count))
-
-        trigger.SelectMany(fun count ->
-            if count = 0 then
-                Observable.Return(defaultValue)
-            else
-                Observable.CombineLatest(collection |> Seq.cast).Select(selector))

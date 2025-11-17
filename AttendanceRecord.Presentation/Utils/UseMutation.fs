@@ -8,8 +8,8 @@ open AttendanceRecord.Shared
 type UseMutationResult<'arg, 'ret> =
     { MutateTask: 'arg -> CancellationToken -> Task<Result<'ret, string>>
       Mutate: 'arg -> unit
-      IsPending: ReadOnlyReactiveProperty<bool>
-      Error: ReadOnlyReactiveProperty<string option> }
+      IsPending: Observable<bool>
+      Error: Observable<string option> }
 
 [<AutoOpen>]
 module UseMutation =
@@ -32,7 +32,7 @@ module UseMutation =
                 match result with
                 | Ok v -> return Ok v
                 | Error e ->
-                    printfn $"Mutation error: {e}"
+                    eprintfn $"Mutation error: {e}"
                     error.Value <- Some e
                     return Error e
             }

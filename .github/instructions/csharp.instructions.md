@@ -1,5 +1,5 @@
 ---
-# applyTo: "**/*.cs"
+applyTo: '**/*.cs'
 ---
 
 # C# Coding Guidelines (Key Points)

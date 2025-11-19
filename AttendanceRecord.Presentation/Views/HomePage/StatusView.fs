@@ -12,23 +12,15 @@ open AttendanceRecord.Application.Dtos.Responses
 type private StatusInfo = { Label: string; Value: string }
 
 module StatusView =
-    let private formatDuration (duration: System.TimeSpan) =
-        let format = @"hh\:mm\:ss"
-
-        if duration < System.TimeSpan.Zero then
-            $"-{duration.ToString format}"
-        else
-            duration.ToString format
-
     let private getStatusInfo status =
         [ { Label = "勤務時間"
-            Value = formatDuration status.WorkDuration }
+            Value = TimeSpan.formatDuration status.WorkDuration }
           { Label = "休憩時間"
-            Value = formatDuration status.RestDuration }
+            Value = TimeSpan.formatDuration status.RestDuration }
           { Label = "本日の残業時間"
-            Value = formatDuration status.OvertimeDuration }
+            Value = TimeSpan.formatDuration status.OvertimeDuration }
           { Label = "今月の残業時間"
-            Value = formatDuration status.OvertimeMonthlyDuration } ]
+            Value = TimeSpan.formatDuration status.OvertimeMonthlyDuration } ]
 
     let create () : Avalonia.Controls.Control =
         withReactive (fun _ self ->

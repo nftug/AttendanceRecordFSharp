@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="Reactive.fs" />
+    <Compile Include="TimeSpan.fs" />
   </ItemGroup>
 
   <ItemGroup>

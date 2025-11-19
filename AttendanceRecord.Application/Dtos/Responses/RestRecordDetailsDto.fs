@@ -10,6 +10,12 @@ type RestRecordDetailsDto =
       IsActive: bool }
 
 module RestRecordDetailsDto =
+    let empty: RestRecordDetailsDto =
+        { Id = Guid.Empty
+          Date = DateTime.MinValue
+          Duration = TimeDurationDto.empty
+          IsActive = false }
+
     let fromDomain (now: DateTime) (restRecord: RestRecord) : RestRecordDetailsDto =
         { Id = restRecord.Id
           Date = restRecord |> RestRecord.getDate

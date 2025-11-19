@@ -7,6 +7,7 @@ open DialogHostAvalonia
 
 open AttendanceRecord.Presentation
 open AttendanceRecord.Presentation.Views.HomePage
+open AttendanceRecord.Presentation.Views.HistoryPage
 open AttendanceRecord.Presentation.Views.AboutPage
 open AttendanceRecord.Presentation.Views.SettingsPage
 open AttendanceRecord.Presentation.Views.Common
@@ -14,6 +15,7 @@ open AttendanceRecord.Presentation.Views.Common
 module MainView =
     type private PageKeys =
         | Home
+        | History
         | Settings
         | About
 
@@ -33,6 +35,16 @@ module MainView =
                                       { Status = services.CurrentStatusStore.CurrentStatus
                                         OnToggleWork = services.ToggleWorkUseCase.Handle
                                         OnToggleRest = services.ToggleRestUseCase.Handle } }
+                              History,
+                              { Icon = MaterialIconKind.History
+                                Title = "履歴"
+                                View =
+                                  HistoryPageView.create
+                                      { GetMonthlyWorkRecords =
+                                          services.GetMonthlyWorkRecordsUseCase
+                                        GetWorkRecordDetails = services.GetWorkRecordDetailsUseCase
+                                        SaveWorkRecord = services.SaveWorkRecordUseCase
+                                        DeleteWorkRecord = services.DeleteWorkRecordUseCase } }
                               Settings,
                               { Icon = MaterialIconKind.Settings
                                 Title = "設定"

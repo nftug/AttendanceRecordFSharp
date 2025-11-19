@@ -77,3 +77,5 @@ module R3 =
     let delay (dueTime: TimeSpan) (source: Observable<'T>) : Observable<'T> = source.Delay dueTime
 
     let prepend<'T> (value: 'T) (source: Observable<'T>) : Observable<'T> = source.Prepend value
+
+    let skip<'T> (count: int) (source: Observable<'T>) : Observable<'T> = source.Skip count

@@ -40,6 +40,7 @@
     <Compile Include="Utils/Notification.fs" />
 
     <Compile Include="Views/Common/MessageBox.fs" />
+    <Compile Include="Views/Common/DatePickerDialog.fs" />
     <Compile Include="Views/Common/NavigationView.fs" />
     <Compile Include="Views/Common/TrayIcon.fs" />
 
@@ -49,6 +50,16 @@
     <Compile Include="Views/HomePage/HomeActionsView.fs" />
     <Compile Include="Views/HomePage/StatusView.fs" />
     <Compile Include="Views/HomePage/HomePageView.fs" />
+
+    <Compile Include="Views/HistoryPage/HistoryPageContextProvider.fs" />
+    <Compile Include="Views/HistoryPage/TimePickerField.fs" />
+    <Compile Include="Views/HistoryPage/HistoryPageHooks.fs" />
+    <Compile Include="Views/HistoryPage/HistoryToolbar.fs" />
+    <Compile Include="Views/HistoryPage/WorkRecordListView.fs" />
+    <Compile Include="Views/HistoryPage/WorkTimeSection.fs" />
+    <Compile Include="Views/HistoryPage/RestTimeSection.fs" />
+    <Compile Include="Views/HistoryPage/WorkRecordEditView.fs" />
+    <Compile Include="Views/HistoryPage/HistoryPageView.fs" />
 
     <Compile Include="Views/SettingsPage/SettingsPageView.fs" />
 

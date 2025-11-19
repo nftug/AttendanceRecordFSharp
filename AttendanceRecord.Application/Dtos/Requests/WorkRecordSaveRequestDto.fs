@@ -3,6 +3,7 @@ namespace AttendanceRecord.Application.Dtos.Requests
 open System
 open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Domain.ValueObjects
+open AttendanceRecord.Application.Dtos.Responses
 open FsToolkit.ErrorHandling
 
 type RestRecordSaveRequestDto =
@@ -17,6 +18,11 @@ type WorkRecordSaveRequestDto =
       RestRecords: RestRecordSaveRequestDto list }
 
 module RestRecordSaveRequestDto =
+    let empty: RestRecordSaveRequestDto =
+        { Id = None
+          StartedAt = DateTime.MinValue
+          EndedAt = None }
+
     let tryToDomain (dto: RestRecordSaveRequestDto) : Result<RestRecord, string> =
         TimeDuration.tryCreate dto.StartedAt dto.EndedAt
         |> Result.map (fun duration ->
@@ -29,3 +35,21 @@ module RestRecordSaveRequestDto =
         |> List.map tryToDomain
         |> List.sequenceResultA
         |> Result.mapError (String.concat "; ")
+
+module WorkRecordSaveRequestDto =
+    let empty: WorkRecordSaveRequestDto =
+        { Id = None
+          StartedAt = DateTime.MinValue
+          EndedAt = None
+          RestRecords = [] }
+
+    let fromResponse (dto: WorkRecordDetailsDto) : WorkRecordSaveRequestDto =
+        { Id = Some dto.Id
+          StartedAt = dto.WorkTimeDuration.StartedAt
+          EndedAt = dto.WorkTimeDuration.EndedAt
+          RestRecords =
+            dto.RestTimes
+            |> List.map (fun rt ->
+                { Id = Some rt.Id
+                  StartedAt = rt.Duration.StartedAt
+                  EndedAt = rt.Duration.EndedAt }) }

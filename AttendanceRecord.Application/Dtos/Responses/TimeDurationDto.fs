@@ -9,6 +9,11 @@ type TimeDurationDto =
       Duration: TimeSpan }
 
 module TimeDurationDto =
+    let empty: TimeDurationDto =
+        { StartedAt = DateTime.MinValue
+          EndedAt = None
+          Duration = TimeSpan.Zero }
+
     let fromDomain (now: DateTime) (timeDuration: TimeDuration) : TimeDurationDto =
         { StartedAt = timeDuration |> TimeDuration.getStartedAt
           EndedAt = timeDuration |> TimeDuration.getEndedAt

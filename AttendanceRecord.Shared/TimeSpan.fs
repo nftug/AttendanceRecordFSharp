@@ -9,4 +9,4 @@ module TimeSpan =
         if duration < TimeSpan.Zero then
             $"-{duration.ToString format}"
         else
-            duration.ToString format
+            $"{duration.ToString format}"

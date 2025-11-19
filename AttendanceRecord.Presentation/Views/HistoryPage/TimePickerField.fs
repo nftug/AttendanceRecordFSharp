@@ -1,0 +1,43 @@
+namespace AttendanceRecord.Presentation.Views.HistoryPage
+
+open System
+open R3
+open NXUI.Extensions
+open type NXUI.Builders
+open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Shared
+
+type TimePickerFieldProps =
+    { Label: string
+      DateValue: DateTime
+      SelectedDateTime: ReactiveProperty<DateTime option>
+      IsDirty: ReactiveProperty<bool> }
+
+module TimePickerField =
+    let create (props: TimePickerFieldProps) =
+        withReactive (fun disposables _ ->
+            let handleTimeChange (timeOpt: TimeSpan option) =
+                props.SelectedDateTime.Value <-
+                    match timeOpt with
+                    | Some time -> Some(props.DateValue.Date + time)
+                    | _ -> None
+
+                props.IsDirty.Value <- true
+
+            StackPanel()
+                .Spacing(5.0)
+                .Children(
+                    TextBlock().Text(props.Label).FontSize(12.0),
+                    TimePicker()
+                        .SelectedTime(
+                            props.SelectedDateTime
+                            |> R3.map (fun dt -> dt |> Option.map (fun d -> d.TimeOfDay))
+                            |> R3.map (fun tOpt -> tOpt |> Option.toNullable)
+                            |> asBinding
+                        )
+                        .OnSelectedTimeChanged(fun ctl e ->
+                            e.Subscribe(fun _ ->
+                                handleTimeChange (ctl.SelectedTime |> Option.ofNullable))
+                            |> disposables.Add)
+                        .Width(150.0)
+                ))

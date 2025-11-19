@@ -2,7 +2,6 @@ namespace AttendanceRecord.Presentation.Utils
 
 open System
 open System.Reflection
-open Microsoft.Extensions.FileProviders
 
 module EmbeddedResourceProvider =
     let private detectResourceNamespace (assembly: Assembly) (rootPath: string) =
@@ -22,9 +21,11 @@ module EmbeddedResourceProvider =
     let getFileStream (filePath: string) =
         let assembly = Assembly.GetExecutingAssembly()
         let filePath = filePath.Replace('\\', '/')
-        let rootPath = "/" + (filePath.Split '/' |> Array.head)
+        let rootPath = filePath.Split '/' |> Array.head
 
         let resourceNamespace = detectResourceNamespace assembly rootPath
-        let provider = new EmbeddedFileProvider(assembly, resourceNamespace)
+        let fullResourceName = resourceNamespace + "." + filePath.Replace('/', '.')
 
-        provider.GetFileInfo(filePath.Replace('/', '.')).CreateReadStream()
+        match assembly.GetManifestResourceStream fullResourceName |> Option.ofObj with
+        | Some s -> s
+        | None -> invalidOp $"Embedded resource '{fullResourceName}' not found."

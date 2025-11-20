@@ -13,7 +13,7 @@ type WorkRecordListViewProps =
 [<AutoOpen>]
 module private WorkRecordListViewLogic =
     let handleDateSelect
-        (hooks: HistoryPageHooks)
+        (ctx: HistoryPageContext)
         (props: WorkRecordListViewProps)
         (disposables: CompositeDisposable)
         (date: DateTime option)
@@ -23,7 +23,7 @@ module private WorkRecordListViewLogic =
                 let! shouldProceed = props.OnConfirmDiscard ct
 
                 if shouldProceed then
-                    hooks.CurrentDate.Value <- date
+                    ctx.CurrentDate.Value <- date
             })
         |> ignore
 
@@ -36,9 +36,7 @@ module WorkRecordListView =
     let create (props: WorkRecordListViewProps) : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
-            let hooks = useHistoryPageHooks ctx disposables
-
-            let dateItems = hooks.MonthlyRecords |> R3.map (fun records -> records.WorkRecords)
+            let dateItems = ctx.MonthlyRecords |> R3.map (fun records -> records.WorkRecords)
 
             Border()
                 .BorderThickness(1.0)
@@ -53,7 +51,7 @@ module WorkRecordListView =
                                     .MinWidth(200.0)
                                     .HorizontalAlignmentStretch()
                                     .SelectedItem(
-                                        hooks.CurrentDate
+                                        ctx.CurrentDate
                                         |> R3.map (fun dateOpt ->
                                             match dateOpt with
                                             | Some date ->
@@ -70,7 +68,7 @@ module WorkRecordListView =
                                             | :? WorkRecordListItemDto as item -> Some item.Date
                                             | _ -> None
 
-                                        handleDateSelect hooks props disposables date)
+                                        handleDateSelect ctx props disposables date)
                                     .ItemsSource(items)
                                     .ItemTemplate(fun (item: WorkRecordListItemDto) ->
                                         StackPanel()

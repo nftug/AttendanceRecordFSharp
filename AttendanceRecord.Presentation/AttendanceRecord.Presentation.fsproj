@@ -53,7 +53,6 @@
 
     <Compile Include="Views/HistoryPage/HistoryPageContextProvider.fs" />
     <Compile Include="Views/HistoryPage/TimePickerField.fs" />
-    <Compile Include="Views/HistoryPage/HistoryPageHooks.fs" />
     <Compile Include="Views/HistoryPage/HistoryToolbar.fs" />
     <Compile Include="Views/HistoryPage/WorkRecordListView.fs" />
     <Compile Include="Views/HistoryPage/WorkTimeSection.fs" />

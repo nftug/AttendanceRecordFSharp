@@ -1,6 +1,5 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage
 
-open System
 open Avalonia.Media
 open Material.Icons
 open AttendanceRecord.Application.Dtos.Responses
@@ -14,15 +13,16 @@ module RestTimeSection =
     let private createRestTimesContent
         (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>)
         (isFormDirty: R3.ReactiveProperty<bool>)
-        (disposables: R3.CompositeDisposable)
         =
         editingRecord
-        |> toView (fun recordOpt ->
+        |> toViewWithReactive (fun recordOpt disposables self ->
             match recordOpt with
             | None -> Panel()
             | Some record when record.RestTimes.IsEmpty ->
                 TextBlock().Text("休憩記録がありません。").FontSize(14.0).Foreground(Brushes.Gray)
             | Some record ->
+                let ctx, _ = HistoryPageContextProvider.require self
+
                 let restItems =
                     record.RestTimes
                     |> List.map (fun rest ->
@@ -96,12 +96,12 @@ module RestTimeSection =
                             .Children(
                                 TimePickerField.create
                                     { Label = "開始時間"
-                                      DateValue = defaultArg startedAt.Value DateTime.MinValue
+                                      BaseDate = ctx.CurrentDate
                                       SelectedDateTime = startedAt
                                       IsDirty = isFormDirty },
                                 TimePickerField.create
                                     { Label = "終了時間"
-                                      DateValue = defaultArg endedAt.Value DateTime.MinValue
+                                      BaseDate = ctx.CurrentDate
                                       SelectedDateTime = endedAt
                                       IsDirty = isFormDirty },
                                 Button()
@@ -119,45 +119,38 @@ module RestTimeSection =
         (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>)
         (isFormDirty: R3.ReactiveProperty<bool>)
         =
-        withReactive (fun disposables _ ->
-            let handleAddRestTime () =
-                match editingRecord.Value with
-                | Some r ->
-                    let updated =
-                        { r with
-                            RestTimes = r.RestTimes @ [ RestRecordDetailsDto.empty ] }
+        let handleAddRestTime () =
+            match editingRecord.Value with
+            | Some r ->
+                let updated =
+                    { r with
+                        RestTimes = r.RestTimes @ [ RestRecordDetailsDto.empty ] }
 
-                    editingRecord.Value <- Some updated
-                    isFormDirty.Value <- true
-                | None -> ()
+                editingRecord.Value <- Some updated
+                isFormDirty.Value <- true
+            | None -> ()
 
-            Border()
-                .BorderThickness(1.0)
-                .BorderBrush(Brushes.Gray)
-                .Padding(15.0)
-                .Child(
-                    StackPanel()
-                        .Spacing(15.0)
-                        .Children(
-                            Grid()
-                                .ColumnDefinitions("Auto,*,Auto")
-                                .Children(
-                                    TextBlock()
-                                        .Text("休憩")
-                                        .FontSize(18.0)
-                                        .FontWeightBold()
-                                        .Column(0),
-                                    Button()
-                                        .Content("+ 追加")
-                                        .OnClickHandler(fun _ _ -> handleAddRestTime ())
-                                        .Column(2)
-                                ),
-                            Border()
-                                .BorderThickness(1.0)
-                                .BorderBrush(Brushes.LightGray)
-                                .Padding(10.0)
-                                .Child(
-                                    createRestTimesContent editingRecord isFormDirty disposables
-                                )
-                        )
-                ))
+        Border()
+            .BorderThickness(1.0)
+            .BorderBrush(Brushes.Gray)
+            .Padding(15.0)
+            .Child(
+                StackPanel()
+                    .Spacing(15.0)
+                    .Children(
+                        Grid()
+                            .ColumnDefinitions("Auto,*,Auto")
+                            .Children(
+                                TextBlock().Text("休憩").FontSize(18.0).FontWeightBold().Column(0),
+                                Button()
+                                    .Content("+ 追加")
+                                    .OnClickHandler(fun _ _ -> handleAddRestTime ())
+                                    .Column(2)
+                            ),
+                        Border()
+                            .BorderThickness(1.0)
+                            .BorderBrush(Brushes.LightGray)
+                            .Padding(10.0)
+                            .Child(createRestTimesContent editingRecord isFormDirty)
+                    )
+            )

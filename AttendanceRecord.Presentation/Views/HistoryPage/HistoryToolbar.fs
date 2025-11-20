@@ -13,7 +13,7 @@ type HistoryToolbarProps =
 [<AutoOpen>]
 module private HistoryToolbarLogic =
     let handleNavigateMonth
-        (hooks: HistoryPageHooks)
+        (ctx: HistoryPageContext)
         (props: HistoryToolbarProps)
         (disposables: CompositeDisposable)
         (delta: int)
@@ -23,12 +23,13 @@ module private HistoryToolbarLogic =
                 let! shouldProceed = props.OnConfirmDiscard ct
 
                 if shouldProceed then
-                    hooks.CurrentMonth.Value <- hooks.CurrentMonth.CurrentValue.AddMonths delta
+                    ctx.CurrentMonth.Value <- ctx.CurrentMonth.CurrentValue.AddMonths delta
+                    ctx.CurrentDate.Value <- None
             })
         |> ignore
 
     let handleJumpToToday
-        (hooks: HistoryPageHooks)
+        (ctx: HistoryPageContext)
         (props: HistoryToolbarProps)
         (disposables: CompositeDisposable)
         ()
@@ -39,13 +40,13 @@ module private HistoryToolbarLogic =
 
                 if shouldProceed then
                     let today = DateTime.Now.Date
-                    hooks.CurrentMonth.Value <- DateTime(today.Year, today.Month, 1)
-                    hooks.CurrentDate.Value <- Some today
+                    ctx.CurrentMonth.Value <- DateTime(today.Year, today.Month, 1)
+                    ctx.CurrentDate.Value <- Some today
             })
         |> ignore
 
     let handleShowDatePicker
-        (hooks: HistoryPageHooks)
+        (ctx: HistoryPageContext)
         (props: HistoryToolbarProps)
         (disposables: CompositeDisposable)
         ()
@@ -57,12 +58,13 @@ module private HistoryToolbarLogic =
                 if shouldProceed then
                     let! result =
                         DatePickerDialog.show
-                            { InitialDate = hooks.CurrentDate.CurrentValue }
+                            { InitialDate = ctx.CurrentDate.CurrentValue }
                             (Some ct)
 
                     match result with
-                    | Some date when result <> hooks.CurrentDate.CurrentValue ->
-                        hooks.CurrentDate.Value <- Some date
+                    | Some date when result <> ctx.CurrentDate.CurrentValue ->
+                        ctx.CurrentDate.Value <- Some date
+                        ctx.CurrentMonth.Value <- DateTime(date.Year, date.Month, 1)
                     | _ -> ()
             })
         |> ignore
@@ -77,9 +79,7 @@ module HistoryToolbar =
     let create (props: HistoryToolbarProps) : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
-            let hooks = useHistoryPageHooks ctx disposables
-
-            let monthText = hooks.CurrentMonth |> R3.map (fun d -> d.ToString("yyyy年 MM月"))
+            let monthText = ctx.CurrentMonth |> R3.map (fun d -> d.ToString "yyyy年 MM月")
 
             Grid()
                 .ColumnDefinitions("Auto,*,Auto")
@@ -94,7 +94,7 @@ module HistoryToolbar =
                             Button()
                                 .Content(MaterialIcon.create MaterialIconKind.NavigateBefore)
                                 .OnClickHandler(fun _ _ ->
-                                    handleNavigateMonth hooks props disposables -1)
+                                    handleNavigateMonth ctx props disposables -1)
                                 .Width(50.0)
                                 .Height(50.0)
                                 .FontSize(18.0)
@@ -103,7 +103,7 @@ module HistoryToolbar =
                             Button()
                                 .Content(MaterialIcon.create MaterialIconKind.NavigateNext)
                                 .OnClickHandler(fun _ _ ->
-                                    handleNavigateMonth hooks props disposables 1)
+                                    handleNavigateMonth ctx props disposables 1)
                                 .Width(50.0)
                                 .Height(50.0)
                                 .FontSize(18.0)
@@ -112,7 +112,7 @@ module HistoryToolbar =
                             Button()
                                 .Content(MaterialIcon.create MaterialIconKind.Home)
                                 .OnClickHandler(fun _ _ ->
-                                    handleJumpToToday hooks props disposables ())
+                                    handleJumpToToday ctx props disposables ())
                                 .Width(50.0)
                                 .Height(50.0)
                                 .FontSize(18.0)
@@ -121,7 +121,7 @@ module HistoryToolbar =
                             Button()
                                 .Content(MaterialIcon.create MaterialIconKind.CalendarToday)
                                 .OnClickHandler(fun _ _ ->
-                                    handleShowDatePicker hooks props disposables ())
+                                    handleShowDatePicker ctx props disposables ())
                                 .Width(50.0)
                                 .Height(50.0)
                                 .FontSize(18.0)

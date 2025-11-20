@@ -14,9 +14,10 @@ module WorkTimeSection =
         (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>)
         (isFormDirty: R3.ReactiveProperty<bool>)
         =
-        withReactive (fun disposables _ ->
+        withReactive (fun disposables self ->
             let startedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
             let endedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
+            let ctx, _ = HistoryPageContextProvider.require self
 
             editingRecord
             |> R3.subscribe (fun rOpt ->
@@ -57,12 +58,12 @@ module WorkTimeSection =
                                 .Children(
                                     TimePickerField.create
                                         { Label = "出勤時間"
-                                          DateValue = defaultArg startedAt.Value DateTime.MinValue
+                                          BaseDate = ctx.CurrentDate
                                           SelectedDateTime = startedAt
                                           IsDirty = isFormDirty },
                                     TimePickerField.create
                                         { Label = "退勤時間"
-                                          DateValue = defaultArg endedAt.Value DateTime.MinValue
+                                          BaseDate = ctx.CurrentDate
                                           SelectedDateTime = endedAt
                                           IsDirty = isFormDirty }
                                 )

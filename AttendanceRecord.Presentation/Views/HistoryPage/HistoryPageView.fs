@@ -123,8 +123,7 @@ module HistoryPageView =
 
             // Load selected record when date changes
             selectedDate
-            |> R3.combineLatest2 monthlyRecords (fun dateOpt monthlyRecords ->
-                dateOpt, monthlyRecords)
+            |> R3.combineLatest2 monthlyRecords (fun d m -> d, m)
             |> R3.subscribe (fun (dateOpt, monthlyRecordsValue) ->
                 loadSelectedRecord props monthlyRecordsValue selectedRecord disposables dateOpt)
             |> disposables.Add

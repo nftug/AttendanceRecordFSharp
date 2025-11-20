@@ -25,9 +25,9 @@ module private WorkRecordEditViewLogic =
         ()
         : unit =
         invokeTask disposables (fun ct ->
-            match editingRecord.Value with
-            | Some r ->
-                task {
+            task {
+                match editingRecord.Value with
+                | Some r ->
                     let request: WorkRecordSaveRequestDto =
                         { Id = if r.Id = Guid.Empty then None else Some r.Id
                           StartedAt = r.WorkTimeDuration.StartedAt
@@ -47,21 +47,21 @@ module private WorkRecordEditViewLogic =
                         props.IsDirty.Value <- false
                     | Error e ->
                         Notification.show "保存エラー" $"勤務記録の保存に失敗しました: {e}" NotificationType.Error
-                }
-            | None -> Task.FromResult(()))
+                | None -> ()
+            })
         |> ignore
 
     let handleDelete
         (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>)
         (props: WorkRecordEditViewProps)
-        (hooks: HistoryPageHooks)
+        (ctx: HistoryPageContext)
         (disposables: R3.CompositeDisposable)
         ()
         : unit =
         invokeTask disposables (fun ct ->
-            match editingRecord.Value with
-            | Some r when r.Id <> Guid.Empty ->
-                task {
+            task {
+                match editingRecord.Value with
+                | Some r when r.Id <> Guid.Empty ->
                     let! shouldDelete =
                         MessageBox.show
                             { Title = "削除の確認"
@@ -78,11 +78,11 @@ module private WorkRecordEditViewLogic =
                         | Ok _ ->
                             Notification.show "削除完了" "勤務記録を削除しました。" NotificationType.Information
                             props.IsDirty.Value <- false
-                            hooks.CurrentDate.Value <- None
+                            ctx.CurrentDate.Value <- None
                         | Error e ->
                             Notification.show "削除エラー" $"勤務記録の削除に失敗しました: {e}" NotificationType.Error
-                }
-            | _ -> Task.FromResult(()))
+                | _ -> ()
+            })
         |> ignore
 
 module WorkRecordEditView =
@@ -115,12 +115,10 @@ module WorkRecordEditView =
 
     let private createRecordView
         (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>)
-        (hooks: HistoryPageHooks)
         (props: WorkRecordEditViewProps)
-        (disposables: R3.CompositeDisposable)
         =
         editingRecord
-        |> toView (fun record ->
+        |> toViewWithReactive (fun record disposables self ->
             match record with
             | None ->
                 TextBlock()
@@ -129,6 +127,8 @@ module WorkRecordEditView =
                     .HorizontalAlignmentCenter()
                     .VerticalAlignmentCenter()
             | Some record ->
+                let ctx, _ = HistoryPageContextProvider.require self
+
                 let actionButtons =
                     StackPanel()
                         .OrientationHorizontal()
@@ -144,7 +144,7 @@ module WorkRecordEditView =
                             Button()
                                 .Content("削除")
                                 .OnClickHandler(fun _ _ ->
-                                    handleDelete editingRecord props hooks disposables ())
+                                    handleDelete editingRecord props ctx disposables ())
                                 .Width(100.0)
                                 .Height(35.0)
                                 .IsEnabled(record.Id <> Guid.Empty)
@@ -177,16 +177,15 @@ module WorkRecordEditView =
     let create (props: WorkRecordEditViewProps) : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
-            let hooks = useHistoryPageHooks ctx disposables
 
             let editingRecord =
                 R3.property (None: WorkRecordDetailsDto option) |> R3.disposeWith disposables
 
             // Sync editingRecord with selectedRecord
-            hooks.SelectedRecord
+            ctx.SelectedRecord
             |> R3.subscribe (fun record ->
                 editingRecord.Value <- record
                 props.IsDirty.Value <- false)
             |> disposables.Add
 
-            createRecordView editingRecord hooks props disposables)
+            createRecordView editingRecord props)

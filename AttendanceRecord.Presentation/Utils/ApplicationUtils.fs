@@ -81,3 +81,9 @@ module ApplicationUtils =
         container.DetachedFromVisualTree.Add(fun _ -> subscription.Dispose())
 
         container
+
+    let toViewWithReactive
+        (render: 'a -> CompositeDisposable -> Control -> Control)
+        (source: Observable<'a>)
+        : Control =
+        withReactive (fun disposables self -> source |> toView (fun v -> render v disposables self))

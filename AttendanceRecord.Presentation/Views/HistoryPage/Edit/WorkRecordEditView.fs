@@ -1,8 +1,6 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
-open System
 open Avalonia.Controls.Notifications
-open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
@@ -18,39 +16,33 @@ type WorkRecordEditViewProps =
 [<AutoOpen>]
 module private WorkRecordEditViewLogic =
     let handleSave
-        (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>)
         (props: WorkRecordEditViewProps)
         (ctx: HistoryPageContext)
         (disposables: R3.CompositeDisposable)
-        ()
         : unit =
         invokeTask disposables (fun ct ->
             task {
-                match editingRecord.Value with
-                | Some r ->
-
-                    let request: WorkRecordSaveRequestDto =
-                        { Id = if r.Id = Guid.Empty then None else Some r.Id
-                          StartedAt = r.WorkTimeDuration.StartedAt
-                          EndedAt = r.WorkTimeDuration.EndedAt
-                          RestRecords =
-                            r.RestTimes
-                            |> List.map (fun rt ->
-                                { Id = if rt.Id = Guid.Empty then None else Some rt.Id
-                                  StartedAt = rt.Duration.StartedAt
-                                  EndedAt = rt.Duration.EndedAt }) }
-
+                match ctx.Form.Value with
+                | Some request ->
                     let! result = props.SaveWorkRecord.Handle request ct
 
                     match result with
-                    | Ok _ ->
+                    | Ok() ->
                         Notification.show "保存完了" "勤務記録を保存しました。" NotificationType.Information
                         ctx.IsFormDirty.Value <- false
 
-                        // Reload the saved record details
-                        match! props.GetWorkRecordDetails.Handle r.Id ct with
-                        | Ok(Some updatedRecord) -> editingRecord.Value <- Some updatedRecord
-                        | _ -> ()
+                        // Reload the saved record details if we have an ID
+                        match request.Id with
+                        | Some id ->
+                            match! props.GetWorkRecordDetails.Handle id ct with
+                            | Ok(Some updatedDetails) ->
+                                ctx.Form.Value <-
+                                    Some(WorkRecordSaveRequestDto.fromResponse updatedDetails)
+
+                                ctx.CurrentStatus.Value <-
+                                    Some(WorkRecordStatus.fromDetails updatedDetails)
+                            | _ -> ()
+                        | None -> ()
 
                     | Error e ->
                         Notification.show "保存エラー" $"勤務記録の保存に失敗しました: {e}" NotificationType.Error
@@ -59,16 +51,14 @@ module private WorkRecordEditViewLogic =
         |> ignore
 
     let handleDelete
-        (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>)
         (props: WorkRecordEditViewProps)
         (ctx: HistoryPageContext)
         (disposables: R3.CompositeDisposable)
-        ()
         : unit =
         invokeTask disposables (fun ct ->
             task {
-                match editingRecord.Value with
-                | Some r when r.Id <> Guid.Empty ->
+                match ctx.Form.Value with
+                | Some r when r.Id.IsSome ->
                     let! shouldDelete =
                         MessageBox.show
                             { Title = "削除の確認"
@@ -79,7 +69,7 @@ module private WorkRecordEditViewLogic =
                             (Some ct)
 
                     if shouldDelete then
-                        let! result = props.DeleteWorkRecord.Handle r.Id ct
+                        let! result = props.DeleteWorkRecord.Handle r.Id.Value ct
 
                         match result with
                         | Ok _ ->
@@ -95,33 +85,9 @@ module private WorkRecordEditViewLogic =
 module WorkRecordEditView =
     open NXUI.Extensions
     open type NXUI.Builders
-    open Avalonia.Media
-
-    let private createSummaryInfoRow (label: string) (value: string) =
-        StackPanel()
-            .OrientationHorizontal()
-            .Children(
-                Label().Content(label).FontSize(14.0).FontWeightBold().Width(120.0),
-                Label().Content(value).FontSize(14.0).VerticalAlignmentCenter()
-            )
-
-    let private createSummarySection (record: WorkRecordDetailsDto) =
-        Border()
-            .BorderThickness(1.0)
-            .BorderBrush(Brushes.Gray)
-            .Padding(15.0)
-            .Child(
-                StackPanel()
-                    .Spacing(8.0)
-                    .Children(
-                        createSummaryInfoRow "勤務時間: " (TimeSpan.formatDuration record.WorkTime),
-                        createSummaryInfoRow "休憩時間: " (TimeSpan.formatDuration record.RestTime),
-                        createSummaryInfoRow "残業時間: " (TimeSpan.formatDuration record.Overtime)
-                    )
-            )
 
     let private createRecordView
-        (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>)
+        (editingRecord: R3.ReactiveProperty<WorkRecordSaveRequestDto option>)
         (props: WorkRecordEditViewProps)
         =
         editingRecord
@@ -144,17 +110,15 @@ module WorkRecordEditView =
                         .Children(
                             Button()
                                 .Content("保存")
-                                .OnClickHandler(fun _ _ ->
-                                    handleSave editingRecord props ctx disposables ())
+                                .OnClickHandler(fun _ _ -> handleSave props ctx disposables)
                                 .Width(100.0)
                                 .Height(35.0),
                             Button()
                                 .Content("削除")
-                                .OnClickHandler(fun _ _ ->
-                                    handleDelete editingRecord props ctx disposables ())
+                                .OnClickHandler(fun _ _ -> handleDelete props ctx disposables)
                                 .Width(100.0)
                                 .Height(35.0)
-                                .IsEnabled(record.Id <> Guid.Empty)
+                                .IsEnabled(record.Id.IsSome)
                         )
 
                 DockPanel()
@@ -171,12 +135,12 @@ module WorkRecordEditView =
                                     .Spacing(20.0)
                                     .Children(
                                         TextBlock()
-                                            .Text(record.Date.ToString "yyyy/MM/dd")
+                                            .Text(record.StartedAt.ToString "yyyy/MM/dd")
                                             .FontSize(24.0)
                                             .FontWeightBold(),
-                                        createSummarySection record,
-                                        WorkTimeSection.create editingRecord,
-                                        RestTimeSection.create editingRecord
+                                        WorkStatusSummarySection.createSummarySection (),
+                                        WorkTimeSection.create (),
+                                        RestTimeSection.create ()
                                     )
                             )
                     ))
@@ -186,10 +150,11 @@ module WorkRecordEditView =
             let ctx, _ = HistoryPageContextProvider.require self
 
             let editingRecord =
-                R3.property (None: WorkRecordDetailsDto option) |> R3.disposeWith disposables
+                R3.property (None: WorkRecordSaveRequestDto option)
+                |> R3.disposeWith disposables
 
             // Sync editingRecord with selectedRecord
-            ctx.SelectedRecord
+            ctx.Form
             |> R3.subscribe (fun record ->
                 editingRecord.Value <- record
                 ctx.IsFormDirty.Value <- false)

@@ -10,6 +10,7 @@ open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Presentation.Views.HistoryPage.Edit
 open AttendanceRecord.Presentation.Views.HistoryPage.Navigation
 open AttendanceRecord.Application.Dtos.Responses
+open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Application.UseCases.WorkRecords
 
 type HistoryPageProps =
@@ -36,42 +37,33 @@ module private HistoryPageLogic =
 
     let loadSelectedRecord
         (props: HistoryPageProps)
-        (monthlyRecordsValue: WorkRecordListDto)
-        (selectedRecord: ReactiveProperty<WorkRecordDetailsDto option>)
+        (ctx: HistoryPageContext)
         (disposables: CompositeDisposable)
-        (dateOpt: DateTime option)
         : unit =
         invokeTask disposables (fun ct ->
             task {
-                match dateOpt with
-                | None -> selectedRecord.Value <- None
+                match ctx.CurrentDate.CurrentValue with
+                | None ->
+                    ctx.CurrentStatus.Value <- None
+                    ctx.Form.Value <- None
                 | Some date ->
                     let matchingRecord =
-                        monthlyRecordsValue.WorkRecords
+                        ctx.MonthlyRecords.CurrentValue.WorkRecords
                         |> List.tryFind (fun r -> r.Date.Date = date.Date)
 
                     match matchingRecord with
                     | Some record ->
                         match! props.GetWorkRecordDetails.Handle record.Id ct with
-                        | Ok(Some details) -> selectedRecord.Value <- Some details
-                        | _ -> selectedRecord.Value <- None
+                        | Ok(Some details) ->
+                            ctx.CurrentStatus.Value <- Some(WorkRecordStatus.fromDetails details)
+                            ctx.Form.Value <- Some(WorkRecordSaveRequestDto.fromResponse details)
+                        | _ ->
+                            ctx.CurrentStatus.Value <- None
+                            ctx.Form.Value <- None
                     | None ->
                         // 新規作成用の空レコード
-                        selectedRecord.Value <-
-                            Some
-                                { Id = Guid.Empty
-                                  Date = date
-                                  WorkTimeDuration =
-                                    { StartedAt = date
-                                      EndedAt = None
-                                      Duration = TimeSpan.Zero }
-                                  RestTimes = []
-                                  WorkTime = TimeSpan.Zero
-                                  RestTime = TimeSpan.Zero
-                                  Overtime = TimeSpan.Zero
-                                  IsActive = false
-                                  IsWorking = false
-                                  IsResting = false }
+                        ctx.CurrentStatus.Value <- None
+                        ctx.Form.Value <- Some(WorkRecordSaveRequestDto.empty date)
             })
         |> ignore
 
@@ -113,10 +105,22 @@ module HistoryPageView =
             let monthlyRecords =
                 R3.property (WorkRecordListDto.empty now) |> R3.disposeWith disposables
 
-            let selectedRecord =
-                R3.property (None: WorkRecordDetailsDto option) |> R3.disposeWith disposables
+            let form =
+                R3.property (None: WorkRecordSaveRequestDto option)
+                |> R3.disposeWith disposables
+
+            let currentStatus =
+                R3.property (None: WorkRecordStatus option) |> R3.disposeWith disposables
 
             let isFormDirty = R3.property false |> R3.disposeWith disposables
+
+            let ctx: HistoryPageContext =
+                { CurrentMonth = currentMonth
+                  CurrentDate = selectedDate
+                  IsFormDirty = isFormDirty
+                  MonthlyRecords = monthlyRecords
+                  Form = form
+                  CurrentStatus = currentStatus }
 
             // Load monthly records when month changes
             currentMonth
@@ -125,17 +129,9 @@ module HistoryPageView =
 
             // Load selected record when date changes
             selectedDate
-            |> R3.combineLatest2 monthlyRecords (fun d m -> d, m)
-            |> R3.subscribe (fun (dateOpt, monthlyRecordsValue) ->
-                loadSelectedRecord props monthlyRecordsValue selectedRecord disposables dateOpt)
+            |> R3.combineLatest2 monthlyRecords (fun _ _ -> ())
+            |> R3.subscribe (fun _ -> loadSelectedRecord props ctx disposables)
             |> disposables.Add
-
-            let context: HistoryPageContext =
-                { CurrentMonth = currentMonth
-                  CurrentDate = selectedDate
-                  IsFormDirty = isFormDirty
-                  MonthlyRecords = monthlyRecords
-                  SelectedRecord = selectedRecord }
 
             let toolbarProps: HistoryToolbarProps =
                 { OnConfirmDiscard = confirmDiscard isFormDirty }
@@ -149,7 +145,7 @@ module HistoryPageView =
                   GetWorkRecordDetails = props.GetWorkRecordDetails }
 
             HistoryPageContextProvider.provide
-                context
+                ctx
                 (DockPanel()
                     .LastChildFill(true)
                     .Children(

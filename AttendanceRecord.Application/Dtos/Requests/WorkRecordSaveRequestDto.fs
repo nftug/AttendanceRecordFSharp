@@ -18,9 +18,9 @@ type WorkRecordSaveRequestDto =
       RestRecords: RestRecordSaveRequestDto list }
 
 module RestRecordSaveRequestDto =
-    let empty: RestRecordSaveRequestDto =
+    let empty (baseDate: DateTime) : RestRecordSaveRequestDto =
         { Id = None
-          StartedAt = DateTime.MinValue
+          StartedAt = baseDate.Date
           EndedAt = None }
 
     let tryToDomain (dto: RestRecordSaveRequestDto) : Result<RestRecord, string> =
@@ -37,9 +37,9 @@ module RestRecordSaveRequestDto =
         |> Result.mapError (String.concat "; ")
 
 module WorkRecordSaveRequestDto =
-    let empty: WorkRecordSaveRequestDto =
+    let empty (baseDate: DateTime) : WorkRecordSaveRequestDto =
         { Id = None
-          StartedAt = DateTime.MinValue
+          StartedAt = baseDate.Date
           EndedAt = None
           RestRecords = [] }
 

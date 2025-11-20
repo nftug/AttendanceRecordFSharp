@@ -4,7 +4,7 @@ open R3
 open System
 open Avalonia.Media
 open Material.Icons
-open AttendanceRecord.Application.Dtos.Responses
+open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
@@ -15,8 +15,8 @@ module RestTimeSection =
     open type NXUI.Builders
 
     let private createRestItemView
-        (onDelete: Guid -> unit)
-        (item: ReactiveProperty<RestRecordDetailsDto>)
+        (onDelete: Guid option -> unit)
+        (item: ReactiveProperty<RestRecordSaveRequestDto>)
         : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
             let startedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
@@ -25,20 +25,20 @@ module RestTimeSection =
 
             item
             |> R3.subscribe (fun r ->
-                startedAt.Value <- Some r.Duration.StartedAt
-                endedAt.Value <- r.Duration.EndedAt)
+                startedAt.Value <- Some r.StartedAt
+                endedAt.Value <- r.EndedAt)
             |> disposables.Add
 
             startedAt
             |> R3.combineLatest2 endedAt (fun sa ea -> sa, ea)
             |> R3.skip 1
             |> R3.subscribe (fun (s, e) ->
-                let s = defaultArg s item.Value.Duration.StartedAt
+                let s = defaultArg s item.Value.StartedAt
 
                 item.Value <-
                     { item.Value with
-                        Duration.StartedAt = s
-                        Duration.EndedAt = e })
+                        StartedAt = s
+                        EndedAt = e })
             |> disposables.Add
 
             StackPanel()
@@ -65,69 +65,73 @@ module RestTimeSection =
                         .BorderBrush(Brushes.Transparent)
                 ))
 
-    let private createRestTimesContent
-        (editingRecord: ReactiveProperty<WorkRecordDetailsDto option>)
-        =
-        editingRecord
-        |> toViewWithReactive (fun recordOpt disposables self ->
-            match recordOpt with
-            | None -> Panel()
-            | Some record when record.RestTimes.IsEmpty ->
-                TextBlock().Text("休憩記録がありません。").FontSize(14.0).Foreground(Brushes.Gray)
-            | Some _ ->
-                let restItems = R3.collection ([]: ReactiveProperty<RestRecordDetailsDto> list)
+    let private createRestTimesContent () =
+        withReactive (fun disposables self ->
+            let ctx, _ = HistoryPageContextProvider.require self
 
-                editingRecord
-                |> R3.subscribe (fun rOpt ->
-                    match rOpt with
-                    | Some r ->
-                        restItems.Clear()
+            ctx.Form
+            |> toView (fun recordOpt ->
+                match recordOpt with
+                | None -> Panel()
+                | Some record when record.RestRecords.IsEmpty ->
+                    TextBlock().Text("休憩記録がありません。").FontSize(14.0).Foreground(Brushes.Gray)
+                | Some _ ->
+                    let restItems =
+                        R3.collection ([]: ReactiveProperty<RestRecordSaveRequestDto> list)
 
-                        r.RestTimes
-                        |> List.map (fun rt -> R3.property rt |> R3.disposeWith disposables)
-                        |> List.iter restItems.Add
-                    | None -> ())
-                |> disposables.Add
+                    ctx.Form
+                    |> R3.subscribe (fun rOpt ->
+                        match rOpt with
+                        | Some r ->
+                            restItems.Clear()
 
-                restItems
-                |> R3.mapFromCollectionChanged (fun _ -> ()) ()
-                |> R3.subscribe (fun _ ->
-                    match editingRecord.Value with
-                    | Some r ->
-                        let updatedRestTimes =
-                            restItems |> Seq.map (fun rp -> rp.Value) |> Seq.toList
+                            r.RestRecords
+                            |> List.map (fun rt -> R3.property rt |> R3.disposeWith disposables)
+                            |> List.iter restItems.Add
+                        | None -> ())
+                    |> disposables.Add
 
-                        editingRecord.Value <- Some { r with RestTimes = updatedRestTimes }
-                    | None -> ())
-                |> disposables.Add
+                    restItems
+                    |> R3.mapFromCollectionChanged (fun _ -> ()) ()
+                    |> R3.subscribe (fun _ ->
+                        match ctx.Form.Value with
+                        | Some r ->
+                            let updated = restItems |> Seq.map (fun rp -> rp.Value) |> Seq.toList
 
-                let onDelete (id: Guid) =
-                    let toRemove = restItems |> Seq.tryFind (fun rp -> rp.Value.Id = id)
+                            ctx.Form.Value <- Some { r with RestRecords = updated }
+                        | None -> ())
+                    |> disposables.Add
 
-                    match toRemove with
-                    | Some rp -> restItems.Remove rp |> ignore
-                    | None -> ()
+                    let onDelete (id: Guid option) =
+                        let toRemove = restItems |> Seq.tryFind (fun rp -> rp.Value.Id = id)
 
-                StackPanel()
-                    .Spacing(5.0)
-                    .Children(
-                        ItemsControl()
-                            .ItemsSource(restItems)
-                            .ItemTemplate(createRestItemView onDelete)
-                    ))
+                        match toRemove with
+                        | Some rp -> restItems.Remove rp |> ignore
+                        | None -> ()
 
-    let create (editingRecord: ReactiveProperty<WorkRecordDetailsDto option>) =
+                    StackPanel()
+                        .Spacing(5.0)
+                        .Children(
+                            ItemsControl()
+                                .ItemsSource(restItems)
+                                .ItemTemplate(createRestItemView onDelete)
+                        )))
+
+    let create () =
         withReactive (fun _ self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
             let handleAddRestTime () =
-                match editingRecord.Value with
+                match ctx.Form.Value with
                 | Some r ->
+                    let baseDate = r.StartedAt.Date
+
                     let updated =
                         { r with
-                            RestTimes = r.RestTimes @ [ RestRecordDetailsDto.empty ] }
+                            RestRecords =
+                                r.RestRecords @ [ RestRecordSaveRequestDto.empty baseDate ] }
 
-                    editingRecord.Value <- Some updated
+                    ctx.Form.Value <- Some updated
                     ctx.IsFormDirty.Value <- true
                 | None -> ()
 
@@ -156,6 +160,6 @@ module RestTimeSection =
                                 .BorderThickness(1.0)
                                 .BorderBrush(Brushes.LightGray)
                                 .Padding(10.0)
-                                .Child(createRestTimesContent editingRecord)
+                                .Child(createRestTimesContent ())
                         )
                 ))

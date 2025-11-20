@@ -2,7 +2,7 @@ namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
 open System
 open Avalonia.Media
-open AttendanceRecord.Application.Dtos.Responses
+open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
@@ -12,18 +12,18 @@ module WorkTimeSection =
     open NXUI.Extensions
     open type NXUI.Builders
 
-    let create (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>) =
+    let create () =
         withReactive (fun disposables self ->
             let startedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
             let endedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
             let ctx, _ = HistoryPageContextProvider.require self
 
-            editingRecord
+            ctx.Form
             |> R3.subscribe (fun rOpt ->
                 match rOpt with
                 | Some r ->
-                    startedAt.Value <- Some r.WorkTimeDuration.StartedAt
-                    endedAt.Value <- r.WorkTimeDuration.EndedAt
+                    startedAt.Value <- Some r.StartedAt
+                    endedAt.Value <- r.EndedAt
                 | None -> ())
             |> disposables.Add
 
@@ -31,14 +31,13 @@ module WorkTimeSection =
             |> R3.combineLatest2 endedAt (fun sa ea -> sa, ea)
             |> R3.skip 1
             |> R3.subscribe (fun (s, e) ->
-                match editingRecord.Value with
+                match ctx.Form.Value with
                 | Some r ->
-                    editingRecord.Value <-
+                    ctx.Form.Value <-
                         Some
                             { r with
-                                WorkTimeDuration.StartedAt =
-                                    defaultArg s r.WorkTimeDuration.StartedAt
-                                WorkTimeDuration.EndedAt = e }
+                                StartedAt = defaultArg s r.StartedAt
+                                EndedAt = e }
                 | _ -> ())
             |> disposables.Add
 

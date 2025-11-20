@@ -1,5 +1,7 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
+open R3
+open System
 open Avalonia.Media
 open Material.Icons
 open AttendanceRecord.Application.Dtos.Responses
@@ -12,8 +14,59 @@ module RestTimeSection =
     open NXUI.Extensions
     open type NXUI.Builders
 
+    let private createRestItemView
+        (onDelete: Guid -> unit)
+        (item: ReactiveProperty<RestRecordDetailsDto>)
+        : Avalonia.Controls.Control =
+        withReactive (fun disposables self ->
+            let startedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
+            let endedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
+            let ctx, _ = HistoryPageContextProvider.require self
+
+            item
+            |> R3.subscribe (fun r ->
+                startedAt.Value <- Some r.Duration.StartedAt
+                endedAt.Value <- r.Duration.EndedAt)
+            |> disposables.Add
+
+            startedAt
+            |> R3.combineLatest2 endedAt (fun sa ea -> sa, ea)
+            |> R3.skip 1
+            |> R3.subscribe (fun (s, e) ->
+                let s = defaultArg s item.Value.Duration.StartedAt
+
+                item.Value <-
+                    { item.Value with
+                        Duration.StartedAt = s
+                        Duration.EndedAt = e })
+            |> disposables.Add
+
+            StackPanel()
+                .OrientationHorizontal()
+                .Spacing(10.0)
+                .Margin(0, 5.0, 0, 5.0)
+                .Children(
+                    TimePickerField.create
+                        { Label = "開始時間"
+                          BaseDate = ctx.CurrentDate
+                          SelectedDateTime = startedAt
+                          IsDirty = Some ctx.IsFormDirty },
+                    TimePickerField.create
+                        { Label = "終了時間"
+                          BaseDate = ctx.CurrentDate
+                          SelectedDateTime = endedAt
+                          IsDirty = Some ctx.IsFormDirty },
+                    Button()
+                        .Content(MaterialIcon.create MaterialIconKind.Delete)
+                        .OnClickHandler(fun _ _ -> onDelete item.Value.Id)
+                        .Width(40.0)
+                        .Height(40.0)
+                        .Background(Brushes.Transparent)
+                        .BorderBrush(Brushes.Transparent)
+                ))
+
     let private createRestTimesContent
-        (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>)
+        (editingRecord: ReactiveProperty<WorkRecordDetailsDto option>)
         =
         editingRecord
         |> toViewWithReactive (fun recordOpt disposables self ->
@@ -21,103 +74,50 @@ module RestTimeSection =
             | None -> Panel()
             | Some record when record.RestTimes.IsEmpty ->
                 TextBlock().Text("休憩記録がありません。").FontSize(14.0).Foreground(Brushes.Gray)
-            | Some record ->
-                let ctx, _ = HistoryPageContextProvider.require self
+            | Some _ ->
+                let restItems = R3.collection ([]: ReactiveProperty<RestRecordDetailsDto> list)
 
-                let restItems =
-                    record.RestTimes
-                    |> List.map (fun rest ->
-                        let restObservable =
-                            editingRecord
-                            |> R3.map (fun rOpt ->
-                                rOpt
-                                |> Option.bind (fun r ->
-                                    r.RestTimes |> List.tryFind (fun rt -> rt.Id = rest.Id)))
-                            |> R3.readonly None
-                            |> R3.disposeWith disposables
+                editingRecord
+                |> R3.subscribe (fun rOpt ->
+                    match rOpt with
+                    | Some r ->
+                        restItems.Clear()
 
-                        let startedAt =
-                            R3.property (Some rest.Duration.StartedAt)
-                            |> R3.disposeWith disposables
+                        r.RestTimes
+                        |> List.map (fun rt -> R3.property rt |> R3.disposeWith disposables)
+                        |> List.iter restItems.Add
+                    | None -> ())
+                |> disposables.Add
 
-                        let endedAt =
-                            R3.property (rest.Duration.EndedAt) |> R3.disposeWith disposables
+                restItems
+                |> R3.mapFromCollectionChanged (fun _ -> ()) ()
+                |> R3.subscribe (fun _ ->
+                    match editingRecord.Value with
+                    | Some r ->
+                        let updatedRestTimes =
+                            restItems |> Seq.map (fun rp -> rp.Value) |> Seq.toList
 
-                        editingRecord
-                        |> R3.subscribe (fun rOpt ->
-                            match restObservable.CurrentValue with
-                            | Some rt ->
-                                startedAt.Value <- Some rt.Duration.StartedAt
-                                endedAt.Value <- rt.Duration.EndedAt
-                            | None -> ())
-                        |> disposables.Add
+                        editingRecord.Value <- Some { r with RestTimes = updatedRestTimes }
+                    | None -> ())
+                |> disposables.Add
 
-                        startedAt
-                        |> R3.combineLatest2 endedAt (fun sa ea -> sa, ea)
-                        |> R3.skip 1
-                        |> R3.subscribe (fun (s, e) ->
-                            match editingRecord.Value with
-                            | Some r ->
-                                let updatedRestTimes =
-                                    r.RestTimes
-                                    |> List.map (fun rt ->
-                                        if rt.Id = rest.Id then
-                                            let s = defaultArg s rt.Duration.StartedAt
+                let onDelete (id: Guid) =
+                    let toRemove = restItems |> Seq.tryFind (fun rp -> rp.Value.Id = id)
 
-                                            { rt with
-                                                Duration.StartedAt = s
-                                                Duration.EndedAt = e }
-                                        else
-                                            rt)
+                    match toRemove with
+                    | Some rp -> restItems.Remove rp |> ignore
+                    | None -> ()
 
-                                editingRecord.Value <-
-                                    Some { r with RestTimes = updatedRestTimes }
+                StackPanel()
+                    .Spacing(5.0)
+                    .Children(
+                        ItemsControl()
+                            .ItemsSource(restItems)
+                            .ItemTemplate(createRestItemView onDelete)
+                    ))
 
-                                ctx.IsFormDirty.Value <- true
-                            | _ -> ())
-                        |> disposables.Add
-
-                        let onDelete () =
-                            match editingRecord.Value with
-                            | Some r ->
-                                let updated =
-                                    { r with
-                                        RestTimes =
-                                            r.RestTimes
-                                            |> List.filter (fun rt -> rt.Id <> rest.Id) }
-
-                                editingRecord.Value <- Some updated
-                                ctx.IsFormDirty.Value <- true
-                            | None -> ()
-
-                        StackPanel()
-                            .OrientationHorizontal()
-                            .Spacing(10.0)
-                            .Margin(0, 5.0, 0, 5.0)
-                            .Children(
-                                TimePickerField.create
-                                    { Label = "開始時間"
-                                      BaseDate = ctx.CurrentDate
-                                      SelectedDateTime = startedAt
-                                      IsDirty = Some ctx.IsFormDirty },
-                                TimePickerField.create
-                                    { Label = "終了時間"
-                                      BaseDate = ctx.CurrentDate
-                                      SelectedDateTime = endedAt
-                                      IsDirty = Some ctx.IsFormDirty },
-                                Button()
-                                    .Content(MaterialIcon.create MaterialIconKind.Delete)
-                                    .OnClickHandler(fun _ _ -> onDelete ())
-                                    .Width(40.0)
-                                    .Height(40.0)
-                                    .Background(Brushes.Transparent)
-                                    .BorderBrush(Brushes.Transparent)
-                            ))
-
-                StackPanel().Spacing(5.0).Children(restItems |> toChildren))
-
-    let create (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>) =
-        withReactive (fun disposables self ->
+    let create (editingRecord: ReactiveProperty<WorkRecordDetailsDto option>) =
+        withReactive (fun _ self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
             let handleAddRestTime () =

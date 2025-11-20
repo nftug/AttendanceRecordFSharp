@@ -59,12 +59,23 @@ module R3 =
         : Observable<'TOut> =
         source1.CombineLatest(source2, source3, source4, combiner)
 
+    let everyValueChanged (propertySelector: 'T -> 'U) (source: 'T) : Observable<'U> =
+        Observable.EveryValueChanged(source, propertySelector)
+
+    let collectionChanged (source: ObservableCollection<'t>) : Observable<int> =
+        source |> everyValueChanged (fun c -> c.Count)
+
+    let collection<'T, 'obs when 'obs :> Observable<'T>>
+        (initialItems: seq<'obs>)
+        : ObservableCollection<'obs> =
+        ObservableCollection<'obs> initialItems
+
     let mapFromCollectionChanged
         (selector: 'T[] -> 'U)
         (defaultValue: 'U)
         (collection: ObservableCollection<'obs :> Observable<'T>>)
         : Observable<'U> =
-        let trigger = Observable.EveryValueChanged(collection, (fun c -> c.Count))
+        let trigger = collection |> collectionChanged
 
         trigger.SelectMany(fun count ->
             if count = 0 then

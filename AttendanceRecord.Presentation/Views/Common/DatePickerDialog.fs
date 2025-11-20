@@ -4,7 +4,9 @@ open System
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Shared
 
-type DatePickerDialogProps = { InitialDate: DateTime option }
+type DatePickerDialogProps =
+    { InitialDate: DateTime option
+      InitialMonth: DateTime option }
 
 module private DatePickerDialogView =
     open NXUI.Extensions
@@ -17,6 +19,11 @@ module private DatePickerDialogView =
 
             let canSelect = selectedDate |> R3.map (fun d -> d.IsSome)
 
+            let onDisplayDateChanged (newDate: DateTime) =
+                match selectedDate.Value with
+                | Some date when date.Month <> newDate.Month -> selectedDate.Value <- None
+                | _ -> ()
+
             StackPanel()
                 .Margin(20.0)
                 .Spacing(20.0)
@@ -25,14 +32,16 @@ module private DatePickerDialogView =
                 .Children(
                     TextBlock().Text("日付を選択").FontSize(20.0).FontWeightBold().Margin(0, 0, 0, 10.0),
                     Calendar()
+                        .DisplayDate(props.InitialMonth |> Option.defaultValue DateTime.Now.Date)
+                        .OnDisplayDateChanged(fun ctl e ->
+                            e.Subscribe(fun _ -> onDisplayDateChanged ctl.DisplayDate)
+                            |> disposables.Add)
                         .SelectedDate(
                             selectedDate |> R3.map (fun d -> d |> Option.toNullable) |> asBinding
                         )
                         .OnSelectedDateChanged(fun ctl e ->
                             e.Subscribe(fun _ ->
-                                match ctl.SelectedDate |> Option.ofNullable with
-                                | Some date -> selectedDate.Value <- Some date
-                                | None -> ())
+                                selectedDate.Value <- ctl.SelectedDate |> Option.ofNullable)
                             |> disposables.Add)
                         .HorizontalAlignmentCenter(),
                     StackPanel()

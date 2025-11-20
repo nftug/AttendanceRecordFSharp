@@ -58,7 +58,8 @@ module private HistoryToolbarLogic =
                 if shouldProceed then
                     let! result =
                         DatePickerDialog.show
-                            { InitialDate = ctx.CurrentDate.CurrentValue }
+                            { InitialDate = ctx.CurrentDate.CurrentValue
+                              InitialMonth = Some ctx.CurrentMonth.CurrentValue }
                             (Some ct)
 
                     match result with

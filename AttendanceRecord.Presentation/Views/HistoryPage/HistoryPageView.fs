@@ -97,14 +97,16 @@ module HistoryPageView =
 
     let create (props: HistoryPageProps) : Avalonia.Controls.Control =
         withReactive (fun disposables _ ->
-            let currentMonth = R3.property DateTime.Now |> R3.disposeWith disposables
+            let now = DateTime.Now
 
-            let selectedDate =
-                R3.property (Some DateTime.Now.Date) |> R3.disposeWith disposables
+            let currentMonth =
+                R3.property (DateTime(now.Year, now.Month, 1)) |> R3.disposeWith disposables
+
+            let selectedDate = R3.property (Some now.Date) |> R3.disposeWith disposables
 
             let monthlyRecords =
                 R3.property
-                    { MonthDate = DateTime.Now
+                    { MonthDate = DateTime(now.Year, now.Month, 1)
                       WorkRecords = []
                       WorkTimeTotal = TimeSpan.Zero
                       RestTimeTotal = TimeSpan.Zero

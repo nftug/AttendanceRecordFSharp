@@ -42,24 +42,25 @@ module RestTimeSection =
 
             StackPanel()
                 .OrientationHorizontal()
-                .Spacing(10.0)
+                .Spacing(15.0)
                 .Margin(0.0, 0.0, 0.0, 5.0)
                 .Children(
                     TimePickerField.create
                         { Label = "開始時間"
                           BaseDate = ctx.CurrentDate
                           SelectedDateTime = startedAt
-                          IsDirty = Some ctx.IsFormDirty },
+                          IsDirty = Some ctx.IsFormDirty
+                          IsClearable = false },
                     TimePickerField.create
                         { Label = "終了時間"
                           BaseDate = ctx.CurrentDate
                           SelectedDateTime = endedAt
-                          IsDirty = Some ctx.IsFormDirty },
+                          IsDirty = Some ctx.IsFormDirty
+                          IsClearable = true },
                     Button()
                         .Content(MaterialIcon.create MaterialIconKind.Delete)
                         .OnClickHandler(fun _ _ -> onDelete item.Value.Id)
-                        .Width(40.0)
-                        .Height(40.0)
+                        .FontSize(20.0)
                         .Background(Brushes.Transparent)
                         .BorderBrush(Brushes.Transparent)
                 ))

@@ -149,9 +149,9 @@ module HistoryPageView =
                 { OnConfirmDiscard = confirmDiscard isFormDirty }
 
             let editViewProps: WorkRecordEditViewProps =
-                { OnSave = props.SaveWorkRecord.Handle
-                  OnDelete = props.DeleteWorkRecord.Handle
-                  OnRequestDateChange = fun _ ct -> confirmDiscard isFormDirty ct }
+                { SaveWorkRecord = props.SaveWorkRecord
+                  DeleteWorkRecord = props.DeleteWorkRecord
+                  GetWorkRecordDetails = props.GetWorkRecordDetails }
 
             HistoryPageContextProvider.provide
                 context

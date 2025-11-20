@@ -1,19 +1,18 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage
 
 open System
-open System.Threading
-open System.Threading.Tasks
 open Avalonia.Controls.Notifications
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Shared
+open AttendanceRecord.Application.UseCases.WorkRecords
 
 type WorkRecordEditViewProps =
-    { OnSave: WorkRecordSaveRequestDto -> CancellationToken -> Task<Result<unit, string>>
-      OnDelete: Guid -> CancellationToken -> Task<Result<unit, string>>
-      OnRequestDateChange: DateTime option -> CancellationToken -> Task<bool> }
+    { SaveWorkRecord: SaveWorkRecord
+      DeleteWorkRecord: DeleteWorkRecord
+      GetWorkRecordDetails: GetWorkRecordDetails }
 
 [<AutoOpen>]
 module private WorkRecordEditViewLogic =
@@ -40,12 +39,18 @@ module private WorkRecordEditViewLogic =
                                   StartedAt = rt.Duration.StartedAt
                                   EndedAt = rt.Duration.EndedAt }) }
 
-                    let! result = props.OnSave request ct
+                    let! result = props.SaveWorkRecord.Handle request ct
 
                     match result with
                     | Ok _ ->
                         Notification.show "保存完了" "勤務記録を保存しました。" NotificationType.Information
                         ctx.IsFormDirty.Value <- false
+
+                        // Reload the saved record details
+                        match! props.GetWorkRecordDetails.Handle r.Id ct with
+                        | Ok(Some updatedRecord) -> editingRecord.Value <- Some updatedRecord
+                        | _ -> ()
+
                     | Error e ->
                         Notification.show "保存エラー" $"勤務記録の保存に失敗しました: {e}" NotificationType.Error
                 | None -> ()
@@ -73,7 +78,7 @@ module private WorkRecordEditViewLogic =
                             (Some ct)
 
                     if shouldDelete then
-                        let! result = props.OnDelete r.Id ct
+                        let! result = props.DeleteWorkRecord.Handle r.Id ct
 
                         match result with
                         | Ok _ ->

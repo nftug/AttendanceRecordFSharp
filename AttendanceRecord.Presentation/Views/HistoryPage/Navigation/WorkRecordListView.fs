@@ -25,6 +25,7 @@ module private WorkRecordListViewLogic =
 
                 if shouldProceed then
                     ctx.CurrentDate.Value <- date
+                    ctx.IsFormDirty.Value <- false
             })
         |> ignore
 

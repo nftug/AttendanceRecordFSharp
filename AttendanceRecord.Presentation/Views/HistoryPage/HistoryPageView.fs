@@ -36,35 +36,19 @@ module private HistoryPageLogic =
         |> ignore
 
     let loadSelectedRecord
-        (props: HistoryPageProps)
         (ctx: HistoryPageContext)
-        (disposables: CompositeDisposable)
+        (currentRecord: ReactiveProperty<WorkRecordDetailsDto option>)
         : unit =
-        invokeTask disposables (fun ct ->
-            task {
-                match ctx.CurrentDate.CurrentValue with
-                | None ->
-                    ctx.CurrentStatus.Value <- None
-                    ctx.Form.Value <- None
-                | Some date ->
-                    let matchingRecord =
-                        ctx.MonthlyRecords.CurrentValue.WorkRecords
-                        |> List.tryFind (fun r -> r.Date.Date = date.Date)
+        match ctx.CurrentDate.CurrentValue with
+        | None -> currentRecord.Value <- None
+        | Some date ->
+            let matchingRecord =
+                ctx.MonthlyRecords.CurrentValue.WorkRecords
+                |> List.tryFind (fun r -> r.Date.Date = date.Date)
 
-                    let! detailsOpt =
-                        match matchingRecord with
-                        | Some record -> props.GetWorkRecordDetails.Handle record.Id ct
-                        | None -> task { return Ok None }
-
-                    match detailsOpt with
-                    | Ok(Some details) ->
-                        ctx.CurrentStatus.Value <- Some(WorkRecordStatus.fromDetails details)
-                        ctx.Form.Value <- Some(WorkRecordSaveRequestDto.fromResponse details)
-                    | _ ->
-                        ctx.CurrentStatus.Value <- Some(WorkRecordStatus.empty ())
-                        ctx.Form.Value <- Some(WorkRecordSaveRequestDto.empty date)
-            })
-        |> ignore
+            match matchingRecord with
+            | Some record -> ctx.FetchCurrentWorkRecord record.Id
+            | None -> ()
 
     let confirmDiscard
         (isFormDirty: ReadOnlyReactiveProperty<bool>)
@@ -83,6 +67,20 @@ module private HistoryPageLogic =
                           Buttons = MessageBoxButtons.OkCancel }
                         (Some ct)
         }
+
+    let fetchCurrentWorkRecord
+        (props: HistoryPageProps)
+        (currentWorkRecord: ReactiveProperty<WorkRecordDetailsDto option>)
+        (disposables: CompositeDisposable)
+        (id: Guid)
+        =
+        invokeTask disposables (fun ct ->
+            task {
+                match! props.GetWorkRecordDetails.Handle id ct with
+                | Ok(Some details) -> currentWorkRecord.Value <- Some details
+                | _ -> ()
+            })
+        |> ignore
 
 module HistoryPageView =
     open NXUI.Extensions
@@ -104,8 +102,8 @@ module HistoryPageView =
                 R3.property (None: WorkRecordSaveRequestDto option)
                 |> R3.disposeWith disposables
 
-            let currentStatus =
-                R3.property (None: WorkRecordStatus option) |> R3.disposeWith disposables
+            let currentRecord =
+                R3.property (None: WorkRecordDetailsDto option) |> R3.disposeWith disposables
 
             let isFormDirty = R3.property false |> R3.disposeWith disposables
 
@@ -115,7 +113,8 @@ module HistoryPageView =
                   IsFormDirty = isFormDirty
                   MonthlyRecords = monthlyRecords
                   Form = form
-                  CurrentStatus = currentStatus }
+                  CurrentRecord = currentRecord
+                  FetchCurrentWorkRecord = fetchCurrentWorkRecord props currentRecord disposables }
 
             // Load monthly records when month changes
             currentMonth
@@ -125,7 +124,18 @@ module HistoryPageView =
             // Load selected record when date changes
             selectedDate
             |> R3.combineLatest2 monthlyRecords (fun _ _ -> ())
-            |> R3.subscribe (fun _ -> loadSelectedRecord props ctx disposables)
+            |> R3.subscribe (fun _ -> loadSelectedRecord ctx currentRecord)
+            |> disposables.Add
+
+            // Transfer current record to form when it changes
+            selectedDate
+            |> R3.combineLatest2 currentRecord (fun date rOpt -> date, rOpt)
+            |> R3.subscribe (fun (date, rOpt) ->
+                form.Value <-
+                    match date, rOpt with
+                    | Some _, Some r -> Some(WorkRecordSaveRequestDto.fromResponse r)
+                    | Some date, None -> Some(WorkRecordSaveRequestDto.empty date)
+                    | None, _ -> None)
             |> disposables.Add
 
             let toolbarProps: HistoryToolbarProps =

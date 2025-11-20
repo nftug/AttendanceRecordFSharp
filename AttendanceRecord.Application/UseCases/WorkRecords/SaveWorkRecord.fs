@@ -1,5 +1,6 @@
 namespace AttendanceRecord.Application.UseCases.WorkRecords
 
+open System
 open System.Threading
 open FsToolkit.ErrorHandling
 open AttendanceRecord.Application.Interfaces
@@ -9,7 +10,7 @@ open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Domain.ValueObjects
 
 type SaveWorkRecord =
-    { Handle: WorkRecordSaveRequestDto -> CancellationToken -> TaskResult<unit, string> }
+    { Handle: WorkRecordSaveRequestDto -> CancellationToken -> TaskResult<Guid, string> }
 
 module SaveWorkRecord =
     let private handle
@@ -36,15 +37,13 @@ module SaveWorkRecord =
                     }
                 | None -> taskResult { return! WorkRecord.tryCreate duration restRecords }
 
-            let! existingWorkRecord = repository.GetByDate (WorkRecord.getDate workRecord) ct
-
-            match existingWorkRecord with
+            match! repository.GetByDate (WorkRecord.getDate workRecord) ct with
             | Some existingRecord when existingRecord.Id <> workRecord.Id ->
                 return! Error "A work record for the specified date already exists."
-            | _ -> ()
-
-            do! repository.Save workRecord ct
-            do! currentStatusStore.Reload()
+            | _ ->
+                do! repository.Save workRecord ct
+                do! currentStatusStore.Reload()
+                return workRecord.Id
         }
 
     let create

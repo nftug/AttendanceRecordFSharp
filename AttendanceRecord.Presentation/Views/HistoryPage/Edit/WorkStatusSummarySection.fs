@@ -18,15 +18,15 @@ module WorkStatusSummarySection =
                 TextBlock().Text(value).VerticalAlignmentCenter()
             )
 
-    let createSummarySection () =
+    let create () =
         withReactive (fun _ self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
-            ctx.CurrentStatus
-            |> toView (fun statusOpt ->
-                match statusOpt with
+            ctx.CurrentRecord
+            |> toView (fun rOpt ->
+                match rOpt with
                 | None -> Panel()
-                | Some status ->
+                | Some record ->
                     Border()
                         .BorderThickness(1.0)
                         .BorderBrush(Brushes.Gray)
@@ -37,12 +37,12 @@ module WorkStatusSummarySection =
                                 .Children(
                                     createSummaryInfoRow
                                         "勤務時間"
-                                        (TimeSpan.formatDuration status.WorkTimeDuration),
+                                        (TimeSpan.formatDuration record.WorkTime),
                                     createSummaryInfoRow
                                         "休憩時間"
-                                        (TimeSpan.formatDuration status.RestTimeDuration),
+                                        (TimeSpan.formatDuration record.RestTime),
                                     createSummaryInfoRow
                                         "残業時間"
-                                        (TimeSpan.formatDuration status.OvertimeDuration)
+                                        (TimeSpan.formatDuration record.Overtime)
                                 )
                         )))

@@ -17,22 +17,26 @@ module private WorkRecordListViewLogic =
         (ctx: HistoryPageContext)
         (props: WorkRecordListViewProps)
         (disposables: CompositeDisposable)
-        (date: DateTime option)
+        (date: DateTime)
         : unit =
-        invokeTask disposables (fun ct ->
-            task {
-                let! shouldProceed = props.OnConfirmDiscard ct
+        match ctx.CurrentDate.CurrentValue with
+        | Some currentDate when date.Date = currentDate.Date -> ()
+        | _ ->
+            invokeTask disposables (fun ct ->
+                task {
+                    let! shouldProceed = props.OnConfirmDiscard ct
 
-                if shouldProceed then
-                    ctx.CurrentDate.Value <- date
-                    ctx.IsFormDirty.Value <- false
-            })
-        |> ignore
+                    if shouldProceed then
+                        ctx.CurrentDate.Value <- Some date
+                        ctx.IsFormDirty.Value <- false
+                })
+            |> ignore
 
 module WorkRecordListView =
     open NXUI.Extensions
     open type NXUI.Builders
     open Material.Icons
+    open Avalonia.Media
     open AttendanceRecord.Application.Dtos.Responses
     open System.Collections.ObjectModel
 
@@ -41,7 +45,6 @@ module WorkRecordListView =
             let ctx, _ = HistoryPageContextProvider.require self
 
             let items = ObservableCollection<WorkRecordListItemDto> []
-            let itemsCount = items |> R3.collectionChanged
 
             ctx.MonthlyRecords
             |> R3.subscribe (fun records ->
@@ -49,45 +52,51 @@ module WorkRecordListView =
                 records.WorkRecords |> List.iter items.Add)
             |> disposables.Add
 
-            let selectedItem =
-                ctx.CurrentDate
-                |> R3.combineLatest2 itemsCount (fun date _ -> date)
-                |> R3.map (fun date ->
-                    match date with
-                    | Some date -> items |> Seq.tryFind (fun item -> item.Date.Date = date.Date)
-                    | None -> None)
+            let itemTemplate (item: WorkRecordListItemDto) : Avalonia.Controls.Control =
+                let isSelected =
+                    ctx.CurrentDate
+                    |> R3.map (fun currentDate ->
+                        match currentDate with
+                        | Some date -> date.Date = item.Date.Date
+                        | None -> false)
+                    |> R3.readonly None
+                    |> R3.disposeWith disposables
+
+                ToggleButton()
+                    .HorizontalAlignmentStretch()
+                    .HorizontalContentAlignmentLeft()
+                    .Padding(10.0)
+                    .FontSize(14.0)
+                    .Background(Brushes.Transparent)
+                    .BorderBrush(Brushes.Transparent)
+                    .IsChecked(isSelected |> asBinding)
+                    .OnIsCheckedChangedHandler(fun ctl _ ->
+                        ctl.IsChecked <- isSelected.CurrentValue)
+                    .OnClickHandler(fun _ _ -> handleDateSelect ctx props disposables item.Date)
+                    .Content(
+                        StackPanel()
+                            .OrientationHorizontal()
+                            .Spacing(10.0)
+                            .Children(
+                                MaterialIcon
+                                    .create(MaterialIconKind.CalendarToday)
+                                    .Foreground(Brushes.DarkGray),
+                                TextBlock()
+                                    .Text(item.Date.ToString "yyyy/MM/dd (ddd)")
+                                    .VerticalAlignmentCenter()
+                            )
+                    )
 
             Border()
                 .BorderThickness(1.0)
-                .BorderBrush(Avalonia.Media.Brushes.Gray)
+                .BorderBrush(Brushes.Gray)
                 .Child(
                     ScrollViewer()
                         .VerticalScrollBarVisibilityAuto()
                         .Content(
-                            ListBox()
+                            ItemsControl()
                                 .MinWidth(200.0)
-                                .HorizontalAlignmentStretch()
-                                .SelectedItem(selectedItem |> R3.map Option.toObj |> asBinding)
-                                .OnSelectionChangedHandler(fun lb _ ->
-                                    match lb.SelectedItem with
-                                    | :? WorkRecordListItemDto as item -> Some item.Date
-                                    | _ -> None
-                                    |> handleDateSelect ctx props disposables)
                                 .ItemsSource(items)
-                                .ItemTemplate(fun (item: WorkRecordListItemDto) ->
-                                    StackPanel()
-                                        .OrientationHorizontal()
-                                        .Spacing(10.0)
-                                        .Children(
-                                            MaterialIcon
-                                                .create(MaterialIconKind.CalendarToday)
-                                                .FontSize(14.0)
-                                                .Foreground(Avalonia.Media.Brushes.DarkGray),
-                                            TextBlock()
-                                                .Text(item.Date.ToString "yyyy/MM/dd (ddd)")
-                                                .FontSize(14.0)
-                                                .VerticalAlignmentCenter()
-                                        )
-                                    :> Avalonia.Controls.Control)
+                                .ItemTemplate(itemTemplate)
                         )
                 ))

@@ -36,19 +36,28 @@ module private HistoryPageLogic =
         |> ignore
 
     let loadSelectedRecord
-        (ctx: HistoryPageContext)
+        (props: HistoryPageProps)
         (currentRecord: ReactiveProperty<WorkRecordDetailsDto option>)
+        (monthlyRecords: WorkRecordListDto)
+        (disposables: CompositeDisposable)
+        (dateOpt: DateTime option)
         : unit =
-        match ctx.CurrentDate.CurrentValue with
+        match dateOpt with
         | None -> currentRecord.Value <- None
         | Some date ->
             let matchingRecord =
-                ctx.MonthlyRecords.CurrentValue.WorkRecords
-                |> List.tryFind (fun r -> r.Date.Date = date.Date)
+                monthlyRecords.WorkRecords |> List.tryFind (fun r -> r.Date.Date = date.Date)
 
             match matchingRecord with
-            | Some record -> ctx.FetchCurrentWorkRecord record.Id
-            | None -> ()
+            | Some record ->
+                invokeTask disposables (fun ct ->
+                    task {
+                        match! props.GetWorkRecordDetails.Handle record.Id ct with
+                        | Ok(Some details) -> currentRecord.Value <- Some details
+                        | _ -> currentRecord.Value <- None
+                    })
+                |> ignore
+            | None -> currentRecord.Value <- None
 
     let confirmDiscard
         (isFormDirty: ReadOnlyReactiveProperty<bool>)
@@ -68,17 +77,26 @@ module private HistoryPageLogic =
                         (Some ct)
         }
 
-    let fetchCurrentWorkRecord
+    let reloadAfterSave
         (props: HistoryPageProps)
-        (currentWorkRecord: ReactiveProperty<WorkRecordDetailsDto option>)
+        (currentRecord: ReactiveProperty<WorkRecordDetailsDto option>)
+        (monthlyRecords: ReactiveProperty<WorkRecordListDto>)
+        (currentMonth: ReadOnlyReactiveProperty<DateTime>)
         (disposables: CompositeDisposable)
-        (id: Guid)
+        (idOpt: Guid option)
         =
         invokeTask disposables (fun ct ->
             task {
-                match! props.GetWorkRecordDetails.Handle id ct with
-                | Ok(Some details) -> currentWorkRecord.Value <- Some details
-                | _ -> ()
+                // 月次レコードを再読み込み
+                loadMonthlyRecords props monthlyRecords disposables currentMonth.CurrentValue
+
+                // 指定されたIDのレコードを再読み込み
+                match idOpt with
+                | Some id ->
+                    match! props.GetWorkRecordDetails.Handle id ct with
+                    | Ok(Some details) -> currentRecord.Value <- Some details
+                    | _ -> currentRecord.Value <- None
+                | None -> currentRecord.Value <- None
             })
         |> ignore
 
@@ -107,6 +125,9 @@ module HistoryPageView =
 
             let isFormDirty = R3.property false |> R3.disposeWith disposables
 
+            let reloadAfterSave =
+                reloadAfterSave props currentRecord monthlyRecords currentMonth disposables
+
             let ctx: HistoryPageContext =
                 { CurrentMonth = currentMonth
                   CurrentDate = selectedDate
@@ -114,17 +135,18 @@ module HistoryPageView =
                   MonthlyRecords = monthlyRecords
                   Form = form
                   CurrentRecord = currentRecord
-                  FetchCurrentWorkRecord = fetchCurrentWorkRecord props currentRecord disposables }
+                  ReloadAfterSave = reloadAfterSave }
 
             // Load monthly records when month changes
             currentMonth
             |> R3.subscribe (loadMonthlyRecords props monthlyRecords disposables)
             |> disposables.Add
 
-            // Load selected record when date changes
+            // Load selected record when date or monthly records change
             selectedDate
-            |> R3.combineLatest2 monthlyRecords (fun _ _ -> ())
-            |> R3.subscribe (fun _ -> loadSelectedRecord ctx currentRecord)
+            |> R3.combineLatest2 monthlyRecords (fun date records -> date, records)
+            |> R3.subscribe (fun (date, records) ->
+                loadSelectedRecord props currentRecord records disposables date)
             |> disposables.Add
 
             // Transfer current record to form when it changes

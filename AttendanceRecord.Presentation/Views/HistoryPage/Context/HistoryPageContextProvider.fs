@@ -13,7 +13,7 @@ type HistoryPageContext =
       MonthlyRecords: ReadOnlyReactiveProperty<WorkRecordListDto>
       Form: ReactiveProperty<WorkRecordSaveRequestDto option>
       CurrentRecord: ReadOnlyReactiveProperty<WorkRecordDetailsDto option>
-      FetchCurrentWorkRecord: Guid -> unit }
+      ReloadAfterSave: Guid option -> unit }
 
 module HistoryPageContextProvider =
     let provide

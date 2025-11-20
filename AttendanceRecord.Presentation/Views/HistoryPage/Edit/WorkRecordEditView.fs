@@ -30,7 +30,7 @@ module private WorkRecordEditViewLogic =
                     | Ok id ->
                         Notification.show "保存完了" "勤務記録を保存しました。" NotificationType.Information
                         ctx.IsFormDirty.Value <- false
-                        ctx.FetchCurrentWorkRecord id
+                        ctx.ReloadAfterSave(Some id)
                     | Error e ->
                         Notification.show "保存エラー" $"勤務記録の保存に失敗しました: {e}" NotificationType.Error
                 | None -> ()
@@ -63,6 +63,7 @@ module private WorkRecordEditViewLogic =
                             Notification.show "削除完了" "勤務記録を削除しました。" NotificationType.Information
                             ctx.CurrentDate.Value <- None
                             ctx.IsFormDirty.Value <- false
+                            ctx.ReloadAfterSave None
                         | Error e ->
                             Notification.show "削除エラー" $"勤務記録の削除に失敗しました: {e}" NotificationType.Error
                 | _ -> ()
@@ -108,6 +109,20 @@ module WorkRecordEditView =
                                     .IsEnabled(record.Id.IsSome)
                             )
 
+                    let scrollContent =
+                        StackPanel()
+                            .Margin(20.0)
+                            .Spacing(20.0)
+                            .Children(
+                                TextBlock()
+                                    .Text(record.StartedAt.ToString "yyyy/MM/dd (ddd)")
+                                    .FontSize(28.0)
+                                    .FontWeightBold(),
+                                WorkStatusSummarySection.create (),
+                                WorkTimeSection.create (),
+                                RestTimeSection.create ()
+                            )
+
                     DockPanel()
                         .LastChildFill(true)
                         .Children(
@@ -115,21 +130,5 @@ module WorkRecordEditView =
                                 .ColumnDefinitions("*,Auto")
                                 .DockBottom()
                                 .Children(actionButtons.Column(1)),
-                            ScrollViewer()
-                                .Content(
-                                    StackPanel()
-                                        .Margin(20.0)
-                                        .Spacing(20.0)
-                                        .Children(
-                                            TextBlock()
-                                                .Text(
-                                                    record.StartedAt.ToString "yyyy/MM/dd (ddd)"
-                                                )
-                                                .FontSize(28.0)
-                                                .FontWeightBold(),
-                                            WorkStatusSummarySection.create (),
-                                            WorkTimeSection.create (),
-                                            RestTimeSection.create ()
-                                        )
-                                )
+                            ScrollViewer().Content(scrollContent)
                         )))

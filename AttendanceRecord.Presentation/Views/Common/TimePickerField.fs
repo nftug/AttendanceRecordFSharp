@@ -45,5 +45,4 @@ module TimePickerField =
                                 e.Subscribe(fun _ ->
                                     handleTimeChange (ctl.SelectedTime |> Option.ofNullable))
                                 |> disposables.Add)
-                            .Width(150.0)
                     ))

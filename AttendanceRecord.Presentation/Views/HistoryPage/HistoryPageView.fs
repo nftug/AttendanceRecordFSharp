@@ -6,6 +6,7 @@ open System.Threading.Tasks
 open R3
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Presentation.Views.HistoryPage.Edit
 open AttendanceRecord.Presentation.Views.HistoryPage.Navigation
@@ -66,10 +67,6 @@ module private HistoryPageLogic =
                         ctx.Form.Value <- Some(WorkRecordSaveRequestDto.empty date)
             })
         |> ignore
-
-[<AutoOpen>]
-module private HistoryPageViewLogic =
-    open AttendanceRecord.Presentation.Views.Common
 
     let confirmDiscard
         (isFormDirty: ReadOnlyReactiveProperty<bool>)
@@ -156,8 +153,8 @@ module HistoryPageView =
                                 (WorkRecordListView.create listViewProps).Column(0),
                                 GridSplitter()
                                     .Column(1)
-                                    .Width(5.0)
-                                    .Background(Avalonia.Media.Brushes.LightGray)
+                                    .Width(1.0)
+                                    .Background(Avalonia.Media.Brushes.DimGray)
                                     .ResizeDirectionColumns(),
                                 (WorkRecordEditView.create editViewProps).Column(2)
                             )

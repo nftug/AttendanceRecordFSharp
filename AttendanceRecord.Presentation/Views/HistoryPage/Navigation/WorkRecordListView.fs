@@ -81,7 +81,7 @@ module WorkRecordListView =
                                             MaterialIcon
                                                 .create(MaterialIconKind.CalendarToday)
                                                 .FontSize(14.0)
-                                                .Foreground(Avalonia.Media.Brushes.DimGray),
+                                                .Foreground(Avalonia.Media.Brushes.DarkGray),
                                             TextBlock()
                                                 .Text(item.Date.ToString "yyyy/MM/dd (ddd)")
                                                 .FontSize(14.0)

@@ -135,8 +135,8 @@ module WorkRecordEditView =
                                     .Spacing(20.0)
                                     .Children(
                                         TextBlock()
-                                            .Text(record.StartedAt.ToString "yyyy/MM/dd")
-                                            .FontSize(24.0)
+                                            .Text(record.StartedAt.ToString "yyyy/MM/dd (ddd)")
+                                            .FontSize(28.0)
                                             .FontWeightBold(),
                                         WorkStatusSummarySection.createSummarySection (),
                                         WorkTimeSection.create (),

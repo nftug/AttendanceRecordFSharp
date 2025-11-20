@@ -22,6 +22,15 @@ module StatusView =
           { Label = "今月の残業時間"
             Value = TimeSpan.formatDuration status.OvertimeMonthlyDuration } ]
 
+    let private createStatusRow (info: StatusInfo) =
+        StackPanel()
+            .OrientationHorizontal()
+            .Spacing(5.0)
+            .Children(
+                TextBlock().Text(info.Label).FontWeightBold().FontSize(16.0).Width(150.0),
+                TextBlock().Text(info.Value).FontSize(16.0).VerticalAlignmentCenter()
+            )
+
     let create () : Avalonia.Controls.Control =
         withReactive (fun _ self ->
             let ctx, _ = HomePageContextProvider.require self
@@ -38,10 +47,5 @@ module StatusView =
                         StackPanel()
                             .Spacing(8.0)
                             .VerticalAlignmentCenter()
-                            .Children(
-                                rows
-                                |> List.map (fun row ->
-                                    TextBlock().Text($"{row.Label}: {row.Value}").FontSize(16.0))
-                                |> toChildren
-                            ))
+                            .Children(rows |> List.map createStatusRow |> toChildren))
                 ))

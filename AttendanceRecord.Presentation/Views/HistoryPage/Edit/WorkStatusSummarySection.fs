@@ -12,9 +12,10 @@ module WorkStatusSummarySection =
     let private createSummaryInfoRow (label: string) (value: string) =
         StackPanel()
             .OrientationHorizontal()
+            .Spacing(3.0)
             .Children(
-                Label().Content(label).FontSize(14.0).FontWeightBold().Width(120.0),
-                Label().Content(value).FontSize(14.0).VerticalAlignmentCenter()
+                TextBlock().Text(label).FontWeightBold().Width(120.0),
+                TextBlock().Text(value).VerticalAlignmentCenter()
             )
 
     let createSummarySection () =
@@ -29,12 +30,11 @@ module WorkStatusSummarySection =
                     Border()
                         .BorderThickness(1.0)
                         .BorderBrush(Brushes.Gray)
-                        .Padding(15.0)
+                        .Padding(18.0)
                         .Child(
                             StackPanel()
                                 .Spacing(10.0)
                                 .Children(
-                                    TextBlock().Text("勤務記録の概要").FontSize(18.0).FontWeightBold(),
                                     createSummaryInfoRow
                                         "勤務時間"
                                         (TimeSpan.formatDuration status.WorkTimeDuration),

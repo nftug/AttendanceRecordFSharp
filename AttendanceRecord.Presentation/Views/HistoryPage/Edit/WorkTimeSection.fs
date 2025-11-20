@@ -29,7 +29,6 @@ module WorkTimeSection =
 
             startedAt
             |> R3.combineLatest2 endedAt (fun sa ea -> sa, ea)
-            |> R3.skip 1
             |> R3.subscribe (fun (s, e) ->
                 match ctx.Form.Value with
                 | Some r ->

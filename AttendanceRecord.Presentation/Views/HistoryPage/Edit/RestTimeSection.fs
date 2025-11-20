@@ -31,7 +31,6 @@ module RestTimeSection =
 
             startedAt
             |> R3.combineLatest2 endedAt (fun sa ea -> sa, ea)
-            |> R3.skip 1
             |> R3.subscribe (fun (s, e) ->
                 let s = defaultArg s item.Value.StartedAt
 
@@ -44,7 +43,7 @@ module RestTimeSection =
             StackPanel()
                 .OrientationHorizontal()
                 .Spacing(10.0)
-                .Margin(0, 5.0, 0, 5.0)
+                .Margin(0.0, 0.0, 0.0, 5.0)
                 .Children(
                     TimePickerField.create
                         { Label = "開始時間"
@@ -156,10 +155,6 @@ module RestTimeSection =
                                         .OnClickHandler(fun _ _ -> handleAddRestTime ())
                                         .Column(2)
                                 ),
-                            Border()
-                                .BorderThickness(1.0)
-                                .BorderBrush(Brushes.LightGray)
-                                .Padding(10.0)
-                                .Child(createRestTimesContent ())
+                            createRestTimesContent ()
                         )
                 ))

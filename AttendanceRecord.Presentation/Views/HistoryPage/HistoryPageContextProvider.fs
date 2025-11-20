@@ -11,6 +11,7 @@ open AttendanceRecord.Application.Dtos.Requests
 type HistoryPageContext =
     { CurrentMonth: ReactiveProperty<DateTime>
       CurrentDate: ReactiveProperty<DateTime option>
+      IsFormDirty: ReactiveProperty<bool>
       MonthlyRecords: Observable<WorkRecordListDto>
       SelectedRecord: Observable<WorkRecordDetailsDto option>
       OnSaveRecord: WorkRecordSaveRequestDto -> CancellationToken -> Task<Result<unit, string>>

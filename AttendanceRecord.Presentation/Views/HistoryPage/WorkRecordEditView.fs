@@ -13,7 +13,6 @@ open AttendanceRecord.Shared
 type WorkRecordEditViewProps =
     { OnSave: WorkRecordSaveRequestDto -> CancellationToken -> Task<Result<unit, string>>
       OnDelete: Guid -> CancellationToken -> Task<Result<unit, string>>
-      IsDirty: R3.ReactiveProperty<bool>
       OnRequestDateChange: DateTime option -> CancellationToken -> Task<bool> }
 
 [<AutoOpen>]
@@ -21,6 +20,7 @@ module private WorkRecordEditViewLogic =
     let handleSave
         (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>)
         (props: WorkRecordEditViewProps)
+        (ctx: HistoryPageContext)
         (disposables: R3.CompositeDisposable)
         ()
         : unit =
@@ -28,6 +28,7 @@ module private WorkRecordEditViewLogic =
             task {
                 match editingRecord.Value with
                 | Some r ->
+
                     let request: WorkRecordSaveRequestDto =
                         { Id = if r.Id = Guid.Empty then None else Some r.Id
                           StartedAt = r.WorkTimeDuration.StartedAt
@@ -44,7 +45,7 @@ module private WorkRecordEditViewLogic =
                     match result with
                     | Ok _ ->
                         Notification.show "保存完了" "勤務記録を保存しました。" NotificationType.Information
-                        props.IsDirty.Value <- false
+                        ctx.IsFormDirty.Value <- false
                     | Error e ->
                         Notification.show "保存エラー" $"勤務記録の保存に失敗しました: {e}" NotificationType.Error
                 | None -> ()
@@ -77,7 +78,7 @@ module private WorkRecordEditViewLogic =
                         match result with
                         | Ok _ ->
                             Notification.show "削除完了" "勤務記録を削除しました。" NotificationType.Information
-                            props.IsDirty.Value <- false
+                            ctx.IsFormDirty.Value <- false
                             ctx.CurrentDate.Value <- None
                         | Error e ->
                             Notification.show "削除エラー" $"勤務記録の削除に失敗しました: {e}" NotificationType.Error
@@ -138,7 +139,7 @@ module WorkRecordEditView =
                             Button()
                                 .Content("保存")
                                 .OnClickHandler(fun _ _ ->
-                                    handleSave editingRecord props disposables ())
+                                    handleSave editingRecord props ctx disposables ())
                                 .Width(100.0)
                                 .Height(35.0),
                             Button()
@@ -168,8 +169,8 @@ module WorkRecordEditView =
                                             .FontSize(24.0)
                                             .FontWeightBold(),
                                         createSummarySection record,
-                                        WorkTimeSection.create editingRecord props.IsDirty,
-                                        RestTimeSection.create editingRecord props.IsDirty
+                                        WorkTimeSection.create editingRecord,
+                                        RestTimeSection.create editingRecord
                                     )
                             )
                     ))
@@ -185,7 +186,7 @@ module WorkRecordEditView =
             ctx.SelectedRecord
             |> R3.subscribe (fun record ->
                 editingRecord.Value <- record
-                props.IsDirty.Value <- false)
+                ctx.IsFormDirty.Value <- false)
             |> disposables.Add
 
             createRecordView editingRecord props)

@@ -23,9 +23,7 @@ module TimePickerField =
                 let handleTimeChange (timeOpt: TimeSpan option) =
                     props.SelectedDateTime.Value <-
                         match timeOpt with
-                        | Some time ->
-                            printfn "Selected time changed: %A" (baseDate + time)
-                            Some(baseDate + time)
+                        | Some time -> Some(baseDate + time)
                         | _ -> None
 
                     props.IsDirty.Value <- true

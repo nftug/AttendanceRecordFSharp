@@ -10,10 +10,7 @@ module WorkTimeSection =
     open NXUI.Extensions
     open type NXUI.Builders
 
-    let create
-        (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>)
-        (isFormDirty: R3.ReactiveProperty<bool>)
-        =
+    let create (editingRecord: R3.ReactiveProperty<WorkRecordDetailsDto option>) =
         withReactive (fun disposables self ->
             let startedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
             let endedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
@@ -60,12 +57,12 @@ module WorkTimeSection =
                                         { Label = "出勤時間"
                                           BaseDate = ctx.CurrentDate
                                           SelectedDateTime = startedAt
-                                          IsDirty = isFormDirty },
+                                          IsDirty = ctx.IsFormDirty },
                                     TimePickerField.create
                                         { Label = "退勤時間"
                                           BaseDate = ctx.CurrentDate
                                           SelectedDateTime = endedAt
-                                          IsDirty = isFormDirty }
+                                          IsDirty = ctx.IsFormDirty }
                                 )
                         )
                 ))

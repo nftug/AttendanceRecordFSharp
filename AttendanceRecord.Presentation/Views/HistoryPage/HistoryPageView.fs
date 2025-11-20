@@ -76,9 +76,12 @@ module private HistoryPageLogic =
 module private HistoryPageViewLogic =
     open AttendanceRecord.Presentation.Views.Common
 
-    let confirmDiscard (isFormDirty: ReactiveProperty<bool>) (ct: CancellationToken) : Task<bool> =
+    let confirmDiscard
+        (isFormDirty: ReadOnlyReactiveProperty<bool>)
+        (ct: CancellationToken)
+        : Task<bool> =
         task {
-            if not isFormDirty.Value then
+            if not isFormDirty.CurrentValue then
                 return true
             else
                 return!
@@ -133,6 +136,7 @@ module HistoryPageView =
             let context: HistoryPageContext =
                 { CurrentMonth = currentMonth
                   CurrentDate = selectedDate
+                  IsFormDirty = isFormDirty
                   MonthlyRecords = monthlyRecords
                   SelectedRecord = selectedRecord
                   OnSaveRecord = props.SaveWorkRecord.Handle
@@ -147,7 +151,6 @@ module HistoryPageView =
             let editViewProps: WorkRecordEditViewProps =
                 { OnSave = props.SaveWorkRecord.Handle
                   OnDelete = props.DeleteWorkRecord.Handle
-                  IsDirty = isFormDirty
                   OnRequestDateChange = fun _ ct -> confirmDiscard isFormDirty ct }
 
             HistoryPageContextProvider.provide

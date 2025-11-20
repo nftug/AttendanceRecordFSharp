@@ -2,7 +2,6 @@ namespace AttendanceRecord.Presentation.Views.HistoryPage
 
 open System
 open System.Threading
-open System.Threading.Tasks
 open R3
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
@@ -52,18 +51,17 @@ module private HistoryPageLogic =
                         ctx.MonthlyRecords.CurrentValue.WorkRecords
                         |> List.tryFind (fun r -> r.Date.Date = date.Date)
 
-                    match matchingRecord with
-                    | Some record ->
-                        match! props.GetWorkRecordDetails.Handle record.Id ct with
-                        | Ok(Some details) ->
-                            ctx.CurrentStatus.Value <- Some(WorkRecordStatus.fromDetails details)
-                            ctx.Form.Value <- Some(WorkRecordSaveRequestDto.fromResponse details)
-                        | _ ->
-                            ctx.CurrentStatus.Value <- None
-                            ctx.Form.Value <- None
-                    | None ->
-                        // 新規作成用の空レコード
-                        ctx.CurrentStatus.Value <- None
+                    let! detailsOpt =
+                        match matchingRecord with
+                        | Some record -> props.GetWorkRecordDetails.Handle record.Id ct
+                        | None -> task { return Ok None }
+
+                    match detailsOpt with
+                    | Ok(Some details) ->
+                        ctx.CurrentStatus.Value <- Some(WorkRecordStatus.fromDetails details)
+                        ctx.Form.Value <- Some(WorkRecordSaveRequestDto.fromResponse details)
+                    | _ ->
+                        ctx.CurrentStatus.Value <- Some(WorkRecordStatus.empty ())
                         ctx.Form.Value <- Some(WorkRecordSaveRequestDto.empty date)
             })
         |> ignore
@@ -71,7 +69,7 @@ module private HistoryPageLogic =
     let confirmDiscard
         (isFormDirty: ReadOnlyReactiveProperty<bool>)
         (ct: CancellationToken)
-        : Task<bool> =
+        : Tasks.Task<bool> =
         task {
             if not isFormDirty.CurrentValue then
                 return true

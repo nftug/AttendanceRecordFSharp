@@ -6,6 +6,9 @@ open System.Threading.Tasks
 open R3
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.HistoryPage.Context
+open AttendanceRecord.Presentation.Views.HistoryPage.Edit
+open AttendanceRecord.Presentation.Views.HistoryPage.Navigation
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.UseCases.WorkRecords
 
@@ -108,13 +111,7 @@ module HistoryPageView =
             let selectedDate = R3.property (Some now.Date) |> R3.disposeWith disposables
 
             let monthlyRecords =
-                R3.property
-                    { MonthDate = DateTime(now.Year, now.Month, 1)
-                      WorkRecords = []
-                      WorkTimeTotal = TimeSpan.Zero
-                      RestTimeTotal = TimeSpan.Zero
-                      OvertimeTotal = TimeSpan.Zero }
-                |> R3.disposeWith disposables
+                R3.property (WorkRecordListDto.empty now) |> R3.disposeWith disposables
 
             let selectedRecord =
                 R3.property (None: WorkRecordDetailsDto option) |> R3.disposeWith disposables
@@ -138,9 +135,7 @@ module HistoryPageView =
                   CurrentDate = selectedDate
                   IsFormDirty = isFormDirty
                   MonthlyRecords = monthlyRecords
-                  SelectedRecord = selectedRecord
-                  OnSaveRecord = props.SaveWorkRecord.Handle
-                  OnDeleteRecord = props.DeleteWorkRecord.Handle }
+                  SelectedRecord = selectedRecord }
 
             let toolbarProps: HistoryToolbarProps =
                 { OnConfirmDiscard = confirmDiscard isFormDirty }

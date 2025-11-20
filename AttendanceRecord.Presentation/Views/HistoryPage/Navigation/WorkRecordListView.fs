@@ -1,10 +1,11 @@
-namespace AttendanceRecord.Presentation.Views.HistoryPage
+namespace AttendanceRecord.Presentation.Views.HistoryPage.Navigation
 
 open System
 open System.Threading
 open System.Threading.Tasks
 open R3
 open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Shared
 
 type WorkRecordListViewProps =

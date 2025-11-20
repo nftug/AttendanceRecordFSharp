@@ -1,9 +1,11 @@
-namespace AttendanceRecord.Presentation.Views.HistoryPage
+namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
 open System
 open Avalonia.Media
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.Common
+open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Shared
 
 module WorkTimeSection =
@@ -57,12 +59,12 @@ module WorkTimeSection =
                                         { Label = "出勤時間"
                                           BaseDate = ctx.CurrentDate
                                           SelectedDateTime = startedAt
-                                          IsDirty = ctx.IsFormDirty },
+                                          IsDirty = Some ctx.IsFormDirty },
                                     TimePickerField.create
                                         { Label = "退勤時間"
                                           BaseDate = ctx.CurrentDate
                                           SelectedDateTime = endedAt
-                                          IsDirty = ctx.IsFormDirty }
+                                          IsDirty = Some ctx.IsFormDirty }
                                 )
                         )
                 ))

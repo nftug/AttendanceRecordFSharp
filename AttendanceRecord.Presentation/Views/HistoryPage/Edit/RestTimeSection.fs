@@ -1,9 +1,11 @@
-namespace AttendanceRecord.Presentation.Views.HistoryPage
+namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
 open Avalonia.Media
 open Material.Icons
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.Common
+open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Shared
 
 module RestTimeSection =
@@ -97,12 +99,12 @@ module RestTimeSection =
                                     { Label = "開始時間"
                                       BaseDate = ctx.CurrentDate
                                       SelectedDateTime = startedAt
-                                      IsDirty = ctx.IsFormDirty },
+                                      IsDirty = Some ctx.IsFormDirty },
                                 TimePickerField.create
                                     { Label = "終了時間"
                                       BaseDate = ctx.CurrentDate
                                       SelectedDateTime = endedAt
-                                      IsDirty = ctx.IsFormDirty },
+                                      IsDirty = Some ctx.IsFormDirty },
                                 Button()
                                     .Content(MaterialIcon.create MaterialIconKind.Delete)
                                     .OnClickHandler(fun _ _ -> onDelete ())

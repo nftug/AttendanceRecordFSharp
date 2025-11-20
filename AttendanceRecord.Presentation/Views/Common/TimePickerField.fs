@@ -1,4 +1,4 @@
-namespace AttendanceRecord.Presentation.Views.HistoryPage
+namespace AttendanceRecord.Presentation.Views.Common
 
 open System
 open R3
@@ -11,7 +11,7 @@ type TimePickerFieldProps =
     { Label: string
       BaseDate: Observable<DateTime option>
       SelectedDateTime: ReactiveProperty<DateTime option>
-      IsDirty: ReactiveProperty<bool> }
+      IsDirty: ReactiveProperty<bool> option }
 
 module TimePickerField =
     let create (props: TimePickerFieldProps) =
@@ -26,7 +26,9 @@ module TimePickerField =
                         | Some time -> Some(baseDate + time)
                         | _ -> None
 
-                    props.IsDirty.Value <- true
+                    match props.IsDirty with
+                    | Some isDirty -> isDirty.Value <- true
+                    | None -> ()
 
                 StackPanel()
                     .Spacing(5.0)

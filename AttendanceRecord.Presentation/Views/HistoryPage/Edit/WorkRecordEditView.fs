@@ -1,4 +1,4 @@
-namespace AttendanceRecord.Presentation.Views.HistoryPage
+namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
 open System
 open Avalonia.Controls.Notifications
@@ -6,6 +6,7 @@ open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
+open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Shared
 open AttendanceRecord.Application.UseCases.WorkRecords
 

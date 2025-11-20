@@ -1,21 +1,16 @@
-namespace AttendanceRecord.Presentation.Views.HistoryPage
+namespace AttendanceRecord.Presentation.Views.HistoryPage.Context
 
 open System
-open System.Threading
-open System.Threading.Tasks
 open AttendanceRecord.Presentation.Utils
 open R3
 open AttendanceRecord.Application.Dtos.Responses
-open AttendanceRecord.Application.Dtos.Requests
 
 type HistoryPageContext =
     { CurrentMonth: ReactiveProperty<DateTime>
       CurrentDate: ReactiveProperty<DateTime option>
       IsFormDirty: ReactiveProperty<bool>
       MonthlyRecords: Observable<WorkRecordListDto>
-      SelectedRecord: Observable<WorkRecordDetailsDto option>
-      OnSaveRecord: WorkRecordSaveRequestDto -> CancellationToken -> Task<Result<unit, string>>
-      OnDeleteRecord: Guid -> CancellationToken -> Task<Result<unit, string>> }
+      SelectedRecord: Observable<WorkRecordDetailsDto option> }
 
 module HistoryPageContextProvider =
     let provide

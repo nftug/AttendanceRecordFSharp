@@ -18,6 +18,13 @@ module WorkRecordListItemDto =
           Date = workRecord |> WorkRecord.getDate }
 
 module WorkRecordListDto =
+    let empty (now: DateTime) : WorkRecordListDto =
+        { MonthDate = DateTime(now.Year, now.Month, 1)
+          WorkRecords = []
+          WorkTimeTotal = TimeSpan.Zero
+          RestTimeTotal = TimeSpan.Zero
+          OvertimeTotal = TimeSpan.Zero }
+
     let fromDomain
         (monthDate: DateTime)
         (now: DateTime)

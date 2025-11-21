@@ -5,6 +5,7 @@ open Avalonia.Controls
 open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
+open AttendanceRecord.Presentation.Views.Application
 
 [<AutoOpen>]
 module private MainWindowLogic =
@@ -52,5 +53,5 @@ module MainWindow =
             .Height(820)
             .WindowStartupLocationCenterScreen()
             .Styles(AppStyles(), DialogHostStyles(), MaterialIconStyles null)
-            .Content(Views.MainView.create services)
+            .Content(MainView.create services)
         |> initialize services.SingleInstanceGuard

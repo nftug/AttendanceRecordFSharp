@@ -1,4 +1,4 @@
-namespace AttendanceRecord.Presentation.Views
+namespace AttendanceRecord.Presentation.Views.Application
 
 open type NXUI.Builders
 open NXUI.Extensions

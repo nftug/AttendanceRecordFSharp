@@ -1,8 +1,9 @@
-namespace AttendanceRecord.Presentation.Views.Common
+namespace AttendanceRecord.Presentation.Views.Application
 
 open Avalonia.Controls
 open Avalonia.Media.Imaging
 open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.Common
 
 module TrayIcon =
     let create (window: Window) : TrayIcon =

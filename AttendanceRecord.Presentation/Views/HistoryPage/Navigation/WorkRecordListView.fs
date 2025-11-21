@@ -39,19 +39,10 @@ module WorkRecordListView =
     open Material.Icons
     open Avalonia.Media
     open AttendanceRecord.Application.Dtos.Responses
-    open System.Collections.ObjectModel
 
     let create (props: WorkRecordListViewProps) : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
-
-            let items = ObservableCollection<WorkRecordListItemDto> []
-
-            ctx.MonthlyRecords
-            |> R3.subscribe (fun records ->
-                items.Clear()
-                records.WorkRecords |> List.iter items.Add)
-            |> disposables.Add
 
             let itemTemplate (item: WorkRecordListItemDto) : Avalonia.Controls.Control =
                 let isSelected =
@@ -91,10 +82,10 @@ module WorkRecordListView =
                 .Child(
                     ScrollViewer()
                         .VerticalScrollBarVisibilityAuto()
+                        .MinWidth(200.0)
                         .Content(
-                            ItemsControl()
-                                .MinWidth(200.0)
-                                .ItemsSource(items)
-                                .ItemTemplate(itemTemplate)
+                            ctx.MonthlyRecords
+                            |> R3.map (fun records -> records.WorkRecords)
+                            |> toListView itemTemplate
                         )
                 ))

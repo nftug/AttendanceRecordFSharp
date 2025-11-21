@@ -15,7 +15,7 @@ module RestTimeSection =
     open type NXUI.Builders
 
     let private createRestItemView
-        (onDelete: Guid option -> unit)
+        (handleDelete: Guid option -> unit)
         (item: ReactiveProperty<RestRecordSaveRequestDto>)
         : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
@@ -57,15 +57,17 @@ module RestTimeSection =
                           IsClearable = true },
                     MaterialIconButton.create
                         { Kind = MaterialIconKind.Delete
-                          OnClick = fun _ -> onDelete item.Value.Id
+                          OnClick = fun _ -> handleDelete item.Value.Id
                           FontSize = Some 20.0
                           Tooltip = Some "休憩時間を削除" }
                 ))
 
-    let private createRestTimesContent () =
+    let create () =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
-            let restItems = R3.collection ([]: ReactiveProperty<RestRecordSaveRequestDto> list)
+
+            let restItems =
+                R3.list ([]: ReactiveProperty<RestRecordSaveRequestDto> list) disposables
 
             ctx.Form
             |> R3.subscribe (fun formOpt ->
@@ -80,7 +82,7 @@ module RestTimeSection =
             |> disposables.Add
 
             restItems
-            |> R3.mapFromCollectionChanged (fun _ -> ()) ()
+            |> R3.mapFromListChanged (fun _ -> ()) ()
             |> R3.subscribe (fun _ ->
                 match ctx.Form.Value with
                 | Some form ->
@@ -89,42 +91,20 @@ module RestTimeSection =
                 | None -> ())
             |> disposables.Add
 
-            let onDelete (id: Guid option) =
+            let handleDelete (id: Guid option) =
                 match restItems |> Seq.tryFind (fun rp -> rp.Value.Id = id) with
                 | Some rp ->
                     restItems.Remove rp |> ignore
                     ctx.IsFormDirty.Value <- true
                 | None -> ()
 
-            ctx.Form
-            |> toView (fun formOpt ->
-                match formOpt with
-                | None -> Panel()
-                | Some record when record.RestRecords.IsEmpty ->
-                    TextBlock().Text("休憩記録がありません。").FontSize(14.0).Foreground(Brushes.Gray)
-                | Some _ ->
-                    StackPanel()
-                        .Spacing(5.0)
-                        .Children(
-                            ItemsControl()
-                                .ItemsSource(restItems)
-                                .ItemTemplate(createRestItemView onDelete)
-                        )))
-
-    let create () =
-        withReactive (fun _ self ->
-            let ctx, _ = HistoryPageContextProvider.require self
-
-            let handleAddRestTime () =
+            let handleAdd () =
                 match ctx.Form.Value with
                 | Some form ->
-                    let updated =
-                        { form with
-                            RestRecords =
-                                form.RestRecords
-                                @ [ RestRecordSaveRequestDto.empty form.StartedAt.Date ] }
+                    RestRecordSaveRequestDto.empty form.StartedAt.Date
+                    |> R3.property
+                    |> restItems.Add
 
-                    ctx.Form.Value <- Some updated
                     ctx.IsFormDirty.Value <- true
                 | None -> ()
 
@@ -146,11 +126,27 @@ module RestTimeSection =
                                         .Column(0),
                                     (MaterialIconButton.create
                                         { Kind = MaterialIconKind.AddCircleOutline
-                                          OnClick = fun _ -> handleAddRestTime ()
+                                          OnClick = fun _ -> handleAdd ()
                                           FontSize = Some 20.0
                                           Tooltip = Some "休憩時間を追加" })
                                         .Column(2)
                                 ),
-                            createRestTimesContent ()
+                            ctx.Form
+                            |> toView (fun formOpt ->
+                                match formOpt with
+                                | None -> Panel()
+                                | Some record when record.RestRecords.IsEmpty ->
+                                    TextBlock()
+                                        .Text("休憩記録がありません。")
+                                        .FontSize(14.0)
+                                        .Foreground(Brushes.Gray)
+                                | Some _ ->
+                                    StackPanel()
+                                        .Spacing(5.0)
+                                        .Children(
+                                            ItemsControl()
+                                                .ItemsSource(restItems)
+                                                .ItemTemplate(createRestItemView handleDelete)
+                                        ))
                         )
                 ))

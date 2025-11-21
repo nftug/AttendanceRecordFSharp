@@ -2,7 +2,7 @@
 
 open R3
 open System
-open System.Collections.ObjectModel
+open ObservableCollections
 
 module R3 =
     let property<'T> (initialValue: 'T) : ReactiveProperty<'T> =
@@ -59,23 +59,35 @@ module R3 =
         : Observable<'TOut> =
         source1.CombineLatest(source2, source3, source4, combiner)
 
-    let everyValueChanged (propertySelector: 'T -> 'U) (source: 'T) : Observable<'U> =
-        Observable.EveryValueChanged(source, propertySelector)
-
-    let collectionChanged (source: ObservableCollection<'t>) : Observable<int> =
-        source |> everyValueChanged (fun c -> c.Count)
-
-    let collection<'T, 'obs when 'obs :> Observable<'T>>
+    let list<'obs when 'obs :> IDisposable>
         (initialItems: seq<'obs>)
-        : ObservableCollection<'obs> =
-        ObservableCollection<'obs> initialItems
+        (disposables: CompositeDisposable)
+        : ObservableList<'obs> =
+        let collection = ObservableList<'obs> initialItems
 
-    let mapFromCollectionChanged
+        collection.ObserveAdd()
+        |> subscribe (fun e -> e.Value |> disposables.Add)
+        |> disposables.Add
+
+        collection.ObserveRemove()
+        |> subscribe (fun e -> e.Value.Dispose())
+        |> disposables.Add
+
+        collection.ObserveClear()
+        |> subscribe (fun _ -> collection |> Seq.iter (fun item -> item.Dispose()))
+        |> disposables.Add
+
+        collection
+
+    let listCountChanged (source: ObservableList<'t>) : Observable<int> =
+        source.ObserveChanged().Select(fun _ -> source.Count)
+
+    let mapFromListChanged
         (selector: 'T[] -> 'U)
         (defaultValue: 'U)
-        (collection: ObservableCollection<'obs :> Observable<'T>>)
+        (collection: ObservableList<'obs :> Observable<'T>>)
         : Observable<'U> =
-        let trigger = collection |> collectionChanged
+        let trigger = collection |> listCountChanged
 
         trigger.SelectMany(fun count ->
             if count = 0 then

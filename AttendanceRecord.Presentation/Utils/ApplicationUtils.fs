@@ -74,8 +74,8 @@ module ApplicationUtils =
 
         container
 
-    let toChildren (items: #Control list) : Control[] =
-        items |> List.toArray |> Array.map (fun c -> c :> Control)
+    let toChildren (items: #Control seq) : Control[] =
+        items |> Seq.toArray |> Array.map (fun c -> c :> Control)
 
     let toView (render: 'a -> Control) (source: Observable<'a>) : Control =
         let container = ContentControl()
@@ -90,3 +90,10 @@ module ApplicationUtils =
         (source: Observable<'a>)
         : Control =
         withReactive (fun disposables self -> source |> toView (fun v -> render v disposables self))
+
+    let toListView (itemTemplate: 'a -> Control) (source: Observable<'a list>) : Control =
+        source
+        |> toView (fun v ->
+            let stackPanel = StackPanel()
+            stackPanel.Children.AddRange(v |> List.map itemTemplate |> toChildren)
+            stackPanel)

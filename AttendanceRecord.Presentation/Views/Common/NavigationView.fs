@@ -1,13 +1,11 @@
 namespace AttendanceRecord.Presentation.Views.Common
 
 open NXUI.Extensions
-open type NXUI.Builders
 open Avalonia.Controls
 open AttendanceRecord.Presentation.Utils
 open R3
 open Material.Icons
 open Avalonia.Media
-open System
 open AttendanceRecord.Shared
 
 type PageItem<'key when 'key: comparison> =
@@ -35,14 +33,12 @@ module NavigationView =
                     |> Map.map (fun key item ->
                         let isSelected =
                             props.SelectedKey
-                            |> R3.map (fun selectedKey -> selectedKey = key |> Nullable)
-                            |> R3.readonly (Nullable false |> Some)
+                            |> R3.map (fun selectedKey -> selectedKey = key)
+                            |> R3.readonly None
                             |> R3.disposeWith disposables
 
-                        ToggleButton()
+                        (AccentToggleButton.create isSelected)
                             .Content(MaterialIconLabel.create item.Icon item.Title)
-                            .OnIsCheckedChangedHandler(fun ctl _ ->
-                                ctl.IsChecked <- isSelected.CurrentValue)
                             .OnClickHandler(fun _ _ ->
                                 props.SelectedKey.Value <- key
                                 props.IsOpen.Value <- false)
@@ -52,8 +48,7 @@ module NavigationView =
                             .HorizontalAlignmentStretch()
                             .HorizontalContentAlignmentLeft()
                             .Background(Brushes.Transparent)
-                            .BorderBrush(Brushes.Transparent)
-                            .IsChecked(isSelected |> asBinding))
+                            .BorderBrush(Brushes.Transparent))
                     |> Map.toList
                     |> List.map snd
                     |> toChildren

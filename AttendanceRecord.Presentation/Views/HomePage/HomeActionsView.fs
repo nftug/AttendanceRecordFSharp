@@ -3,7 +3,6 @@ namespace AttendanceRecord.Presentation.Views.HomePage
 open type NXUI.Builders
 open NXUI.Extensions
 open R3
-open System
 open Material.Icons
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
@@ -15,11 +14,23 @@ module HomeActionsView =
             let ctx, _ = HomePageContextProvider.require self
             let hooks = useHomeActionsHooks ctx disposables
 
+            let isWorking =
+                hooks.Status
+                |> R3.map (fun s -> s.IsWorking)
+                |> R3.readonly None
+                |> R3.disposeWith disposables
+
+            let isResting =
+                hooks.Status
+                |> R3.map (fun s -> s.IsResting)
+                |> R3.readonly None
+                |> R3.disposeWith disposables
+
             Grid()
                 .RowDefinitions("Auto")
                 .ColumnDefinitions("*,*")
                 .Children(
-                    ToggleButton()
+                    (AccentToggleButton.create isWorking)
                         .Column(0)
                         .Content(
                             hooks.WorkButtonLabel
@@ -27,16 +38,11 @@ module HomeActionsView =
                         )
                         .OnClickHandler(fun _ _ -> hooks.HandleClickToggleWork())
                         .IsEnabled(hooks.WorkToggleEnabled |> asBinding)
-                        .IsChecked(
-                            hooks.Status |> R3.map (fun s -> s.IsWorking |> Nullable) |> asBinding
-                        )
-                        .OnIsCheckedChangedHandler(fun ctl _ ->
-                            ctl.IsChecked <- hooks.Status.CurrentValue.IsWorking)
                         .Height(46.0)
                         .FontSize(16.0)
                         .HorizontalAlignmentStretch()
                         .Margin(0, 0, 10.0, 0),
-                    ToggleButton()
+                    (AccentToggleButton.create isResting)
                         .Column(1)
                         .Content(
                             hooks.RestButtonLabel
@@ -44,11 +50,6 @@ module HomeActionsView =
                         )
                         .OnClickHandler(fun _ _ -> hooks.HandleClickToggleRest())
                         .IsEnabled(hooks.RestToggleEnabled |> asBinding)
-                        .IsChecked(
-                            hooks.Status |> R3.map (fun s -> s.IsResting |> Nullable) |> asBinding
-                        )
-                        .OnIsCheckedChangedHandler(fun ctl _ ->
-                            ctl.IsChecked <- hooks.Status.CurrentValue.IsResting)
                         .Height(46.0)
                         .FontSize(16.0)
                         .HorizontalAlignmentStretch()

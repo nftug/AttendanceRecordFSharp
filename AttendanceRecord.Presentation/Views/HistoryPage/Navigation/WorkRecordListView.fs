@@ -63,16 +63,13 @@ module WorkRecordListView =
                     |> R3.readonly None
                     |> R3.disposeWith disposables
 
-                ToggleButton()
+                (AccentToggleButton.create isSelected)
                     .HorizontalAlignmentStretch()
                     .HorizontalContentAlignmentLeft()
                     .Padding(10.0)
                     .FontSize(14.0)
                     .Background(Brushes.Transparent)
                     .BorderBrush(Brushes.Transparent)
-                    .IsChecked(isSelected |> asBinding)
-                    .OnIsCheckedChangedHandler(fun ctl _ ->
-                        ctl.IsChecked <- isSelected.CurrentValue)
                     .OnClickHandler(fun _ _ -> handleDateSelect ctx props disposables item.Date)
                     .Content(
                         StackPanel()

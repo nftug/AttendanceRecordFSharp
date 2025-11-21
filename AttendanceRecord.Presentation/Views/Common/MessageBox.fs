@@ -34,7 +34,7 @@ module private MessageBoxView =
             .Margin(20.0)
             .Spacing(20.0)
             .MinWidth(300.0)
-            .MaxWidth(400.0)
+            .MaxWidth(450.0)
             .Children(
                 TextBlock()
                     .Text(props.Title)

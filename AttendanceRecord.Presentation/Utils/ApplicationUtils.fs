@@ -32,6 +32,9 @@ module ApplicationUtils =
             | Some control -> control :?> 't
             | None -> failwith $"Control of type {typeof<'t>.FullName} not found."
 
+    let getPlatformColors () : Platform.PlatformColorValues =
+        Application.Current.PlatformSettings.GetColorValues()
+
     let asBinding<'T> (source: Observable<'T>) : Data.IBinding =
         source.AsSystemObservable().ToBinding()
 

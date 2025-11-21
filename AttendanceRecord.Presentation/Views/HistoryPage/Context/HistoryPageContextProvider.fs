@@ -5,10 +5,10 @@ open R3
 
 module HistoryPageContextProvider =
     let provide
-        (value: HistoryPageContext)
         (content: Avalonia.Controls.Control)
-        : ContextProvider<HistoryPageContext> =
-        Context.provide value content
+        (value: HistoryPageContext)
+        : Avalonia.Controls.Control =
+        Context.provide content value
 
     let require (control: Avalonia.Controls.Control) : (HistoryPageContext * CompositeDisposable) =
         Context.require<HistoryPageContext> control

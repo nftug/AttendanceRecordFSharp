@@ -12,11 +12,9 @@ module HistoryPageView =
 
     let create (props: HistoryPageContextProps) : Avalonia.Controls.Control =
         withReactive (fun disposables _ ->
-            let ctx = useHistoryPageContext props disposables
-
-            HistoryPageContextProvider.provide
-                ctx
-                (DockPanel()
+            useHistoryPageContext props disposables
+            |> HistoryPageContextProvider.provide (
+                DockPanel()
                     .LastChildFill(true)
                     .Children(
                         (HistoryToolbar.create ()).DockTop(),
@@ -35,4 +33,5 @@ module HistoryPageView =
                                       GetWorkRecordDetails = props.GetWorkRecordDetails })
                                     .Column(2)
                             )
-                    )))
+                    )
+            ))

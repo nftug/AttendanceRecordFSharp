@@ -13,10 +13,10 @@ type HomePageContext =
 
 module HomePageContextProvider =
     let provide
-        (value: HomePageContext)
         (content: Avalonia.Controls.Control)
-        : ContextProvider<HomePageContext> =
-        Context.provide value content
+        (value: HomePageContext)
+        : Avalonia.Controls.Control =
+        Context.provide content value
 
     let require (control: Avalonia.Controls.Control) : (HomePageContext * CompositeDisposable) =
         Context.require<HomePageContext> control

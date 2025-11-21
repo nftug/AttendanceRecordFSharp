@@ -6,9 +6,9 @@ open R3
 
 module HomePageView =
     let create (props: HomePageContext) : Avalonia.Controls.Control =
-        HomePageContextProvider.provide
-            props
-            (DockPanel()
+        props
+        |> HomePageContextProvider.provide (
+            DockPanel()
                 .LastChildFill(true)
                 .Children(
                     StackPanel()
@@ -19,4 +19,5 @@ module HomePageView =
                         .VerticalAlignmentCenter()
                         .Children(HomeActionsView.create (), StatusView.create ()),
                     ClockView.create ()
-                ))
+                )
+        )

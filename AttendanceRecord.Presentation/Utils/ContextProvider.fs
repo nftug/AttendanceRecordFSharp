@@ -49,26 +49,26 @@ type ContextProvider<'T when 'T: not struct>() =
 
 module Context =
     // === provide functions ===
-    let provide<'T when 'T: not struct> (value: 'T) (content: Control) : ContextProvider<'T> =
+    let provide<'T when 'T: not struct> (content: Control) (value: 'T) : ContextProvider<'T> =
         ContextProvider<'T>().Init(value, content)
 
     let provideWithBuilder<'T when 'T: not struct>
-        (builder: CompositeDisposable -> 'T)
         (content: Control)
+        (builder: CompositeDisposable -> 'T)
         : ContextProvider<'T> =
         ContextProvider<'T>().Init(builder, content)
 
     let provideWithName<'T when 'T: not struct>
-        (value: 'T)
         (content: Control)
         (name: string)
+        (value: 'T)
         : ContextProvider<'T> =
         ContextProvider<'T>().Init(value, content, name)
 
     let provideWithBuilderAndName<'T when 'T: not struct>
-        (builder: CompositeDisposable -> 'T)
         (content: Control)
         (name: string)
+        (builder: CompositeDisposable -> 'T)
         : ContextProvider<'T> =
         ContextProvider<'T>().Init(builder, content, name)
 

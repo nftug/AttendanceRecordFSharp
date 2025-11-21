@@ -36,19 +36,16 @@ type AlarmService(currentStatusStore: CurrentStatusStore, getAppConfig: unit -> 
             | None -> ())
         |> disposable.Add
 
-        R3.merge
-            [ workEndAlarm
-              |> R3.map (fun a ->
-                  { AlarmType = a.Rule.AlarmType
-                    IsTriggered = a.State.IsTriggered })
-              restStartAlarm
-              |> R3.map (fun a ->
-                  { AlarmType = a.Rule.AlarmType
-                    IsTriggered = a.State.IsTriggered }) ]
-        |> R3.filter (fun s -> s.IsTriggered)
-        |> R3.delay (TimeSpan.FromMilliseconds 100.0)
-        |> R3.subscribe (fun s -> alarmTriggered.Execute(s.AlarmType) |> ignore)
-        |> disposable.Add
+        [ workEndAlarm; restStartAlarm ]
+        |> List.iter (fun alarm ->
+            alarm
+            |> R3.map (fun a ->
+                { AlarmType = a.Rule.AlarmType
+                  IsTriggered = a.State.IsTriggered })
+            |> R3.distinctUntilChanged
+            |> R3.filter (fun s -> s.IsTriggered)
+            |> R3.subscribe (fun t -> alarmTriggered.Execute t.AlarmType)
+            |> disposable.Add)
 
     member _.AlarmTriggered: Observable<AlarmType> = alarmTriggered
 
@@ -60,6 +57,7 @@ type AlarmService(currentStatusStore: CurrentStatusStore, getAppConfig: unit -> 
         | AlarmType.WorkEnd -> workEndAlarm.Value <- workEndAlarm.Value |> Alarm.snooze now cfg
         | AlarmType.RestStart ->
             restStartAlarm.Value <- restStartAlarm.Value |> Alarm.snooze now cfg
+        | _ -> ()
 
     interface IDisposable with
         member _.Dispose() = disposable.Dispose()

@@ -108,3 +108,12 @@ module R3 =
     let prepend<'T> (value: 'T) (source: Observable<'T>) : Observable<'T> = source.Prepend value
 
     let skip<'T> (count: int) (source: Observable<'T>) : Observable<'T> = source.Skip count
+
+    let distinctUntilChanged<'T> (source: Observable<'T>) : Observable<'T> =
+        source.DistinctUntilChanged()
+
+    let distinctUntilChangedBy<'T, 'K>
+        (selector: 'T -> 'K)
+        (source: Observable<'T>)
+        : Observable<'T> =
+        source.DistinctUntilChangedBy selector

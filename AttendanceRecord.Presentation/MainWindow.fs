@@ -34,7 +34,7 @@ module private MainWindowLogic =
                 |> ignore
             else
                 let trayIcons = new TrayIcons()
-                trayIcons.Add(TrayIcon.create window)
+                trayIcons.Add(AppTrayIcon.create window)
                 TrayIcon.SetIcons(Application.Current, trayIcons))
 
         window

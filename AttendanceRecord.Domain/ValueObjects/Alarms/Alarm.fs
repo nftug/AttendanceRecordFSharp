@@ -25,7 +25,7 @@ module Alarm =
 
     let private isSnoozed now a =
         match a.State.SnoozedUntil with
-        | Some t when t > now -> true
+        | Some t when t >= now -> true
         | _ -> false
 
     let tryTrigger (now: DateTime) (r: 'r) (cfg: AppConfig) (a: Alarm<'r>) : Alarm<'r> =

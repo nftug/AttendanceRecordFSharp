@@ -69,7 +69,8 @@
 
     <Compile Include="Views/AboutPage/AboutPageView.fs" />
 
-    <Compile Include="Views/Application/TrayIcon.fs" />
+    <Compile Include="Views/Application/AppTrayIcon.fs" />
+    <Compile Include="Views/Application/AlarmHost.fs" />
     <Compile Include="Views/Application/MainView.fs" />
 
     <Compile Include="AppStyles.fs" />

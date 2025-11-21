@@ -5,7 +5,7 @@ open Avalonia.Media.Imaging
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 
-module TrayIcon =
+module AppTrayIcon =
     let create (window: Window) : TrayIcon =
         let showAndActivateWindow () =
             window.Show()

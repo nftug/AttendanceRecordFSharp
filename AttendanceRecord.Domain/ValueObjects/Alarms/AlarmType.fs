@@ -2,5 +2,5 @@ namespace AttendanceRecord.Domain.ValueObjects.Alarms
 
 [<RequireQualifiedAccess>]
 type AlarmType =
-    | WorkEnd
-    | RestStart
+    | WorkEnd = 0
+    | RestStart = 1

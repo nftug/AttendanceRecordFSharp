@@ -18,6 +18,7 @@
     <Compile Include="Dtos/Requests/WorkRecordSaveRequestDto.fs" />
 
     <Compile Include="Interfaces/SingleInstanceGuard.fs" />
+    <Compile Include="Interfaces/NamedPipe.fs" />
     <Compile Include="Interfaces/AppConfigRepository.fs" />
     <Compile Include="Interfaces/WorkRecordRepository.fs" />
 
@@ -37,6 +38,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AttendanceRecord.Shared\AttendanceRecord.Shared.fsproj" />
     <ProjectReference Include="..\AttendanceRecord.Domain\AttendanceRecord.Domain.fsproj" />
+    <ProjectReference Include="..\AttendanceRecord.Persistence\AttendanceRecord.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

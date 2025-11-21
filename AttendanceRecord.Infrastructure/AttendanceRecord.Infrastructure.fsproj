@@ -17,6 +17,7 @@
     <Compile Include="Services/SingleInstanceGuardImpl.fs" />
     <Compile Include="Repositories/WorkRecordRepositoryImpl.fs" />
     <Compile Include="Repositories/AppConfigRepositoryImpl.fs" />
+    <Compile Include="Services/NamedPipeImpl.fs" />
   </ItemGroup>
 
   <ItemGroup>

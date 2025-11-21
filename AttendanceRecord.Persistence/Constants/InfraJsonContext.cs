@@ -6,6 +6,7 @@ namespace AttendanceRecord.Persistence.Constants;
 
 [JsonSerializable(typeof(IEnumerable<WorkRecordFileDto>))]
 [JsonSerializable(typeof(AppConfigFileDto))]
+[JsonSerializable(typeof(NamedPipeMessage))]
 public partial class InfraJsonContext : JsonSerializerContext
 {
     public static InfraJsonContext Intended { get; } =

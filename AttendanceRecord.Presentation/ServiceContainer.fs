@@ -8,6 +8,7 @@ open AttendanceRecord.Infrastructure.Services
 
 type ServiceContainer =
     { SingleInstanceGuard: SingleInstanceGuard
+      NamedPipe: NamedPipe
       CurrentStatusStore: CurrentStatusStore
       AlarmService: AlarmService
       ToggleWorkUseCase: ToggleWork
@@ -24,6 +25,7 @@ module ServiceContainer =
         let singleInstanceGuard = SingleInstanceGuardImpl.create appDirService
         let workRecordRepository = WorkRecordRepositoryImpl.create appDirService
         let appConfigRepository = AppConfigRepositoryImpl.create appDirService
+        let namedPipe = NamedPipeImpl.create NamedPipe.pipeName
 
         // Application Services and Use Cases
         let timerProvider = TimerProvider.create ()
@@ -51,6 +53,7 @@ module ServiceContainer =
             GetWorkRecordDetails.create workRecordRepository getAppConfig
 
         { SingleInstanceGuard = singleInstanceGuard
+          NamedPipe = namedPipe
           CurrentStatusStore = currentStatusStore
           AlarmService = alarmService
           ToggleWorkUseCase = toggleWorkUseCase

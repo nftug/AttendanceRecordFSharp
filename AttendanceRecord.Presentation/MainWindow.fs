@@ -4,30 +4,25 @@ open Avalonia
 open Avalonia.Controls
 open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Presentation.Utils
-open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.Application
+open AttendanceRecord.Shared
 
 [<AutoOpen>]
 module private MainWindowLogic =
-    let initialize (singleInstanceGuard: SingleInstanceGuard) (window: Window) : Window =
+    let initialize (services: ServiceContainer) (window: Window) : Window =
         getApplicationLifetime()
-            .ShutdownRequested.Add(fun _ -> singleInstanceGuard.ReleaseLock())
+            .ShutdownRequested.Add(fun _ -> services.SingleInstanceGuard.ReleaseLock())
 
         window.Closing.AddHandler(fun sender e ->
             e.Cancel <- true
             sender :?> Window |> _.Hide())
 
         window.Loaded.Add(fun _ ->
-            if not (singleInstanceGuard.TryAcquireLock()) then
+            if not (services.SingleInstanceGuard.TryAcquireLock()) then
                 task {
-                    let! _ =
-                        MessageBox.show
-                            { Title = "多重起動の防止"
-                              Message = "このアプリケーションは既に起動しています。"
-                              OkContent = Some "終了"
-                              CancelContent = None
-                              Buttons = MessageBoxButtons.Ok }
-                            None
+                    match! services.NamedPipe.SendMessage NamedPipeMessage.showMainWindow with
+                    | Ok() -> ()
+                    | Error err -> eprintfn $"Failed to send message to existing instance: {err}"
 
                     getApplicationLifetime().Shutdown()
                 }
@@ -35,7 +30,16 @@ module private MainWindowLogic =
             else
                 let trayIcons = new TrayIcons()
                 trayIcons.Add(AppTrayIcon.create window)
-                TrayIcon.SetIcons(Application.Current, trayIcons))
+                TrayIcon.SetIcons(Application.Current, trayIcons)
+
+                services.NamedPipe.Receiver
+                |> R3.subscribe (fun msg ->
+                    match msg.Content with
+                    | NamedPipeMessage.showMainWindow ->
+                        window.Show()
+                        window.Activate()
+                    | _ -> ())
+                |> ignore)
 
         window
 
@@ -54,4 +58,4 @@ module MainWindow =
             .WindowStartupLocationCenterScreen()
             .Styles(AppStyles(), DialogHostStyles(), MaterialIconStyles null)
             .Content(MainView.create services)
-        |> initialize services.SingleInstanceGuard
+        |> initialize services

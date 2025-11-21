@@ -87,8 +87,6 @@ module WorkRecordEditView =
                         .HorizontalAlignmentCenter()
                         .VerticalAlignmentCenter()
                 | Some form ->
-                    let ctx, _ = HistoryPageContextProvider.require self
-
                     let actionButtons =
                         StackPanel()
                             .OrientationHorizontal()

@@ -15,43 +15,41 @@ module RestTimeSection =
     open type NXUI.Builders
 
     let private createRestItemView
+        (ctx: HistoryPageContext)
         (handleDelete: Guid option -> unit)
         (item: ReactiveProperty<RestRecordSaveRequestDto>)
         : Avalonia.Controls.Control =
-        withLifecycle (fun _ self ->
-            let ctx, _ = HistoryPageContextProvider.require self
+        let handleSetStartedAt (startedAt: DateTime option) : unit =
+            item.Value <-
+                { item.Value with
+                    StartedAt = defaultArg startedAt item.Value.StartedAt }
 
-            let handleSetStartedAt (startedAt: DateTime option) : unit =
-                item.Value <-
-                    { item.Value with
-                        StartedAt = defaultArg startedAt item.Value.StartedAt }
+        let handleSetEndedAt (endedAt: DateTime option) : unit =
+            item.Value <- { item.Value with EndedAt = endedAt }
 
-            let handleSetEndedAt (endedAt: DateTime option) : unit =
-                item.Value <- { item.Value with EndedAt = endedAt }
-
-            StackPanel()
-                .OrientationHorizontal()
-                .Spacing(15.0)
-                .Margin(0.0, 0.0, 0.0, 5.0)
-                .Children(
-                    TimePickerField.create
-                        { Label = "開始時間"
-                          BaseDate = ctx.CurrentDate
-                          Value = item |> R3.map (fun r -> Some r.StartedAt)
-                          OnSetValue = handleSetStartedAt
-                          IsClearable = false },
-                    TimePickerField.create
-                        { Label = "終了時間"
-                          BaseDate = ctx.CurrentDate
-                          Value = item |> R3.map _.EndedAt
-                          OnSetValue = handleSetEndedAt
-                          IsClearable = true },
-                    MaterialIconButton.create
-                        { Kind = MaterialIconKind.Delete
-                          OnClick = fun _ -> handleDelete item.Value.Id
-                          FontSize = Some 20.0
-                          Tooltip = Some "休憩時間を削除" }
-                ))
+        StackPanel()
+            .OrientationHorizontal()
+            .Spacing(15.0)
+            .Margin(0.0, 0.0, 0.0, 5.0)
+            .Children(
+                TimePickerField.create
+                    { Label = "開始時間"
+                      BaseDate = ctx.CurrentDate
+                      Value = item |> R3.map (fun r -> Some r.StartedAt)
+                      OnSetValue = handleSetStartedAt
+                      IsClearable = false },
+                TimePickerField.create
+                    { Label = "終了時間"
+                      BaseDate = ctx.CurrentDate
+                      Value = item |> R3.map _.EndedAt
+                      OnSetValue = handleSetEndedAt
+                      IsClearable = true },
+                MaterialIconButton.create
+                    { Kind = MaterialIconKind.Delete
+                      OnClick = fun _ -> handleDelete item.Value.Id
+                      FontSize = Some 20.0
+                      Tooltip = Some "休憩時間を削除" }
+            )
 
     let create () =
         withLifecycle (fun disposables self ->
@@ -130,7 +128,7 @@ module RestTimeSection =
                                         .Children(
                                             ItemsControl()
                                                 .ItemsSource(restItems)
-                                                .ItemTemplate(createRestItemView handleDelete)
+                                                .ItemTemplate(createRestItemView ctx handleDelete)
                                         ))
                         )
                 ))

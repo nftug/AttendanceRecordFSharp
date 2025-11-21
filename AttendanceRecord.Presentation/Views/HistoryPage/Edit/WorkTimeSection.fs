@@ -57,13 +57,11 @@ module WorkTimeSection =
                                         { Label = "出勤時間"
                                           BaseDate = ctx.CurrentDate
                                           SelectedDateTime = startedAt
-                                          IsDirty = Some ctx.IsFormDirty
                                           IsClearable = false },
                                     TimePickerField.create
                                         { Label = "退勤時間"
                                           BaseDate = ctx.CurrentDate
                                           SelectedDateTime = endedAt
-                                          IsDirty = Some ctx.IsFormDirty
                                           IsClearable = true }
                                 )
                         )

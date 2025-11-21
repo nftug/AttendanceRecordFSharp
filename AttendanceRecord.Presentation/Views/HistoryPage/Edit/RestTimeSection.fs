@@ -47,13 +47,11 @@ module RestTimeSection =
                         { Label = "開始時間"
                           BaseDate = ctx.CurrentDate
                           SelectedDateTime = startedAt
-                          IsDirty = Some ctx.IsFormDirty
                           IsClearable = false },
                     TimePickerField.create
                         { Label = "終了時間"
                           BaseDate = ctx.CurrentDate
                           SelectedDateTime = endedAt
-                          IsDirty = Some ctx.IsFormDirty
                           IsClearable = true },
                     MaterialIconButton.create
                         { Kind = MaterialIconKind.Delete
@@ -74,10 +72,7 @@ module RestTimeSection =
                 restItems.Clear()
 
                 match formOpt with
-                | Some form ->
-                    form.RestRecords
-                    |> List.map (fun rt -> R3.property rt |> R3.disposeWith disposables)
-                    |> List.iter restItems.Add
+                | Some form -> form.RestRecords |> List.map R3.property |> restItems.AddRange
                 | None -> ())
             |> disposables.Add
 
@@ -93,9 +88,7 @@ module RestTimeSection =
 
             let handleDelete (id: Guid option) =
                 match restItems |> Seq.tryFind (fun rp -> rp.Value.Id = id) with
-                | Some rp ->
-                    restItems.Remove rp |> ignore
-                    ctx.IsFormDirty.Value <- true
+                | Some rp -> restItems.Remove rp |> ignore
                 | None -> ()
 
             let handleAdd () =
@@ -104,8 +97,6 @@ module RestTimeSection =
                     RestRecordSaveRequestDto.empty form.StartedAt.Date
                     |> R3.property
                     |> restItems.Add
-
-                    ctx.IsFormDirty.Value <- true
                 | None -> ()
 
             Border()

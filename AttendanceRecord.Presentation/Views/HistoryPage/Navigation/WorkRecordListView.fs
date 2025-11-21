@@ -1,22 +1,16 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Navigation
 
 open System
-open System.Threading
-open System.Threading.Tasks
 open R3
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Shared
 
-type WorkRecordListViewProps =
-    { OnConfirmDiscard: CancellationToken -> Task<bool> }
-
 [<AutoOpen>]
 module private WorkRecordListViewLogic =
     let handleDateSelect
         (ctx: HistoryPageContext)
-        (props: WorkRecordListViewProps)
         (disposables: CompositeDisposable)
         (date: DateTime)
         : unit =
@@ -25,11 +19,10 @@ module private WorkRecordListViewLogic =
         | _ ->
             invokeTask disposables (fun ct ->
                 task {
-                    let! shouldProceed = props.OnConfirmDiscard ct
+                    let! shouldProceed = ctx.ConfirmDiscard ct
 
                     if shouldProceed then
                         ctx.CurrentDate.Value <- Some date
-                        ctx.IsFormDirty.Value <- false
                 })
             |> ignore
 
@@ -40,7 +33,7 @@ module WorkRecordListView =
     open Avalonia.Media
     open AttendanceRecord.Application.Dtos.Responses
 
-    let create (props: WorkRecordListViewProps) : Avalonia.Controls.Control =
+    let create () : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
@@ -61,7 +54,7 @@ module WorkRecordListView =
                     .FontSize(14.0)
                     .Background(Brushes.Transparent)
                     .BorderBrush(Brushes.Transparent)
-                    .OnClickHandler(fun _ _ -> handleDateSelect ctx props disposables item.Date)
+                    .OnClickHandler(fun _ _ -> handleDateSelect ctx disposables item.Date)
                     .Content(
                         StackPanel()
                             .OrientationHorizontal()

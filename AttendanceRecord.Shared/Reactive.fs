@@ -79,21 +79,27 @@ module R3 =
 
         collection
 
-    let listCountChanged (source: ObservableList<'t>) : Observable<int> =
-        source.ObserveChanged().Select(fun _ -> source.Count)
+    let everyValueChanged (selector: 'T -> 'U) (source: 'T) : Observable<'U> =
+        Observable.EveryValueChanged(source, selector)
+
+    let selectMany (selector: 'T -> Observable<'U>) (source: Observable<'T>) : Observable<'U> =
+        source.SelectMany selector
 
     let mapFromListChanged
         (selector: 'T[] -> 'U)
         (defaultValue: 'U)
         (collection: ObservableList<'obs :> Observable<'T>>)
         : Observable<'U> =
-        let trigger = collection |> listCountChanged
-
-        trigger.SelectMany(fun count ->
-            if count = 0 then
-                Observable.Return(defaultValue)
+        collection
+        |> everyValueChanged (fun items -> items.Count)
+        |> selectMany (fun _ ->
+            if collection.Count = 0 then
+                Observable.Return defaultValue
             else
-                Observable.CombineLatest(collection |> Seq.cast).Select(selector))
+                collection
+                |> Seq.cast<Observable<'T>>
+                |> Observable.CombineLatest
+                |> map selector)
 
     let merge<'T> (sources: seq<Observable<'T>>) : Observable<'T> = Observable.Merge sources
 

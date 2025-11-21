@@ -12,7 +12,6 @@ type TimePickerFieldProps =
     { Label: string
       BaseDate: Observable<DateTime option>
       SelectedDateTime: ReactiveProperty<DateTime option>
-      IsDirty: ReactiveProperty<bool> option
       IsClearable: bool }
 
 module TimePickerField =
@@ -27,10 +26,6 @@ module TimePickerField =
                         match timeOpt with
                         | Some time -> Some(baseDate + time)
                         | _ -> None
-
-                    match props.IsDirty with
-                    | Some isDirty -> isDirty.Value <- true
-                    | None -> ()
 
                 StackPanel()
                     .Spacing(5.0)

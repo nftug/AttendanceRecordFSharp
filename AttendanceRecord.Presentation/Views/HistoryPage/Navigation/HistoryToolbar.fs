@@ -1,27 +1,21 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Navigation
 
 open System
-open System.Threading
-open System.Threading.Tasks
 open R3
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
 
-type HistoryToolbarProps =
-    { OnConfirmDiscard: CancellationToken -> Task<bool> }
-
 [<AutoOpen>]
 module private HistoryToolbarLogic =
     let handleNavigateMonth
         (ctx: HistoryPageContext)
-        (props: HistoryToolbarProps)
         (disposables: CompositeDisposable)
         (delta: int)
         : unit =
         invokeTask disposables (fun ct ->
             task {
-                let! shouldProceed = props.OnConfirmDiscard ct
+                let! shouldProceed = ctx.ConfirmDiscard ct
 
                 if shouldProceed then
                     ctx.CurrentMonth.Value <- ctx.CurrentMonth.CurrentValue.AddMonths delta
@@ -29,14 +23,10 @@ module private HistoryToolbarLogic =
             })
         |> ignore
 
-    let handleJumpToToday
-        (ctx: HistoryPageContext)
-        (props: HistoryToolbarProps)
-        (disposables: CompositeDisposable)
-        : unit =
+    let handleJumpToToday (ctx: HistoryPageContext) (disposables: CompositeDisposable) : unit =
         invokeTask disposables (fun ct ->
             task {
-                let! shouldProceed = props.OnConfirmDiscard ct
+                let! shouldProceed = ctx.ConfirmDiscard ct
 
                 if shouldProceed then
                     let today = DateTime.Now.Date
@@ -45,14 +35,10 @@ module private HistoryToolbarLogic =
             })
         |> ignore
 
-    let handleShowDatePicker
-        (ctx: HistoryPageContext)
-        (props: HistoryToolbarProps)
-        (disposables: CompositeDisposable)
-        : unit =
+    let handleShowDatePicker (ctx: HistoryPageContext) (disposables: CompositeDisposable) : unit =
         invokeTask disposables (fun ct ->
             task {
-                let! shouldProceed = props.OnConfirmDiscard ct
+                let! shouldProceed = ctx.ConfirmDiscard ct
 
                 if shouldProceed then
                     let! result =
@@ -72,11 +58,10 @@ module private HistoryToolbarLogic =
 module HistoryToolbar =
     open NXUI.Extensions
     open type NXUI.Builders
-    open Avalonia.Media
     open Material.Icons
     open AttendanceRecord.Shared
 
-    let create (props: HistoryToolbarProps) : Avalonia.Controls.Control =
+    let create () : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
             let monthText = ctx.CurrentMonth |> R3.map (fun d -> d.ToString "yyyy年 MM月")
@@ -93,28 +78,28 @@ module HistoryToolbar =
                         .Children(
                             (MaterialIconButton.create
                                 { Kind = MaterialIconKind.NavigateBefore
-                                  OnClick = fun _ -> handleNavigateMonth ctx props disposables -1
+                                  OnClick = fun _ -> handleNavigateMonth ctx disposables -1
                                   FontSize = Some 18.0
                                   Tooltip = Some "前の月へ移動" })
                                 .Width(50.0)
                                 .Height(50.0),
                             (MaterialIconButton.create
                                 { Kind = MaterialIconKind.NavigateNext
-                                  OnClick = fun _ -> handleNavigateMonth ctx props disposables 1
+                                  OnClick = fun _ -> handleNavigateMonth ctx disposables 1
                                   FontSize = Some 18.0
                                   Tooltip = Some "次の月へ移動" })
                                 .Width(50.0)
                                 .Height(50.0),
                             (MaterialIconButton.create
                                 { Kind = MaterialIconKind.Home
-                                  OnClick = fun _ -> handleJumpToToday ctx props disposables
+                                  OnClick = fun _ -> handleJumpToToday ctx disposables
                                   FontSize = Some 18.0
                                   Tooltip = Some "今月へ移動" })
                                 .Width(50.0)
                                 .Height(50.0),
                             (MaterialIconButton.create
                                 { Kind = MaterialIconKind.CalendarToday
-                                  OnClick = fun _ -> handleShowDatePicker ctx props disposables
+                                  OnClick = fun _ -> handleShowDatePicker ctx disposables
                                   FontSize = Some 18.0
                                   Tooltip = Some "日付を選択" })
                                 .Width(50.0)

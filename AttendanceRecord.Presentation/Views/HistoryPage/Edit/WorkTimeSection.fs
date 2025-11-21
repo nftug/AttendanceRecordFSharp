@@ -13,56 +13,48 @@ module WorkTimeSection =
     open type NXUI.Builders
 
     let create () =
-        withReactive (fun disposables self ->
-            let startedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
-            let endedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
+        withReactive (fun _ self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
             ctx.Form
-            |> R3.subscribe (fun formOpt ->
+            |> toView (fun formOpt ->
                 match formOpt with
+                | None -> Panel()
                 | Some form ->
-                    startedAt.Value <- Some form.StartedAt
-                    endedAt.Value <- form.EndedAt
-                | None -> ())
-            |> disposables.Add
+                    let handleSetStartedAt (startedAt: DateTime option) : unit =
+                        let startedAt = defaultArg startedAt form.StartedAt
+                        ctx.Form.Value <- Some { form with StartedAt = startedAt }
 
-            startedAt
-            |> R3.combineLatest2 endedAt (fun sa ea -> sa, ea)
-            |> R3.subscribe (fun (s, e) ->
-                match ctx.Form.Value with
-                | Some form ->
-                    ctx.Form.Value <-
-                        Some
-                            { form with
-                                StartedAt = defaultArg s form.StartedAt
-                                EndedAt = e }
-                | _ -> ())
-            |> disposables.Add
+                    let handleSetEndedAt (endedAt: DateTime option) : unit =
+                        ctx.Form.Value <- Some { form with EndedAt = endedAt }
 
-            Border()
-                .BorderThickness(1.0)
-                .BorderBrush(Brushes.Gray)
-                .Padding(15.0)
-                .Child(
-                    StackPanel()
-                        .Spacing(15.0)
-                        .Children(
-                            TextBlock().Text("出退勤").FontSize(18.0).FontWeightBold(),
+                    Border()
+                        .BorderThickness(1.0)
+                        .BorderBrush(Brushes.Gray)
+                        .Padding(15.0)
+                        .Child(
                             StackPanel()
-                                .OrientationHorizontal()
                                 .Spacing(15.0)
                                 .Children(
-                                    TimePickerField.create
-                                        { Label = "出勤時間"
-                                          BaseDate = ctx.CurrentDate
-                                          SelectedDateTime = startedAt
-                                          IsClearable = false },
-                                    TimePickerField.create
-                                        { Label = "退勤時間"
-                                          BaseDate = ctx.CurrentDate
-                                          SelectedDateTime = endedAt
-                                          IsClearable = true }
+                                    TextBlock().Text("出退勤").FontSize(18.0).FontWeightBold(),
+                                    StackPanel()
+                                        .OrientationHorizontal()
+                                        .Spacing(15.0)
+                                        .Children(
+                                            TimePickerField.create
+                                                { Label = "出勤時間"
+                                                  BaseDate = ctx.CurrentDate
+                                                  Value =
+                                                    ctx.Form |> R3.map (Option.map _.StartedAt)
+                                                  OnSetValue = handleSetStartedAt
+                                                  IsClearable = false },
+                                            TimePickerField.create
+                                                { Label = "退勤時間"
+                                                  BaseDate = ctx.CurrentDate
+                                                  Value =
+                                                    ctx.Form |> R3.map (Option.bind _.EndedAt)
+                                                  OnSetValue = handleSetEndedAt
+                                                  IsClearable = true }
+                                        )
                                 )
-                        )
-                ))
+                        )))

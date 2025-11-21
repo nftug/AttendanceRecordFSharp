@@ -18,25 +18,16 @@ module RestTimeSection =
         (handleDelete: Guid option -> unit)
         (item: ReactiveProperty<RestRecordSaveRequestDto>)
         : Avalonia.Controls.Control =
-        withReactive (fun disposables self ->
-            let startedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
-            let endedAt = R3.property (None: DateTime option) |> R3.disposeWith disposables
+        withReactive (fun _ self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
-            item
-            |> R3.subscribe (fun r ->
-                startedAt.Value <- Some r.StartedAt
-                endedAt.Value <- r.EndedAt)
-            |> disposables.Add
-
-            startedAt
-            |> R3.combineLatest2 endedAt (fun sa ea -> sa, ea)
-            |> R3.subscribe (fun (s, e) ->
+            let handleSetStartedAt (startedAt: DateTime option) : unit =
                 item.Value <-
                     { item.Value with
-                        StartedAt = defaultArg s item.Value.StartedAt
-                        EndedAt = e })
-            |> disposables.Add
+                        StartedAt = defaultArg startedAt item.Value.StartedAt }
+
+            let handleSetEndedAt (endedAt: DateTime option) : unit =
+                item.Value <- { item.Value with EndedAt = endedAt }
 
             StackPanel()
                 .OrientationHorizontal()
@@ -46,12 +37,14 @@ module RestTimeSection =
                     TimePickerField.create
                         { Label = "開始時間"
                           BaseDate = ctx.CurrentDate
-                          SelectedDateTime = startedAt
+                          Value = item |> R3.map (fun r -> Some r.StartedAt)
+                          OnSetValue = handleSetStartedAt
                           IsClearable = false },
                     TimePickerField.create
                         { Label = "終了時間"
                           BaseDate = ctx.CurrentDate
-                          SelectedDateTime = endedAt
+                          Value = item |> R3.map _.EndedAt
+                          OnSetValue = handleSetEndedAt
                           IsClearable = true },
                     MaterialIconButton.create
                         { Kind = MaterialIconKind.Delete
@@ -81,7 +74,7 @@ module RestTimeSection =
             |> R3.subscribe (fun _ ->
                 match ctx.Form.Value with
                 | Some form ->
-                    let updated = restItems |> Seq.map (fun rp -> rp.Value) |> Seq.toList
+                    let updated = restItems |> Seq.map _.Value |> Seq.toList
                     ctx.Form.Value <- Some { form with RestRecords = updated }
                 | None -> ())
             |> disposables.Add

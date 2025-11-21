@@ -11,7 +11,8 @@ open AttendanceRecord.Shared
 type TimePickerFieldProps =
     { Label: string
       BaseDate: Observable<DateTime option>
-      SelectedDateTime: ReactiveProperty<DateTime option>
+      Value: Observable<DateTime option>
+      OnSetValue: (DateTime option -> unit)
       IsClearable: bool }
 
 module TimePickerField =
@@ -22,10 +23,11 @@ module TimePickerField =
             | None -> Panel()
             | Some baseDate ->
                 let handleTimeChange (timeOpt: TimeSpan option) =
-                    props.SelectedDateTime.Value <-
+                    props.OnSetValue(
                         match timeOpt with
                         | Some time -> Some(baseDate + time)
                         | _ -> None
+                    )
 
                 StackPanel()
                     .Spacing(5.0)
@@ -37,17 +39,14 @@ module TimePickerField =
                             .Children(
                                 TimePicker()
                                     .SelectedTime(
-                                        props.SelectedDateTime
-                                        |> R3.map (fun dt ->
-                                            dt |> Option.map (fun d -> d.TimeOfDay))
-                                        |> R3.map (fun tOpt -> tOpt |> Option.toNullable)
+                                        props.Value
+                                        |> R3.map (Option.map _.TimeOfDay)
+                                        |> R3.map Option.toNullable
                                         |> asBinding
                                     )
                                     .OnSelectedTimeChanged(fun ctl e ->
                                         e.Subscribe(fun _ ->
-                                            handleTimeChange (
-                                                ctl.SelectedTime |> Option.ofNullable
-                                            ))
+                                            handleTimeChange (Option.ofNullable ctl.SelectedTime))
                                         |> disposables.Add),
                                 (MaterialIconButton.create
                                     { Kind = MaterialIconKind.Close

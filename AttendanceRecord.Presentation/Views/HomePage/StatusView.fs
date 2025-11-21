@@ -32,7 +32,7 @@ module StatusView =
             )
 
     let create () : Avalonia.Controls.Control =
-        withReactive (fun _ self ->
+        withLifecycle (fun _ self ->
             let ctx, _ = HomePageContextProvider.require self
 
             Border()

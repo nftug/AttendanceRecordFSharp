@@ -53,7 +53,7 @@ module ApplicationUtils =
             | :? ObjectDisposedException -> ()
         }
 
-    let withReactive<'t when 't :> Control>
+    let withLifecycle<'t when 't :> Control>
         (create: CompositeDisposable -> Control -> 't)
         : Control =
         let mutable disposables: CompositeDisposable option = None

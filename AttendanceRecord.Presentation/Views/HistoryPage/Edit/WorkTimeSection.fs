@@ -13,7 +13,7 @@ module WorkTimeSection =
     open type NXUI.Builders
 
     let create () =
-        withReactive (fun _ self ->
+        withLifecycle (fun _ self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
             ctx.Form

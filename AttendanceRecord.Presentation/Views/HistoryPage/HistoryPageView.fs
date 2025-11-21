@@ -11,7 +11,7 @@ module HistoryPageView =
     open type NXUI.Builders
 
     let create (props: HistoryPageContextProps) : Avalonia.Controls.Control =
-        withReactive (fun disposables _ ->
+        withLifecycle (fun disposables _ ->
             useHistoryPageContext props disposables
             |> HistoryPageContextProvider.provide (
                 DockPanel()

@@ -34,7 +34,7 @@ module WorkRecordListView =
     open AttendanceRecord.Application.Dtos.Responses
 
     let create () : Avalonia.Controls.Control =
-        withReactive (fun disposables self ->
+        withLifecycle (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
             let itemTemplate _ _ (item: WorkRecordListItemDto) : Avalonia.Controls.Control =

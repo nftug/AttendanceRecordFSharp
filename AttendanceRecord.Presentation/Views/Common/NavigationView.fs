@@ -25,7 +25,7 @@ type private DrawerViewProps<'key when 'key: comparison> =
 
 module NavigationView =
     let private createDrawer (props: DrawerViewProps<'key>) =
-        withReactive (fun disposables _ ->
+        withLifecycle (fun disposables _ ->
             StackPanel()
                 .Margin(12.0)
                 .Children(
@@ -55,7 +55,7 @@ module NavigationView =
                 ))
 
     let create (props: NavigationViewProps<'key>) : Control =
-        withReactive (fun disposables _ ->
+        withLifecycle (fun disposables _ ->
             let isDrawerOpen = R3.property false |> R3.disposeWith disposables
 
             let selectedPageKey = R3.property props.InitialPageKey |> R3.disposeWith disposables

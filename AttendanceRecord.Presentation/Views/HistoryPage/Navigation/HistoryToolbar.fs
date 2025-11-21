@@ -62,7 +62,7 @@ module HistoryToolbar =
     open AttendanceRecord.Shared
 
     let create () : Avalonia.Controls.Control =
-        withReactive (fun disposables self ->
+        withLifecycle (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
             let monthText = ctx.CurrentMonth |> R3.map _.ToString("yyyy年 MM月")
 

@@ -9,7 +9,7 @@ open AttendanceRecord.Shared
 
 module ClockView =
     let create () : Avalonia.Controls.Control =
-        withReactive (fun _ self ->
+        withLifecycle (fun _ self ->
             let ctx, _ = HomePageContextProvider.require self
             let now = ctx.Status |> R3.map _.CurrentTime
 

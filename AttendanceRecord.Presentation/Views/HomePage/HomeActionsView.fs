@@ -10,7 +10,7 @@ open AttendanceRecord.Presentation.Views.Common
 
 module HomeActionsView =
     let create () : Avalonia.Controls.Control =
-        withReactive (fun disposables self ->
+        withLifecycle (fun disposables self ->
             let ctx, _ = HomePageContextProvider.require self
             let hooks = useHomeActionsHooks ctx disposables
 

@@ -74,7 +74,7 @@ module WorkRecordEditView =
     open type NXUI.Builders
 
     let create (props: WorkRecordEditViewProps) : Avalonia.Controls.Control =
-        withReactive (fun disposables self ->
+        withLifecycle (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
             ctx.Form

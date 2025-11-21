@@ -18,7 +18,7 @@ module RestTimeSection =
         (handleDelete: Guid option -> unit)
         (item: ReactiveProperty<RestRecordSaveRequestDto>)
         : Avalonia.Controls.Control =
-        withReactive (fun _ self ->
+        withLifecycle (fun _ self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
             let handleSetStartedAt (startedAt: DateTime option) : unit =
@@ -54,7 +54,7 @@ module RestTimeSection =
                 ))
 
     let create () =
-        withReactive (fun disposables self ->
+        withLifecycle (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
             let restItems =

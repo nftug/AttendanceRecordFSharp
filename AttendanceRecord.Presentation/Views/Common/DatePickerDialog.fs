@@ -14,7 +14,7 @@ module private DatePickerDialogView =
     open System.Windows.Input
 
     let create (props: DatePickerDialogProps) (closeCommand: ICommand) =
-        withReactive (fun disposables _ ->
+        withLifecycle (fun disposables _ ->
             let selectedDate = R3.property props.InitialDate |> R3.disposeWith disposables
 
             let canSelect = selectedDate |> R3.map _.IsSome

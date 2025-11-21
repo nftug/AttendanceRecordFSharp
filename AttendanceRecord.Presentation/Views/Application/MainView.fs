@@ -22,7 +22,7 @@ module MainView =
         | About
 
     let create (services: ServiceContainer) : Avalonia.Controls.Control =
-        withReactive (fun disposables _ ->
+        withLifecycle (fun disposables _ ->
             // Start alarm host
             AlarmHost.start services.AlarmService disposables
 

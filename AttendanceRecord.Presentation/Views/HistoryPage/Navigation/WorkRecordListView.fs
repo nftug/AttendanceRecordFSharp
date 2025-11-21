@@ -5,6 +5,7 @@ open System.Threading
 open System.Threading.Tasks
 open R3
 open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Shared
 

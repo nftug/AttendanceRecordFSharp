@@ -1,6 +1,7 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
 open Avalonia.Controls.Notifications
+open Material.Icons
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
@@ -74,6 +75,7 @@ module WorkRecordEditView =
     open NXUI.Extensions
     open type NXUI.Builders
 
+
     let create (props: WorkRecordEditViewProps) : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
@@ -97,12 +99,16 @@ module WorkRecordEditView =
                             .Margin(10.0)
                             .Children(
                                 Button()
-                                    .Content("保存")
+                                    .Content(
+                                        MaterialIconLabel.create MaterialIconKind.ContentSave "保存"
+                                    )
                                     .OnClickHandler(fun _ _ -> handleSave props ctx disposables)
                                     .Width(100.0)
                                     .Height(35.0),
                                 Button()
-                                    .Content("削除")
+                                    .Content(
+                                        MaterialIconLabel.create MaterialIconKind.Delete "削除"
+                                    )
                                     .OnClickHandler(fun _ _ -> handleDelete props ctx disposables)
                                     .Width(100.0)
                                     .Height(35.0)

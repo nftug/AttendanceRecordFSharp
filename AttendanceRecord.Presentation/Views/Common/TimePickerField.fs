@@ -3,7 +3,6 @@ namespace AttendanceRecord.Presentation.Views.Common
 open System
 open R3
 open Material.Icons
-open Avalonia.Media
 open NXUI.Extensions
 open type NXUI.Builders
 open AttendanceRecord.Presentation.Utils
@@ -55,12 +54,11 @@ module TimePickerField =
                                                 ctl.SelectedTime |> Option.ofNullable
                                             ))
                                         |> disposables.Add),
-                                Button()
+                                (MaterialIconButton.create
+                                    { Kind = MaterialIconKind.Close
+                                      OnClick = fun _ -> handleTimeChange None
+                                      FontSize = Some 12.0
+                                      Tooltip = Some "時間をクリア" })
                                     .IsVisible(props.IsClearable)
-                                    .Content(MaterialIcon.create MaterialIconKind.Close)
-                                    .FontSize(12.0)
-                                    .OnClickHandler(fun _ _ -> handleTimeChange None)
-                                    .Background(Brushes.Transparent)
-                                    .BorderBrush(Brushes.Transparent)
                             )
                     ))

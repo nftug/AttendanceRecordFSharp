@@ -32,11 +32,9 @@ module RestTimeSection =
             startedAt
             |> R3.combineLatest2 endedAt (fun sa ea -> sa, ea)
             |> R3.subscribe (fun (s, e) ->
-                let s = defaultArg s item.Value.StartedAt
-
                 item.Value <-
                     { item.Value with
-                        StartedAt = s
+                        StartedAt = defaultArg s item.Value.StartedAt
                         EndedAt = e })
             |> disposables.Add
 
@@ -57,58 +55,54 @@ module RestTimeSection =
                           SelectedDateTime = endedAt
                           IsDirty = Some ctx.IsFormDirty
                           IsClearable = true },
-                    Button()
-                        .Content(MaterialIcon.create MaterialIconKind.Delete)
-                        .OnClickHandler(fun _ _ -> onDelete item.Value.Id)
-                        .FontSize(20.0)
-                        .Background(Brushes.Transparent)
-                        .BorderBrush(Brushes.Transparent)
+                    MaterialIconButton.create
+                        { Kind = MaterialIconKind.Delete
+                          OnClick = fun _ -> onDelete item.Value.Id
+                          FontSize = Some 20.0
+                          Tooltip = Some "休憩時間を削除" }
                 ))
 
     let private createRestTimesContent () =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
+            let restItems = R3.collection ([]: ReactiveProperty<RestRecordSaveRequestDto> list)
 
             ctx.Form
-            |> toView (fun recordOpt ->
-                match recordOpt with
+            |> R3.subscribe (fun formOpt ->
+                restItems.Clear()
+
+                match formOpt with
+                | Some form ->
+                    form.RestRecords
+                    |> List.map (fun rt -> R3.property rt |> R3.disposeWith disposables)
+                    |> List.iter restItems.Add
+                | None -> ())
+            |> disposables.Add
+
+            restItems
+            |> R3.mapFromCollectionChanged (fun _ -> ()) ()
+            |> R3.subscribe (fun _ ->
+                match ctx.Form.Value with
+                | Some form ->
+                    let updated = restItems |> Seq.map (fun rp -> rp.Value) |> Seq.toList
+                    ctx.Form.Value <- Some { form with RestRecords = updated }
+                | None -> ())
+            |> disposables.Add
+
+            let onDelete (id: Guid option) =
+                match restItems |> Seq.tryFind (fun rp -> rp.Value.Id = id) with
+                | Some rp ->
+                    restItems.Remove rp |> ignore
+                    ctx.IsFormDirty.Value <- true
+                | None -> ()
+
+            ctx.Form
+            |> toView (fun formOpt ->
+                match formOpt with
                 | None -> Panel()
                 | Some record when record.RestRecords.IsEmpty ->
                     TextBlock().Text("休憩記録がありません。").FontSize(14.0).Foreground(Brushes.Gray)
                 | Some _ ->
-                    let restItems =
-                        R3.collection ([]: ReactiveProperty<RestRecordSaveRequestDto> list)
-
-                    ctx.Form
-                    |> R3.subscribe (fun rOpt ->
-                        match rOpt with
-                        | Some r ->
-                            restItems.Clear()
-
-                            r.RestRecords
-                            |> List.map (fun rt -> R3.property rt |> R3.disposeWith disposables)
-                            |> List.iter restItems.Add
-                        | None -> ())
-                    |> disposables.Add
-
-                    restItems
-                    |> R3.mapFromCollectionChanged (fun _ -> ()) ()
-                    |> R3.subscribe (fun _ ->
-                        match ctx.Form.Value with
-                        | Some r ->
-                            let updated = restItems |> Seq.map (fun rp -> rp.Value) |> Seq.toList
-
-                            ctx.Form.Value <- Some { r with RestRecords = updated }
-                        | None -> ())
-                    |> disposables.Add
-
-                    let onDelete (id: Guid option) =
-                        let toRemove = restItems |> Seq.tryFind (fun rp -> rp.Value.Id = id)
-
-                        match toRemove with
-                        | Some rp -> restItems.Remove rp |> ignore
-                        | None -> ()
-
                     StackPanel()
                         .Spacing(5.0)
                         .Children(
@@ -124,12 +118,10 @@ module RestTimeSection =
             let handleAddRestTime () =
                 match ctx.Form.Value with
                 | Some r ->
-                    let baseDate = r.StartedAt.Date
-
                     let updated =
                         { r with
                             RestRecords =
-                                r.RestRecords @ [ RestRecordSaveRequestDto.empty baseDate ] }
+                                r.RestRecords @ [ RestRecordSaveRequestDto.empty r.StartedAt.Date ] }
 
                     ctx.Form.Value <- Some updated
                     ctx.IsFormDirty.Value <- true
@@ -151,9 +143,11 @@ module RestTimeSection =
                                         .FontSize(18.0)
                                         .FontWeightBold()
                                         .Column(0),
-                                    Button()
-                                        .Content("+ 追加")
-                                        .OnClickHandler(fun _ _ -> handleAddRestTime ())
+                                    (MaterialIconButton.create
+                                        { Kind = MaterialIconKind.AddCircleOutline
+                                          OnClick = fun _ -> handleAddRestTime ()
+                                          FontSize = Some 20.0
+                                          Tooltip = Some "休憩時間を追加" })
                                         .Column(2)
                                 ),
                             createRestTimesContent ()

@@ -36,9 +36,9 @@
     <Compile Include="Utils/UseMutation.fs" />
     <Compile Include="Utils/GridExtensions.fs" />
     <Compile Include="Utils/ItemsControlExtensions.fs" />
-    <Compile Include="Utils/MaterialIcon.fs" />
     <Compile Include="Utils/Notification.fs" />
 
+    <Compile Include="Views/Common/MaterialIcon.fs" />
     <Compile Include="Views/Common/MessageBox.fs" />
     <Compile Include="Views/Common/DatePickerDialog.fs" />
     <Compile Include="Views/Common/NavigationView.fs" />

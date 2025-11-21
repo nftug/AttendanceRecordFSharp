@@ -93,14 +93,13 @@ module NavigationView =
                     .Height(50.0)
                     .Margin(5.0)
                     .Children(
-                        Button()
-                            .Content(MaterialIcon.create MaterialIconKind.Menu)
+                        (MaterialIconButton.create
+                            { Kind = MaterialIconKind.Menu
+                              OnClick = fun _ -> isDrawerOpen.Value <- true
+                              FontSize = Some 18.0
+                              Tooltip = Some "メニューを開く" })
                             .Width(50.0)
-                            .Height(50.0)
-                            .FontSize(18.0)
-                            .Background(Brushes.Transparent)
-                            .BorderBrush(Brushes.Transparent)
-                            .OnClickHandler(fun _ _ -> isDrawerOpen.Value <- true),
+                            .Height(50.0),
                         TextBlock()
                             .Text(pageTitle |> asBinding)
                             .FontSize(21.0)

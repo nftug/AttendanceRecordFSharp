@@ -33,7 +33,6 @@ module private HistoryToolbarLogic =
         (ctx: HistoryPageContext)
         (props: HistoryToolbarProps)
         (disposables: CompositeDisposable)
-        ()
         : unit =
         invokeTask disposables (fun ct ->
             task {
@@ -50,7 +49,6 @@ module private HistoryToolbarLogic =
         (ctx: HistoryPageContext)
         (props: HistoryToolbarProps)
         (disposables: CompositeDisposable)
-        ()
         : unit =
         invokeTask disposables (fun ct ->
             task {
@@ -93,42 +91,34 @@ module HistoryToolbar =
                         .Spacing(5.0)
                         .Column(0)
                         .Children(
-                            Button()
-                                .Content(MaterialIcon.create MaterialIconKind.NavigateBefore)
-                                .OnClickHandler(fun _ _ ->
-                                    handleNavigateMonth ctx props disposables -1)
+                            (MaterialIconButton.create
+                                { Kind = MaterialIconKind.NavigateBefore
+                                  OnClick = fun _ -> handleNavigateMonth ctx props disposables -1
+                                  FontSize = Some 18.0
+                                  Tooltip = Some "前の月へ移動" })
+                                .Width(50.0)
+                                .Height(50.0),
+                            (MaterialIconButton.create
+                                { Kind = MaterialIconKind.NavigateNext
+                                  OnClick = fun _ -> handleNavigateMonth ctx props disposables 1
+                                  FontSize = Some 18.0
+                                  Tooltip = Some "次の月へ移動" })
+                                .Width(50.0)
+                                .Height(50.0),
+                            (MaterialIconButton.create
+                                { Kind = MaterialIconKind.Home
+                                  OnClick = fun _ -> handleJumpToToday ctx props disposables
+                                  FontSize = Some 18.0
+                                  Tooltip = Some "今月へ移動" })
+                                .Width(50.0)
+                                .Height(50.0),
+                            (MaterialIconButton.create
+                                { Kind = MaterialIconKind.CalendarToday
+                                  OnClick = fun _ -> handleShowDatePicker ctx props disposables
+                                  FontSize = Some 18.0
+                                  Tooltip = Some "日付を選択" })
                                 .Width(50.0)
                                 .Height(50.0)
-                                .FontSize(18.0)
-                                .Background(Brushes.Transparent)
-                                .BorderBrush(Brushes.Transparent),
-                            Button()
-                                .Content(MaterialIcon.create MaterialIconKind.NavigateNext)
-                                .OnClickHandler(fun _ _ ->
-                                    handleNavigateMonth ctx props disposables 1)
-                                .Width(50.0)
-                                .Height(50.0)
-                                .FontSize(18.0)
-                                .Background(Brushes.Transparent)
-                                .BorderBrush(Brushes.Transparent),
-                            Button()
-                                .Content(MaterialIcon.create MaterialIconKind.Home)
-                                .OnClickHandler(fun _ _ ->
-                                    handleJumpToToday ctx props disposables ())
-                                .Width(50.0)
-                                .Height(50.0)
-                                .FontSize(18.0)
-                                .Background(Brushes.Transparent)
-                                .BorderBrush(Brushes.Transparent),
-                            Button()
-                                .Content(MaterialIcon.create MaterialIconKind.CalendarToday)
-                                .OnClickHandler(fun _ _ ->
-                                    handleShowDatePicker ctx props disposables ())
-                                .Width(50.0)
-                                .Height(50.0)
-                                .FontSize(18.0)
-                                .Background(Brushes.Transparent)
-                                .BorderBrush(Brushes.Transparent)
                         ),
                     StackPanel()
                         .OrientationHorizontal()

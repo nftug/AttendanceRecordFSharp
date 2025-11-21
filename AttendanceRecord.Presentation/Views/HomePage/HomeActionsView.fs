@@ -7,6 +7,7 @@ open System
 open Material.Icons
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.Common
 
 module HomeActionsView =
     let create () : Avalonia.Controls.Control =

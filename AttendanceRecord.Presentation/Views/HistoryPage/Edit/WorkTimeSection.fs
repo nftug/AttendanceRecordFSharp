@@ -19,11 +19,11 @@ module WorkTimeSection =
             let ctx, _ = HistoryPageContextProvider.require self
 
             ctx.Form
-            |> R3.subscribe (fun rOpt ->
-                match rOpt with
-                | Some r ->
-                    startedAt.Value <- Some r.StartedAt
-                    endedAt.Value <- r.EndedAt
+            |> R3.subscribe (fun formOpt ->
+                match formOpt with
+                | Some form ->
+                    startedAt.Value <- Some form.StartedAt
+                    endedAt.Value <- form.EndedAt
                 | None -> ())
             |> disposables.Add
 
@@ -31,11 +31,11 @@ module WorkTimeSection =
             |> R3.combineLatest2 endedAt (fun sa ea -> sa, ea)
             |> R3.subscribe (fun (s, e) ->
                 match ctx.Form.Value with
-                | Some r ->
+                | Some form ->
                     ctx.Form.Value <-
                         Some
-                            { r with
-                                StartedAt = defaultArg s r.StartedAt
+                            { form with
+                                StartedAt = defaultArg s form.StartedAt
                                 EndedAt = e }
                 | _ -> ())
             |> disposables.Add

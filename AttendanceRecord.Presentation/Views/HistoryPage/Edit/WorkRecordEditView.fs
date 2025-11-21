@@ -75,21 +75,20 @@ module WorkRecordEditView =
     open NXUI.Extensions
     open type NXUI.Builders
 
-
     let create (props: WorkRecordEditViewProps) : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
             ctx.Form
-            |> toView (fun record ->
-                match record with
+            |> toView (fun formOpt ->
+                match formOpt with
                 | None ->
                     TextBlock()
                         .Text("日付を選択してください")
                         .FontSize(16.0)
                         .HorizontalAlignmentCenter()
                         .VerticalAlignmentCenter()
-                | Some record ->
+                | Some form ->
                     let ctx, _ = HistoryPageContextProvider.require self
 
                     let actionButtons =
@@ -112,7 +111,7 @@ module WorkRecordEditView =
                                     .OnClickHandler(fun _ _ -> handleDelete props ctx disposables)
                                     .Width(100.0)
                                     .Height(35.0)
-                                    .IsEnabled(record.Id.IsSome)
+                                    .IsEnabled(form.Id.IsSome)
                             )
 
                     let scrollContent =
@@ -121,7 +120,7 @@ module WorkRecordEditView =
                             .Spacing(20.0)
                             .Children(
                                 TextBlock()
-                                    .Text(record.StartedAt.ToString "yyyy/MM/dd (ddd)")
+                                    .Text(form.StartedAt.ToString "yyyy/MM/dd (ddd)")
                                     .FontSize(28.0)
                                     .FontWeightBold(),
                                 WorkStatusSummarySection.create (),

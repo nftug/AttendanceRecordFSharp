@@ -117,11 +117,12 @@ module RestTimeSection =
 
             let handleAddRestTime () =
                 match ctx.Form.Value with
-                | Some r ->
+                | Some form ->
                     let updated =
-                        { r with
+                        { form with
                             RestRecords =
-                                r.RestRecords @ [ RestRecordSaveRequestDto.empty r.StartedAt.Date ] }
+                                form.RestRecords
+                                @ [ RestRecordSaveRequestDto.empty form.StartedAt.Date ] }
 
                     ctx.Form.Value <- Some updated
                     ctx.IsFormDirty.Value <- true

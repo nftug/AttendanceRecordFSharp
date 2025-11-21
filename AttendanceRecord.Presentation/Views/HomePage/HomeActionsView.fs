@@ -34,7 +34,7 @@ module HomeActionsView =
                     |> _.Column(0)
                         .Content(
                             hooks.WorkButtonLabel
-                            |> toView (MaterialIconLabel.create MaterialIconKind.Work)
+                            |> toView (fun _ _ -> MaterialIconLabel.create MaterialIconKind.Work)
                         )
                         .OnClickHandler(fun _ _ -> hooks.HandleClickToggleWork())
                         .IsEnabled(hooks.WorkToggleEnabled |> asBinding)
@@ -46,7 +46,7 @@ module HomeActionsView =
                     |> _.Column(1)
                         .Content(
                             hooks.RestButtonLabel
-                            |> toView (MaterialIconLabel.create MaterialIconKind.Coffee)
+                            |> toView (fun _ _ -> MaterialIconLabel.create MaterialIconKind.Coffee)
                         )
                         .OnClickHandler(fun _ _ -> hooks.HandleClickToggleRest())
                         .IsEnabled(hooks.RestToggleEnabled |> asBinding)

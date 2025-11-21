@@ -77,23 +77,55 @@ module ApplicationUtils =
     let toChildren (items: #Control seq) : Control[] =
         items |> Seq.toArray |> Array.map (fun c -> c :> Control)
 
-    let toView (render: 'a -> Control) (source: Observable<'a>) : Control =
-        let container = ContentControl()
-        let subscription = source |> R3.subscribe (fun v -> container.Content <- render v)
-
-        container.DetachedFromVisualTree.Add(fun _ -> subscription.Dispose())
-
-        container
-
-    let toViewWithReactive
+    let toView
         (render: CompositeDisposable -> Control -> 'a -> Control)
         (source: Observable<'a>)
         : Control =
-        withReactive (fun disposables self -> source |> toView (fun v -> render disposables self v))
+        let container = ContentControl()
+        let disposables = new CompositeDisposable()
 
-    let toListView (itemTemplate: 'a -> Control) (source: Observable<'a list>) : Control =
         source
-        |> toView (fun v ->
+        |> R3.subscribe (fun v ->
+            let child = render disposables container v
+            container.Content <- child)
+        |> disposables.Add
+
+        container.DetachedFromVisualTree.Add(fun _ -> disposables.Dispose())
+
+        container
+
+    let toListView
+        (itemTemplate: CompositeDisposable -> Control -> 'a -> Control)
+        (source: Observable<'a list>)
+        : Control =
+        source
+        |> toView (fun d s v ->
             let stackPanel = StackPanel()
-            stackPanel.Children.AddRange(v |> List.map itemTemplate |> toChildren)
+
+            stackPanel.Children.AddRange(v |> List.map (itemTemplate d s) |> toChildren)
+
+            stackPanel)
+
+    let toOptView
+        (render: CompositeDisposable -> Control -> 'a -> Control)
+        (source: Observable<'a option>)
+        : Control =
+        source
+        |> toView (fun d s ->
+            function
+            | Some v -> render d s v
+            | None -> Panel())
+
+    let toOptListView
+        (itemTemplate: CompositeDisposable -> Control -> 'a -> Control)
+        (source: Observable<'a option list>)
+        : Control =
+        source
+        |> toView (fun d s vList ->
+            let stackPanel = StackPanel()
+
+            stackPanel.Children.AddRange(
+                vList |> List.choose id |> List.map (itemTemplate d s) |> toChildren
+            )
+
             stackPanel)

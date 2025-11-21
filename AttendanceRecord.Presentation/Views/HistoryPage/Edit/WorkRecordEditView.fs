@@ -78,7 +78,8 @@ module WorkRecordEditView =
             let ctx, _ = HistoryPageContextProvider.require self
 
             ctx.Form
-            |> toView (function
+            |> toView (fun _ _ ->
+                function
                 | None ->
                     TextBlock()
                         .Text("日付を選択してください")
@@ -102,7 +103,9 @@ module WorkRecordEditView =
                                     .Width(100.0)
                                     .Height(35.0),
                                 Button()
-                                    .Content(MaterialIconLabel.create MaterialIconKind.Delete "削除")
+                                    .Content(
+                                        MaterialIconLabel.create MaterialIconKind.Delete "削除"
+                                    )
                                     .OnClickHandler(fun _ _ -> handleDelete props ctx disposables)
                                     .Width(100.0)
                                     .Height(35.0)

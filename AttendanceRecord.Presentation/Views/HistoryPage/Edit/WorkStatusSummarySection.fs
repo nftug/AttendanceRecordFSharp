@@ -23,25 +23,23 @@ module WorkStatusSummarySection =
             let ctx, _ = HistoryPageContextProvider.require self
 
             ctx.CurrentRecord
-            |> toView (function
-                | None -> Panel()
-                | Some record ->
-                    Border()
-                        .BorderThickness(1.0)
-                        .BorderBrush(Brushes.Gray)
-                        .Padding(18.0)
-                        .Child(
-                            StackPanel()
-                                .Spacing(10.0)
-                                .Children(
-                                    createSummaryInfoRow
-                                        "勤務時間"
-                                        (TimeSpan.formatDuration record.WorkTime),
-                                    createSummaryInfoRow
-                                        "休憩時間"
-                                        (TimeSpan.formatDuration record.RestTime),
-                                    createSummaryInfoRow
-                                        "残業時間"
-                                        (TimeSpan.formatDuration record.Overtime)
-                                )
-                        )))
+            |> toOptView (fun _ _ record ->
+                Border()
+                    .BorderThickness(1.0)
+                    .BorderBrush(Brushes.Gray)
+                    .Padding(18.0)
+                    .Child(
+                        StackPanel()
+                            .Spacing(10.0)
+                            .Children(
+                                createSummaryInfoRow
+                                    "勤務時間"
+                                    (TimeSpan.formatDuration record.WorkTime),
+                                createSummaryInfoRow
+                                    "休憩時間"
+                                    (TimeSpan.formatDuration record.RestTime),
+                                createSummaryInfoRow
+                                    "残業時間"
+                                    (TimeSpan.formatDuration record.Overtime)
+                            )
+                    )))

@@ -18,41 +18,39 @@ type TimePickerFieldProps =
 module TimePickerField =
     let create (props: TimePickerFieldProps) =
         props.BaseDate
-        |> toViewWithReactive (fun disposables _ ->
-            function
-            | None -> Panel()
-            | Some baseDate ->
-                let handleTimeChange (timeOpt: TimeSpan option) =
-                    props.OnSetValue(
-                        match timeOpt with
-                        | Some time -> Some(baseDate + time)
-                        | _ -> None
-                    )
+        |> R3.map (fun d -> defaultArg d DateTime.Now)
+        |> toView (fun disposables _ baseDate ->
+            let handleTimeChange (timeOpt: TimeSpan option) =
+                props.OnSetValue(
+                    match timeOpt with
+                    | Some time -> Some(baseDate + time)
+                    | _ -> None
+                )
 
-                StackPanel()
-                    .Spacing(5.0)
-                    .Children(
-                        TextBlock().Text(props.Label).FontSize(12.0),
-                        StackPanel()
-                            .OrientationHorizontal()
-                            .Spacing(2.0)
-                            .Children(
-                                TimePicker()
-                                    .SelectedTime(
-                                        props.Value
-                                        |> R3.map (Option.map _.TimeOfDay)
-                                        |> R3.map Option.toNullable
-                                        |> asBinding
-                                    )
-                                    .OnSelectedTimeChanged(fun ctl e ->
-                                        e.Subscribe(fun _ ->
-                                            handleTimeChange (Option.ofNullable ctl.SelectedTime))
-                                        |> disposables.Add),
-                                MaterialIconButton.create
-                                    { Kind = MaterialIconKind.Close
-                                      OnClick = fun _ -> handleTimeChange None
-                                      FontSize = Some 12.0
-                                      Tooltip = Some "時間をクリア" }
-                                |> _.IsVisible(props.IsClearable)
-                            )
-                    ))
+            StackPanel()
+                .Spacing(5.0)
+                .Children(
+                    TextBlock().Text(props.Label).FontSize(12.0),
+                    StackPanel()
+                        .OrientationHorizontal()
+                        .Spacing(2.0)
+                        .Children(
+                            TimePicker()
+                                .SelectedTime(
+                                    props.Value
+                                    |> R3.map (Option.map _.TimeOfDay)
+                                    |> R3.map Option.toNullable
+                                    |> asBinding
+                                )
+                                .OnSelectedTimeChanged(fun ctl e ->
+                                    e.Subscribe(fun _ ->
+                                        handleTimeChange (Option.ofNullable ctl.SelectedTime))
+                                    |> disposables.Add),
+                            MaterialIconButton.create
+                                { Kind = MaterialIconKind.Close
+                                  OnClick = fun _ -> handleTimeChange None
+                                  FontSize = Some 12.0
+                                  Tooltip = Some "時間をクリア" }
+                            |> _.IsVisible(props.IsClearable)
+                        )
+                ))

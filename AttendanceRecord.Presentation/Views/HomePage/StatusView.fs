@@ -43,7 +43,7 @@ module StatusView =
                 .Child(
                     ctx.Status
                     |> R3.map getStatusInfo
-                    |> toView (fun rows ->
+                    |> toView (fun _ _ rows ->
                         StackPanel()
                             .Spacing(8.0)
                             .VerticalAlignmentCenter()

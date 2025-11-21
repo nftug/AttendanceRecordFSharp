@@ -118,14 +118,13 @@ module RestTimeSection =
                                     |> _.Column(2)
                                 ),
                             ctx.Form
-                            |> toView (function
-                                | None -> Panel()
-                                | Some record when record.RestRecords.IsEmpty ->
+                            |> toOptView (fun _ _ form ->
+                                if form.RestRecords.IsEmpty then
                                     TextBlock()
                                         .Text("休憩記録がありません。")
                                         .FontSize(14.0)
                                         .Foreground(Brushes.Gray)
-                                | Some _ ->
+                                else
                                     StackPanel()
                                         .Spacing(5.0)
                                         .Children(

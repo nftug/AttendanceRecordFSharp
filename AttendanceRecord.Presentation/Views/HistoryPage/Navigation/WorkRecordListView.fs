@@ -37,7 +37,7 @@ module WorkRecordListView =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
-            let itemTemplate (item: WorkRecordListItemDto) : Avalonia.Controls.Control =
+            let itemTemplate _ _ (item: WorkRecordListItemDto) : Avalonia.Controls.Control =
                 let isSelected =
                     ctx.CurrentDate
                     |> R3.map (function

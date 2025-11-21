@@ -17,7 +17,7 @@ module private DatePickerDialogView =
         withReactive (fun disposables _ ->
             let selectedDate = R3.property props.InitialDate |> R3.disposeWith disposables
 
-            let canSelect = selectedDate |> R3.map (fun d -> d.IsSome)
+            let canSelect = selectedDate |> R3.map _.IsSome
 
             let onDisplayDateChanged (newDate: DateTime) =
                 match selectedDate.Value with
@@ -36,9 +36,7 @@ module private DatePickerDialogView =
                         .OnDisplayDateChanged(fun ctl e ->
                             e.Subscribe(fun _ -> onDisplayDateChanged ctl.DisplayDate)
                             |> disposables.Add)
-                        .SelectedDate(
-                            selectedDate |> R3.map (fun d -> d |> Option.toNullable) |> asBinding
-                        )
+                        .SelectedDate(selectedDate |> R3.map Option.toNullable |> asBinding)
                         .OnSelectedDateChanged(fun ctl e ->
                             e.Subscribe(fun _ ->
                                 selectedDate.Value <- ctl.SelectedDate |> Option.ofNullable)

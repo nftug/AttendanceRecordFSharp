@@ -43,7 +43,7 @@ type AlarmService(currentStatusStore: CurrentStatusStore, getAppConfig: unit -> 
                 { AlarmType = a.Rule.AlarmType
                   IsTriggered = a.State.IsTriggered })
             |> R3.distinctUntilChanged
-            |> R3.filter (fun s -> s.IsTriggered)
+            |> R3.filter _.IsTriggered
             |> R3.subscribe (fun t -> alarmTriggered.Execute t.AlarmType)
             |> disposable.Add)
 

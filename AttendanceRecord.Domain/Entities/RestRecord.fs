@@ -17,7 +17,7 @@ module RestRecord =
     let createStart () : RestRecord = create (TimeDuration.createStart ())
 
     let tryCreateEnd (now: DateTime) (record: RestRecord) : Result<RestRecord, string> =
-        match record.Duration |> TimeDuration.isActive now  with
+        match record.Duration |> TimeDuration.isActive now with
         | true ->
             TimeDuration.tryCreateEnd record.Duration
             |> Result.map (fun duration -> { record with Duration = duration })
@@ -36,8 +36,7 @@ module RestRecord =
     let getEndedAt (record: RestRecord) : DateTime option =
         record.Duration |> TimeDuration.getEndedAt
 
-    let getDate (record: RestRecord) : DateTime =
-        getStartedAt record |> fun dt -> dt.Date
+    let getDate (record: RestRecord) : DateTime = getStartedAt record |> _.Date
 
     // List operations
     let getSortedList (records: RestRecord list) : RestRecord list =
@@ -47,9 +46,7 @@ module RestRecord =
         records |> List.tryFind (isActive now) |> Option.isSome
 
     let getDurationOfList (now: DateTime) (records: RestRecord list) : TimeSpan =
-        records
-        |> List.sumBy (getDuration now >> _.Ticks)
-        |> TimeSpan.FromTicks
+        records |> List.sumBy (getDuration now >> _.Ticks) |> TimeSpan.FromTicks
 
     let addToList (record: RestRecord) (records: RestRecord list) : RestRecord list =
         records
@@ -57,7 +54,8 @@ module RestRecord =
         |> List.append [ record ]
         |> getSortedList
 
-    let startOfList (records: RestRecord list) : RestRecord list = records |> addToList (createStart ())
+    let startOfList (records: RestRecord list) : RestRecord list =
+        records |> addToList (createStart ())
 
     let finishOfList (now: DateTime) (records: RestRecord list) : Result<RestRecord list, string> =
         result {
@@ -69,6 +67,6 @@ module RestRecord =
         }
 
     let toggleOfList (now: DateTime) (records: RestRecord list) : Result<RestRecord list, string> =
-        match records |> isRestingOfList now  with
+        match records |> isRestingOfList now with
         | true -> records |> finishOfList now
         | false -> Ok(startOfList records)

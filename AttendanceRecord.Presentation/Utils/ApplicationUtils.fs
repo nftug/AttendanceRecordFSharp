@@ -86,10 +86,10 @@ module ApplicationUtils =
         container
 
     let toViewWithReactive
-        (render: 'a -> CompositeDisposable -> Control -> Control)
+        (render: CompositeDisposable -> Control -> 'a -> Control)
         (source: Observable<'a>)
         : Control =
-        withReactive (fun disposables self -> source |> toView (fun v -> render v disposables self))
+        withReactive (fun disposables self -> source |> toView (fun v -> render disposables self v))
 
     let toListView (itemTemplate: 'a -> Control) (source: Observable<'a list>) : Control =
         source

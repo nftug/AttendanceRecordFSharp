@@ -60,6 +60,7 @@ module RestTimeSection =
             let restItems =
                 R3.list ([]: ReactiveProperty<RestRecordSaveRequestDto> list) disposables
 
+            // Sync from ctx.Form to restItems
             ctx.Form
             |> R3.subscribe (fun formOpt ->
                 restItems.Clear()
@@ -69,6 +70,7 @@ module RestTimeSection =
                 | None -> ())
             |> disposables.Add
 
+            // Sync from restItems to ctx.Form
             restItems
             |> R3.mapFromListChanged (fun _ -> ()) ()
             |> R3.subscribe (fun _ ->
@@ -108,16 +110,15 @@ module RestTimeSection =
                                         .FontSize(18.0)
                                         .FontWeightBold()
                                         .Column(0),
-                                    (MaterialIconButton.create
+                                    MaterialIconButton.create
                                         { Kind = MaterialIconKind.AddCircleOutline
                                           OnClick = fun _ -> handleAdd ()
                                           FontSize = Some 20.0
-                                          Tooltip = Some "休憩時間を追加" })
-                                        .Column(2)
+                                          Tooltip = Some "休憩時間を追加" }
+                                    |> _.Column(2)
                                 ),
                             ctx.Form
-                            |> toView (fun formOpt ->
-                                match formOpt with
+                            |> toView (function
                                 | None -> Panel()
                                 | Some record when record.RestRecords.IsEmpty ->
                                     TextBlock()

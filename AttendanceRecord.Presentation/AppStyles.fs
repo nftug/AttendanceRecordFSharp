@@ -12,9 +12,9 @@ type AppStyles() =
 
     do
         base.AddRange
-            [ Style(fun x -> x.OfType<Button>())
+            [ Style(_.OfType<Button>())
                   .SetContentControlHorizontalContentAlignment(HorizontalAlignment.Center)
                   .SetContentControlVerticalContentAlignment(VerticalAlignment.Center)
-              Style(fun x -> x.OfType<ToggleButton>())
+              Style(_.OfType<ToggleButton>())
                   .SetContentControlHorizontalContentAlignment(HorizontalAlignment.Center)
                   .SetContentControlVerticalContentAlignment(VerticalAlignment.Center) ]

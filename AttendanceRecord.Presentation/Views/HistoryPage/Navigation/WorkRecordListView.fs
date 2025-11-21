@@ -40,15 +40,14 @@ module WorkRecordListView =
             let itemTemplate (item: WorkRecordListItemDto) : Avalonia.Controls.Control =
                 let isSelected =
                     ctx.CurrentDate
-                    |> R3.map (fun currentDate ->
-                        match currentDate with
+                    |> R3.map (function
                         | Some date -> date.Date = item.Date.Date
                         | None -> false)
                     |> R3.readonly None
                     |> R3.disposeWith disposables
 
-                (AccentToggleButton.create isSelected)
-                    .HorizontalAlignmentStretch()
+                AccentToggleButton.create isSelected
+                |> _.HorizontalAlignmentStretch()
                     .HorizontalContentAlignmentLeft()
                     .Padding(10.0)
                     .FontSize(14.0)
@@ -77,8 +76,6 @@ module WorkRecordListView =
                         .VerticalScrollBarVisibilityAuto()
                         .MinWidth(200.0)
                         .Content(
-                            ctx.MonthlyRecords
-                            |> R3.map (fun records -> records.WorkRecords)
-                            |> toListView itemTemplate
+                            ctx.MonthlyRecords |> R3.map _.WorkRecords |> toListView itemTemplate
                         )
                 ))

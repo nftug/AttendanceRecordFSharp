@@ -27,13 +27,13 @@ module R3 =
         disposable
 
     let filter<'T> (predicate: 'T -> bool) (source: Observable<'T>) : Observable<'T> =
-        source.Where(fun v -> predicate v)
+        source.Where predicate
 
     let map<'TIn, 'TOut> (mapper: 'TIn -> 'TOut) (source: Observable<'TIn>) : Observable<'TOut> =
-        source.Select(fun v -> mapper v)
+        source.Select mapper
 
     let subscribe<'T> (onNext: 'T -> unit) (source: Observable<'T>) : IDisposable =
-        source.Subscribe(fun v -> onNext v)
+        source.Subscribe onNext
 
     let combineLatest2<'T1, 'T2, 'TOut>
         (source2: Observable<'T2>)
@@ -69,12 +69,10 @@ module R3 =
         |> subscribe (fun e -> e.Value |> disposables.Add)
         |> disposables.Add
 
-        collection.ObserveRemove()
-        |> subscribe (fun e -> e.Value.Dispose())
-        |> disposables.Add
+        collection.ObserveRemove() |> subscribe _.Value.Dispose() |> disposables.Add
 
         collection.ObserveClear()
-        |> subscribe (fun _ -> collection |> Seq.iter (fun item -> item.Dispose()))
+        |> subscribe (fun _ -> collection |> Seq.iter _.Dispose())
         |> disposables.Add
 
         collection
@@ -91,7 +89,7 @@ module R3 =
         (collection: ObservableList<'obs :> Observable<'T>>)
         : Observable<'U> =
         collection
-        |> everyValueChanged (fun items -> items.Count)
+        |> everyValueChanged _.Count
         |> selectMany (fun _ ->
             if collection.Count = 0 then
                 Observable.Return defaultValue

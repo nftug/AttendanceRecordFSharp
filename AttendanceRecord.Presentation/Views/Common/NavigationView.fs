@@ -37,8 +37,8 @@ module NavigationView =
                             |> R3.readonly None
                             |> R3.disposeWith disposables
 
-                        (AccentToggleButton.create isSelected)
-                            .Content(MaterialIconLabel.create item.Icon item.Title)
+                        AccentToggleButton.create isSelected
+                        |> _.Content(MaterialIconLabel.create item.Icon item.Title)
                             .OnClickHandler(fun _ _ ->
                                 props.SelectedKey.Value <- key
                                 props.IsOpen.Value <- false)
@@ -88,13 +88,12 @@ module NavigationView =
                     .Height(50.0)
                     .Margin(5.0)
                     .Children(
-                        (MaterialIconButton.create
+                        MaterialIconButton.create
                             { Kind = MaterialIconKind.Menu
                               OnClick = fun _ -> isDrawerOpen.Value <- true
                               FontSize = Some 18.0
-                              Tooltip = Some "メニューを開く" })
-                            .Width(50.0)
-                            .Height(50.0),
+                              Tooltip = Some "メニューを開く" }
+                        |> _.Width(50.0).Height(50.0),
                         TextBlock()
                             .Text(pageTitle |> asBinding)
                             .FontSize(21.0)

@@ -23,8 +23,7 @@ module WorkStatusSummarySection =
             let ctx, _ = HistoryPageContextProvider.require self
 
             ctx.CurrentRecord
-            |> toView (fun rOpt ->
-                match rOpt with
+            |> toView (function
                 | None -> Panel()
                 | Some record ->
                     Border()

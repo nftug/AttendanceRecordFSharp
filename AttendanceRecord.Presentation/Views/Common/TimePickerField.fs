@@ -18,8 +18,8 @@ type TimePickerFieldProps =
 module TimePickerField =
     let create (props: TimePickerFieldProps) =
         props.BaseDate
-        |> toViewWithReactive (fun baseDateOpt disposables _ ->
-            match baseDateOpt with
+        |> toViewWithReactive (fun disposables _ ->
+            function
             | None -> Panel()
             | Some baseDate ->
                 let handleTimeChange (timeOpt: TimeSpan option) =
@@ -48,11 +48,11 @@ module TimePickerField =
                                         e.Subscribe(fun _ ->
                                             handleTimeChange (Option.ofNullable ctl.SelectedTime))
                                         |> disposables.Add),
-                                (MaterialIconButton.create
+                                MaterialIconButton.create
                                     { Kind = MaterialIconKind.Close
                                       OnClick = fun _ -> handleTimeChange None
                                       FontSize = Some 12.0
-                                      Tooltip = Some "時間をクリア" })
-                                    .IsVisible(props.IsClearable)
+                                      Tooltip = Some "時間をクリア" }
+                                |> _.IsVisible(props.IsClearable)
                             )
                     ))

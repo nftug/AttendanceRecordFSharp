@@ -22,8 +22,7 @@ module WorkRecord =
     let getEndedAt (record: WorkRecord) : DateTime option =
         record.Duration |> TimeDuration.getEndedAt
 
-    let getDate (record: WorkRecord) : DateTime =
-        getStartedAt record |> fun dt -> dt.Date
+    let getDate (record: WorkRecord) : DateTime = getStartedAt record |> _.Date
 
     let getRestDuration (now: DateTime) (record: WorkRecord) : TimeSpan =
         record.RestRecords |> RestRecord.getDurationOfList now
@@ -58,7 +57,7 @@ module WorkRecord =
         : Result<unit, string> =
         let date = duration |> TimeDuration.getDate
 
-        if restTimes |> List.exists (fun rt -> rt |> RestRecord.getDate <> date) then
+        if restTimes |> List.exists (RestRecord.getDate >> (<>) date) then
             Error "All rest records must be on the same date as the work record"
         else
             Ok()

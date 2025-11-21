@@ -9,8 +9,7 @@ module EmbeddedResourceProvider =
 
         let matched =
             assembly.GetManifestResourceNames()
-            |> Array.tryFind (fun name ->
-                name.Contains(segment, StringComparison.OrdinalIgnoreCase))
+            |> Array.tryFind _.Contains(segment, StringComparison.OrdinalIgnoreCase)
 
         match matched with
         | Some name ->

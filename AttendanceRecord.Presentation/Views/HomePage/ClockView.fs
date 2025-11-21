@@ -14,7 +14,7 @@ module ClockView =
             let now = ctx.Status |> R3.map _.CurrentTime
 
             TextBlock()
-                .Text(now |> R3.map (fun v -> v.ToString "HH:mm:ss") |> asBinding)
+                .Text(now |> R3.map _.ToString("HH:mm:ss") |> asBinding)
                 .FontSize(68.0)
                 .Margin(20.0)
                 .HorizontalAlignmentCenter()

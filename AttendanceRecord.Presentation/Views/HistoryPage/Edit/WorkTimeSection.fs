@@ -17,8 +17,7 @@ module WorkTimeSection =
             let ctx, _ = HistoryPageContextProvider.require self
 
             ctx.Form
-            |> toView (fun formOpt ->
-                match formOpt with
+            |> toView (function
                 | None -> Panel()
                 | Some form ->
                     let handleSetStartedAt (startedAt: DateTime option) : unit =

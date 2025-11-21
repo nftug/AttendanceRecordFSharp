@@ -29,7 +29,7 @@ module MaterialIconButton =
         let button =
             Button()
                 .Content(MaterialIcon.create props.Kind)
-                .OnClickHandler(fun _ e -> props.OnClick e)
+                .OnClickHandler(fun _ -> props.OnClick)
                 .Background(Avalonia.Media.Brushes.Transparent)
                 .BorderBrush(Avalonia.Media.Brushes.Transparent)
 

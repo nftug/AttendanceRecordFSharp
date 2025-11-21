@@ -64,7 +64,7 @@ module HistoryToolbar =
     let create () : Avalonia.Controls.Control =
         withReactive (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
-            let monthText = ctx.CurrentMonth |> R3.map (fun d -> d.ToString "yyyy年 MM月")
+            let monthText = ctx.CurrentMonth |> R3.map _.ToString("yyyy年 MM月")
 
             Grid()
                 .ColumnDefinitions("Auto,*,Auto")
@@ -76,34 +76,30 @@ module HistoryToolbar =
                         .Spacing(5.0)
                         .Column(0)
                         .Children(
-                            (MaterialIconButton.create
+                            MaterialIconButton.create
                                 { Kind = MaterialIconKind.NavigateBefore
                                   OnClick = fun _ -> handleNavigateMonth ctx disposables -1
                                   FontSize = Some 18.0
-                                  Tooltip = Some "前の月へ移動" })
-                                .Width(50.0)
-                                .Height(50.0),
-                            (MaterialIconButton.create
+                                  Tooltip = Some "前の月へ移動" }
+                            |> _.Width(50.0).Height(50.0),
+                            MaterialIconButton.create
                                 { Kind = MaterialIconKind.NavigateNext
                                   OnClick = fun _ -> handleNavigateMonth ctx disposables 1
                                   FontSize = Some 18.0
-                                  Tooltip = Some "次の月へ移動" })
-                                .Width(50.0)
-                                .Height(50.0),
-                            (MaterialIconButton.create
+                                  Tooltip = Some "次の月へ移動" }
+                            |> _.Width(50.0).Height(50.0),
+                            MaterialIconButton.create
                                 { Kind = MaterialIconKind.Home
                                   OnClick = fun _ -> handleJumpToToday ctx disposables
                                   FontSize = Some 18.0
-                                  Tooltip = Some "今月へ移動" })
-                                .Width(50.0)
-                                .Height(50.0),
-                            (MaterialIconButton.create
+                                  Tooltip = Some "今月へ移動" }
+                            |> _.Width(50.0).Height(50.0),
+                            MaterialIconButton.create
                                 { Kind = MaterialIconKind.CalendarToday
                                   OnClick = fun _ -> handleShowDatePicker ctx disposables
                                   FontSize = Some 18.0
-                                  Tooltip = Some "日付を選択" })
-                                .Width(50.0)
-                                .Height(50.0)
+                                  Tooltip = Some "日付を選択" }
+                            |> _.Width(50.0).Height(50.0)
                         ),
                     StackPanel()
                         .OrientationHorizontal()

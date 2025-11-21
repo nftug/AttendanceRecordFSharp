@@ -16,13 +16,13 @@ module HomeActionsView =
 
             let isWorking =
                 hooks.Status
-                |> R3.map (fun s -> s.IsWorking)
+                |> R3.map _.IsWorking
                 |> R3.readonly None
                 |> R3.disposeWith disposables
 
             let isResting =
                 hooks.Status
-                |> R3.map (fun s -> s.IsResting)
+                |> R3.map _.IsResting
                 |> R3.readonly None
                 |> R3.disposeWith disposables
 
@@ -30,8 +30,8 @@ module HomeActionsView =
                 .RowDefinitions("Auto")
                 .ColumnDefinitions("*,*")
                 .Children(
-                    (AccentToggleButton.create isWorking)
-                        .Column(0)
+                    AccentToggleButton.create isWorking
+                    |> _.Column(0)
                         .Content(
                             hooks.WorkButtonLabel
                             |> toView (MaterialIconLabel.create MaterialIconKind.Work)
@@ -42,8 +42,8 @@ module HomeActionsView =
                         .FontSize(16.0)
                         .HorizontalAlignmentStretch()
                         .Margin(0, 0, 10.0, 0),
-                    (AccentToggleButton.create isResting)
-                        .Column(1)
+                    AccentToggleButton.create isResting
+                    |> _.Column(1)
                         .Content(
                             hooks.RestButtonLabel
                             |> toView (MaterialIconLabel.create MaterialIconKind.Coffee)

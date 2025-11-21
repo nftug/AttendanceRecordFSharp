@@ -129,7 +129,7 @@ module WorkRecordEditView =
                         .Children(
                             Grid()
                                 .ColumnDefinitions("*,Auto")
-                                .DockBottom()
-                                .Children(actionButtons.Column(1)),
+                                .Children(actionButtons.Column(1))
+                                .DockBottom(),
                             ScrollViewer().Content(scrollContent)
                         )))

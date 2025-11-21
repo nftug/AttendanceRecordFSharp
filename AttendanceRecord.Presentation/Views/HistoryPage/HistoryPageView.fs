@@ -17,21 +17,21 @@ module HistoryPageView =
                 DockPanel()
                     .LastChildFill(true)
                     .Children(
-                        (HistoryToolbar.create ()).DockTop(),
+                        HistoryToolbar.create () |> _.DockTop(),
                         Grid()
                             .ColumnDefinitions("250,5,*")
                             .Children(
-                                (WorkRecordListView.create ()).Column(0),
+                                WorkRecordListView.create () |> _.Column(0),
                                 GridSplitter()
                                     .Column(1)
                                     .Width(1.0)
                                     .Background(Avalonia.Media.Brushes.DimGray)
                                     .ResizeDirectionColumns(),
-                                (WorkRecordEditView.create
+                                WorkRecordEditView.create
                                     { SaveWorkRecord = props.SaveWorkRecord
                                       DeleteWorkRecord = props.DeleteWorkRecord
-                                      GetWorkRecordDetails = props.GetWorkRecordDetails })
-                                    .Column(2)
+                                      GetWorkRecordDetails = props.GetWorkRecordDetails }
+                                |> _.Column(2)
                             )
                     )
             ))

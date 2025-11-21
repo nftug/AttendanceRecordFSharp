@@ -17,13 +17,17 @@ type TimePickerFieldProps =
 
 module TimePickerField =
     let create (props: TimePickerFieldProps) =
-        props.BaseDate
-        |> R3.map (fun d -> defaultArg d DateTime.Now)
-        |> toView (fun disposables _ baseDate ->
+        withLifecycle (fun disposables _ ->
+            let baseDate =
+                props.BaseDate
+                |> R3.map (fun dateOpt -> defaultArg dateOpt DateTime.Today |> _.Date)
+                |> R3.readonly None
+                |> R3.disposeWith disposables
+
             let handleTimeChange (timeOpt: TimeSpan option) =
                 props.OnSetValue(
                     match timeOpt with
-                    | Some time -> Some(baseDate + time)
+                    | Some time -> Some(baseDate.CurrentValue + time)
                     | _ -> None
                 )
 

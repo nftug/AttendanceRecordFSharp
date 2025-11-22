@@ -6,18 +6,31 @@ open R3
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
 
+type Route =
+    { Path: string
+      ViewFn: unit -> Avalonia.Controls.Control }
+
 type NavigationContext =
-    { CurrentPageKey: ReadOnlyReactiveProperty<string>
+    { CurrentRoute: Observable<Route>
       RegisterGuard: (CancellationToken -> Tasks.Task<bool>) -> IDisposable
       NavigateTo: string -> Tasks.Task<bool> }
 
-[<AutoOpen>]
 module NavigationContext =
-    let createNavigationContext
-        (initialPageKey: string)
+    let create
+        (routes: Route list)
+        (initialPath: string)
         (disposables: CompositeDisposable)
         : NavigationContext =
-        let currentPageKey = R3.property initialPageKey |> R3.disposeWith disposables
+        let currentPath = R3.property initialPath |> R3.disposeWith disposables
+
+        let currentRoute =
+            currentPath
+            |> R3.map (fun key ->
+                routes
+                |> List.tryFind (fun r -> r.Path = key)
+                |> Option.defaultValue
+                    { Path = ""
+                      ViewFn = fun () -> Avalonia.Controls.Panel() })
 
         let guards = ResizeArray<CancellationToken -> Tasks.Task<bool>>()
 
@@ -28,7 +41,7 @@ module NavigationContext =
         let navigateTo (targetKey: string) : Tasks.Task<bool> =
             invokeTask disposables (fun ct ->
                 task {
-                    if currentPageKey.CurrentValue = targetKey then
+                    if currentPath.CurrentValue = targetKey then
                         return true
                     else
                         let mutable canProceed = true
@@ -41,11 +54,11 @@ module NavigationContext =
                                     canProceed <- false
 
                         if canProceed then
-                            currentPageKey.Value <- targetKey
+                            currentPath.Value <- targetKey
 
                         return canProceed
                 })
 
-        { CurrentPageKey = currentPageKey
+        { CurrentRoute = currentRoute
           RegisterGuard = registerGuard
           NavigateTo = navigateTo }

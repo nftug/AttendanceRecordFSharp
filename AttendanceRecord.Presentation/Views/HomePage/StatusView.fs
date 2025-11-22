@@ -8,6 +8,7 @@ open Avalonia.Media
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Application.Dtos.Responses
+open AttendanceRecord.Presentation.Views.HomePage.Context
 
 type private StatusInfo = { Label: string; Value: string }
 
@@ -33,7 +34,7 @@ module StatusView =
 
     let create () : Avalonia.Controls.Control =
         withLifecycle (fun _ self ->
-            let ctx, _ = HomePageContextProvider.require self
+            let ctx, _ = Context.require<HomePageContext> self
 
             Border()
                 .BorderThickness(1.0)

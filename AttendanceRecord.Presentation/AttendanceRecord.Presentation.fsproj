@@ -50,7 +50,7 @@
     <Compile Include="Views/Common/Navigation/NavigationContext.fs" />
     <Compile Include="Views/Common/Navigation/NavigationView.fs" />
 
-    <Compile Include="Views/HomePage/HomePageContextProvider.fs" />
+    <Compile Include="Views/HomePage/Context/HomePageContext.fs" />
     <Compile Include="Views/HomePage/ClockView.fs" />
     <Compile Include="Views/HomePage/HomeActionsHooks.fs" />
     <Compile Include="Views/HomePage/HomeActionsView.fs" />
@@ -58,7 +58,6 @@
     <Compile Include="Views/HomePage/HomePageView.fs" />
 
     <Compile Include="Views/HistoryPage/Context/HistoryPageContext.fs" />
-    <Compile Include="Views/HistoryPage/Context/HistoryPageContextProvider.fs" />
     <Compile Include="Views/HistoryPage/Edit/WorkTimeSection.fs" />
     <Compile Include="Views/HistoryPage/Edit/RestTimeSection.fs" />
     <Compile Include="Views/HistoryPage/Edit/WorkStatusSummarySection.fs" />
@@ -68,7 +67,6 @@
     <Compile Include="Views/HistoryPage/HistoryPageView.fs" />
 
     <Compile Include="Views/SettingsPage/Context/SettingsPageContext.fs" />
-    <Compile Include="Views/SettingsPage/Context/SettingsPageContextProvider.fs" />
     <Compile Include="Views/SettingsPage/Sections/ThemeSection.fs" />
     <Compile Include="Views/SettingsPage/Sections/BasicSettingsSection.fs" />
     <Compile Include="Views/SettingsPage/Sections/WorkEndAlarmSection.fs" />

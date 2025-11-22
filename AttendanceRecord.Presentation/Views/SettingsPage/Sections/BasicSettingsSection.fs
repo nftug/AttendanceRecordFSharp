@@ -10,7 +10,7 @@ open AttendanceRecord.Shared
 module BasicSettingsSection =
     let create () =
         withLifecycle (fun disposables self ->
-            let ctx, _ = SettingsPageContextProvider.require self
+            let ctx, _ = Context.require<SettingsPageContext> self
             let standardWorkMinutes = R3.property 0m |> R3.disposeWith disposables
 
             ctx.Form

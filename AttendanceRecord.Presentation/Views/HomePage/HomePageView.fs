@@ -3,11 +3,13 @@ namespace AttendanceRecord.Presentation.Views.HomePage
 open type NXUI.Builders
 open NXUI.Extensions
 open R3
+open AttendanceRecord.Presentation.Views.HomePage.Context
+open AttendanceRecord.Presentation.Utils
 
 module HomePageView =
     let create (props: HomePageContext) : Avalonia.Controls.Control =
         props
-        |> HomePageContextProvider.provide (
+        |> Context.provide (
             DockPanel()
                 .LastChildFill(true)
                 .Children(
@@ -21,3 +23,4 @@ module HomePageView =
                     ClockView.create ()
                 )
         )
+        :> Avalonia.Controls.Control

@@ -91,7 +91,7 @@ module WorkRecordEditView =
 
     let create (props: WorkRecordEditViewProps) : Avalonia.Controls.Control =
         withLifecycle (fun disposables self ->
-            let ctx, _ = HistoryPageContextProvider.require self
+            let ctx, _ = Context.require<HistoryPageContext> self
             let saveMutation = useMutation disposables props.SaveWorkRecord.Handle
             let deleteMutation = useMutation disposables props.DeleteWorkRecord.Handle
 

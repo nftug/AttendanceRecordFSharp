@@ -44,7 +44,7 @@ module SettingsActionsView =
 
     let create (props: SettingsActionsViewProps) =
         withLifecycle (fun disposables self ->
-            let ctx, _ = SettingsPageContextProvider.require self
+            let ctx, _ = Context.require<SettingsPageContext> self
             let saveMutation = useMutation disposables props.SaveAppConfig.Handle
 
             let isFormDirty =

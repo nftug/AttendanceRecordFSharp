@@ -54,7 +54,7 @@ module RestTimeSection =
 
     let create () : Avalonia.Controls.Control =
         withLifecycle (fun disposables self ->
-            let ctx, _ = HistoryPageContextProvider.require self
+            let ctx, _ = Context.require<HistoryPageContext> self
 
             let restItems =
                 R3.list ([]: ReactiveProperty<RestRecordSaveRequestDto> list) disposables

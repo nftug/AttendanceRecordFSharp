@@ -10,7 +10,7 @@ open AttendanceRecord.Shared
 module WorkEndAlarmSection =
     let create () =
         withLifecycle (fun disposables self ->
-            let ctx, _ = SettingsPageContextProvider.require self
+            let ctx, _ = Context.require<SettingsPageContext> self
             let alarmEnabled = R3.property false |> R3.disposeWith disposables
             let beforeEndMinutes = R3.property 0m |> R3.disposeWith disposables
             let snoozeMinutes = R3.property 0m |> R3.disposeWith disposables

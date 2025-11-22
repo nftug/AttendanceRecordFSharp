@@ -14,7 +14,7 @@ module WorkTimeSection =
 
     let create () =
         withLifecycle (fun _ self ->
-            let ctx, _ = HistoryPageContextProvider.require self
+            let ctx, _ = Context.require<HistoryPageContext> self
 
             ctx.Form
             |> toOptView (fun _ _ form ->

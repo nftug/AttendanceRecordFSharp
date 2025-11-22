@@ -5,6 +5,7 @@ open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Application.Dtos.Responses
+open AttendanceRecord.Presentation.Views.HomePage.Context
 
 type HomeActionsHooks =
     { Status: ReadOnlyReactiveProperty<CurrentStatusDto>

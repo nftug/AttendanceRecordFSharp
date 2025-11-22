@@ -21,7 +21,7 @@ module HistoryPageView =
             | None -> ()
 
             ctx
-            |> HistoryPageContextProvider.provide (
+            |> Context.provide (
                 DockPanel()
                     .LastChildFill(true)
                     .Children(

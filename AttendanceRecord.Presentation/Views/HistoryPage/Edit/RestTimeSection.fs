@@ -1,6 +1,7 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
 open R3
+open ObservableCollections
 open System
 open Avalonia.Media
 open Material.Icons
@@ -17,15 +18,12 @@ module RestTimeSection =
     let private createRestItemView
         (ctx: HistoryPageContext)
         (handleDelete: Guid option -> unit)
-        (item: ReactiveProperty<RestRecordSaveRequestDto>)
+        (items: ObservableList<RestRecordSaveRequestDto>)
+        (item: RestRecordSaveRequestDto)
         =
-        let handleSetStartedAt (startedAt: DateTime option) : unit =
-            item.Value <-
-                { item.Value with
-                    StartedAt = defaultArg startedAt item.Value.StartedAt }
-
-        let handleSetEndedAt (endedAt: DateTime option) : unit =
-            item.Value <- { item.Value with EndedAt = endedAt }
+        let index = items.IndexOf item
+        let startedAt = item |> R3.everyValueChanged _.StartedAt |> R3.map Some
+        let endedAt = item |> R3.everyValueChanged _.EndedAt
 
         StackPanel()
             .OrientationHorizontal()
@@ -35,18 +33,22 @@ module RestTimeSection =
                 TimePickerField.create
                     { Label = "開始時間"
                       BaseDate = ctx.CurrentDate
-                      Value = item |> R3.map (fun r -> Some r.StartedAt)
-                      OnSetValue = handleSetStartedAt
+                      Value = startedAt
+                      OnSetValue =
+                        fun v ->
+                            items[index] <-
+                                { item with
+                                    StartedAt = defaultArg v item.StartedAt }
                       IsClearable = false },
                 TimePickerField.create
                     { Label = "終了時間"
                       BaseDate = ctx.CurrentDate
-                      Value = item |> R3.map _.EndedAt
-                      OnSetValue = handleSetEndedAt
+                      Value = endedAt
+                      OnSetValue = fun v -> items[index] <- { item with EndedAt = v }
                       IsClearable = true },
                 MaterialIconButton.create
                     { Kind = MaterialIconKind.Delete
-                      OnClick = fun _ -> handleDelete item.Value.Id
+                      OnClick = fun _ -> handleDelete item.Id
                       FontSize = Some 18.0
                       Tooltip = Some "休憩時間を削除" }
                 |> _.VerticalAlignmentBottom()
@@ -56,34 +58,31 @@ module RestTimeSection =
         withLifecycle (fun disposables self ->
             let ctx, _ = Context.require<HistoryPageContext> self
 
-            let restItems =
-                R3.list ([]: ReactiveProperty<RestRecordSaveRequestDto> list) disposables
+            let restItems = ObservableList<RestRecordSaveRequestDto>()
 
             // Sync from ctx.Form to restItems
             ctx.Form
             |> R3.subscribe (fun form ->
                 restItems.Clear()
-                form.RestRecords |> List.map R3.property |> restItems.AddRange)
+                form.RestRecords |> restItems.AddRange)
             |> disposables.Add
 
             // Sync from restItems to ctx.Form
             restItems
-            |> R3.mapFromListChanged (fun _ -> ()) ()
+            |> R3.observeCollection
             |> R3.subscribe (fun _ ->
                 ctx.Form.Value <-
                     { ctx.Form.Value with
-                        RestRecords = restItems |> Seq.map _.Value |> Seq.toList })
+                        RestRecords = restItems |> Seq.toList })
             |> disposables.Add
 
             let handleDelete (id: Guid option) =
-                match restItems |> Seq.tryFind (fun rp -> rp.Value.Id = id) with
+                match restItems |> Seq.tryFind (fun rp -> rp.Id = id) with
                 | Some rp -> restItems.Remove rp |> ignore
                 | None -> ()
 
             let handleAdd () =
-                RestRecordSaveRequestDto.empty ctx.Form.Value.StartedAt.Date
-                |> R3.property
-                |> restItems.Add
+                RestRecordSaveRequestDto.empty ctx.Form.Value.StartedAt.Date |> restItems.Add
 
             let isEmpty = ctx.Form |> R3.map (fun f -> f.RestRecords.IsEmpty)
 
@@ -117,7 +116,9 @@ module RestTimeSection =
                                 .Content(
                                     ItemsControl()
                                         .ItemsSource(restItems.ToNotifyCollectionChangedSlim())
-                                        .ItemTemplate(createRestItemView ctx handleDelete)
+                                        .ItemTemplate(
+                                            createRestItemView ctx handleDelete restItems
+                                        )
                                 )
                                 .IsVisible(isEmpty |> R3.map not |> asBinding)
                                 .Row(1),

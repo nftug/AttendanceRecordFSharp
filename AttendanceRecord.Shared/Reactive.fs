@@ -56,45 +56,11 @@ module R3 =
         : Observable<'T1 * 'T2 * 'T3 * 'T4> =
         source1.CombineLatest(source2, source3, source4, fun v1 v2 v3 v4 -> v1, v2, v3, v4)
 
-    let list<'obs when 'obs :> IDisposable>
-        (initialItems: seq<'obs>)
-        (disposables: CompositeDisposable)
-        : ObservableList<'obs> =
-        let collection = ObservableList<'obs> initialItems
-
-        collection.ObserveAdd()
-        |> subscribe (fun e -> e.Value |> disposables.Add)
-        |> disposables.Add
-
-        collection.ObserveRemove() |> subscribe _.Value.Dispose() |> disposables.Add
-
-        collection.ObserveClear()
-        |> subscribe (fun _ -> collection |> Seq.iter _.Dispose())
-        |> disposables.Add
-
-        collection
-
     let everyValueChanged (selector: 'T -> 'U) (source: 'T) : Observable<'U> =
         Observable.EveryValueChanged(source, selector)
 
     let selectMany (selector: 'T -> Observable<'U>) (source: Observable<'T>) : Observable<'U> =
         source.SelectMany selector
-
-    let mapFromListChanged
-        (selector: 'T[] -> 'U)
-        (defaultValue: 'U)
-        (collection: ObservableList<'obs :> Observable<'T>>)
-        : Observable<'U> =
-        collection
-        |> everyValueChanged _.Count
-        |> selectMany (fun _ ->
-            if collection.Count = 0 then
-                Observable.Return defaultValue
-            else
-                collection
-                |> Seq.cast<Observable<'T>>
-                |> Observable.CombineLatest
-                |> map selector)
 
     let merge<'T> (sources: seq<Observable<'T>>) : Observable<'T> = Observable.Merge sources
 
@@ -112,3 +78,8 @@ module R3 =
         (source: Observable<'T>)
         : Observable<'T> =
         source.DistinctUntilChangedBy selector
+
+    let observeCollection (source: ObservableList<'T>) : Observable<unit> =
+        let changed = source |> everyValueChanged _.Count |> map (fun _ -> ())
+        let replaced = source.ObserveReplace().Select(fun _ -> ())
+        merge [ changed; replaced ] |> map (fun _ -> ())

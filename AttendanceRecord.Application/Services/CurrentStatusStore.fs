@@ -11,7 +11,7 @@ open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Interfaces
 
 type CurrentStatusStore
-    (timerService: TimerProvider, repository: WorkRecordRepository, getAppConfig: unit -> AppConfig) as this
+    (timerService: TimerProvider, repository: WorkRecordRepository, appConfig: Observable<AppConfig>) as this
     =
     let disposable = new CompositeDisposable()
 
@@ -20,10 +20,10 @@ type CurrentStatusStore
     let monthlyRecords = R3.property ([]: WorkRecord list) |> R3.disposeWith disposable
 
     let currentStatus =
-        R3.combineLatest2 workRecord monthlyRecords
-        |> R3.map (fun (workRecord, monthlyRecords) ->
+        R3.combineLatest3 workRecord monthlyRecords appConfig
+        |> R3.map (fun (workRecord, monthlyRecords, appConfig) ->
             let now = DateTime.Now
-            let standardWorkTime = getAppConfig().StandardWorkTime
+            let standardWorkTime = appConfig.StandardWorkTime
 
             monthlyRecords
             |> WorkRecordTally.getOvertimeTotal now standardWorkTime

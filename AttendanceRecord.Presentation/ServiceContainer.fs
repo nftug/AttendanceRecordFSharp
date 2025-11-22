@@ -3,6 +3,7 @@ namespace AttendanceRecord.Presentation
 open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Application.Services
 open AttendanceRecord.Application.UseCases.WorkRecords
+open AttendanceRecord.Application.UseCases.AppConfig
 open AttendanceRecord.Infrastructure.Repositories
 open AttendanceRecord.Infrastructure.Services
 
@@ -16,7 +17,9 @@ type ServiceContainer =
       SaveWorkRecordUseCase: SaveWorkRecord
       DeleteWorkRecordUseCase: DeleteWorkRecord
       GetMonthlyWorkRecordsUseCase: GetMonthlyWorkRecords
-      GetWorkRecordDetailsUseCase: GetWorkRecordDetails }
+      GetWorkRecordDetailsUseCase: GetWorkRecordDetails
+      GetAppConfigUseCase: GetAppConfig
+      SaveAppConfigUseCase: SaveAppConfig }
 
 module ServiceContainer =
     let create () : ServiceContainer =
@@ -29,13 +32,13 @@ module ServiceContainer =
 
         // Application Services and Use Cases
         let timerProvider = TimerProvider.create ()
-        let appConfigStore = AppConfigStore appConfigRepository
-        let getAppConfig () = appConfigStore.Current
+        let appConfigStore = new AppConfigStore(appConfigRepository)
+        let getAppConfig () = appConfigStore.Current.CurrentValue
 
         let currentStatusStore =
-            new CurrentStatusStore(timerProvider, workRecordRepository, getAppConfig)
+            new CurrentStatusStore(timerProvider, workRecordRepository, appConfigStore.Current)
 
-        let alarmService = new AlarmService(currentStatusStore, getAppConfig)
+        let alarmService = new AlarmService(currentStatusStore, appConfigStore.Current)
 
         let toggleWorkUseCase = ToggleWork.create workRecordRepository currentStatusStore
         let toggleRestUseCase = ToggleRest.create workRecordRepository currentStatusStore
@@ -52,6 +55,9 @@ module ServiceContainer =
         let getWorkRecordDetailsUseCase =
             GetWorkRecordDetails.create workRecordRepository getAppConfig
 
+        let getAppConfigUseCase = GetAppConfig.create getAppConfig
+        let saveAppConfigUseCase = SaveAppConfig.create appConfigRepository appConfigStore
+
         { SingleInstanceGuard = singleInstanceGuard
           NamedPipe = namedPipe
           CurrentStatusStore = currentStatusStore
@@ -61,4 +67,6 @@ module ServiceContainer =
           SaveWorkRecordUseCase = saveWorkRecordUseCase
           DeleteWorkRecordUseCase = deleteWorkRecordUseCase
           GetMonthlyWorkRecordsUseCase = getMonthlyWorkRecordsUseCase
-          GetWorkRecordDetailsUseCase = getWorkRecordDetailsUseCase }
+          GetWorkRecordDetailsUseCase = getWorkRecordDetailsUseCase
+          GetAppConfigUseCase = getAppConfigUseCase
+          SaveAppConfigUseCase = saveAppConfigUseCase }

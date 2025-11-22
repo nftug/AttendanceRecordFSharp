@@ -10,7 +10,8 @@ type private AlarmTriggerState =
     { AlarmType: AlarmType
       IsTriggered: bool }
 
-type AlarmService(currentStatusStore: CurrentStatusStore, getAppConfig: unit -> AppConfig) =
+type AlarmService
+    (currentStatusStore: CurrentStatusStore, appConfig: ReadOnlyReactiveProperty<AppConfig>) =
     let disposable = new CompositeDisposable()
 
     let workEndAlarm =
@@ -22,16 +23,16 @@ type AlarmService(currentStatusStore: CurrentStatusStore, getAppConfig: unit -> 
     let alarmTriggered = R3.command<AlarmType> () |> R3.disposeWith disposable
 
     do
-        currentStatusStore.WorkRecord
-        |> R3.subscribe (function
+        R3.combineLatest2 currentStatusStore.WorkRecord appConfig
+        |> R3.subscribe (fun (workRecordOption, appConfig) ->
+            match workRecordOption with
             | Some record ->
                 let now = DateTime.Now
 
-                workEndAlarm.Value <-
-                    workEndAlarm.Value |> Alarm.tryTrigger now record (getAppConfig ())
+                workEndAlarm.Value <- workEndAlarm.Value |> Alarm.tryTrigger now record appConfig
 
                 restStartAlarm.Value <-
-                    restStartAlarm.Value |> Alarm.tryTrigger now record (getAppConfig ())
+                    restStartAlarm.Value |> Alarm.tryTrigger now record appConfig
             | None -> ())
         |> disposable.Add
 
@@ -50,7 +51,7 @@ type AlarmService(currentStatusStore: CurrentStatusStore, getAppConfig: unit -> 
 
     member _.SnoozeAlarm(alarmType: AlarmType) : unit =
         let now = DateTime.Now
-        let cfg = getAppConfig ()
+        let cfg = appConfig.CurrentValue
 
         match alarmType with
         | AlarmType.WorkEnd -> workEndAlarm.Value <- workEndAlarm.Value |> Alarm.snooze now cfg

@@ -17,6 +17,9 @@
     <Compile Include="Dtos/Responses/CurrentStatusDto.fs" />
     <Compile Include="Dtos/Requests/WorkRecordSaveRequestDto.fs" />
 
+    <Compile Include="Dtos/Responses/AppConfigDto.fs" />
+    <Compile Include="Dtos/Requests/AppConfigSaveRequestDto.fs" />
+
     <Compile Include="Interfaces/SingleInstanceGuard.fs" />
     <Compile Include="Interfaces/NamedPipe.fs" />
     <Compile Include="Interfaces/AppConfigRepository.fs" />
@@ -33,6 +36,9 @@
     <Compile Include="UseCases/WorkRecords/GetWorkRecordDetails.fs" />
     <Compile Include="UseCases/WorkRecords/SaveWorkRecord.fs" />
     <Compile Include="UseCases/WorkRecords/DeleteWorkRecord.fs" />
+
+    <Compile Include="UseCases/AppConfig/GetAppConfig.fs" />
+    <Compile Include="UseCases/AppConfig/SaveAppConfig.fs" />
   </ItemGroup>
 
   <ItemGroup>

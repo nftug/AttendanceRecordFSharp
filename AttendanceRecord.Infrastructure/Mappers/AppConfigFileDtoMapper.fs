@@ -7,6 +7,7 @@ open AttendanceRecord.Domain.Entities
 module AppConfigFileDtoMapper =
     let fromDomain (config: AppConfig) : AppConfigFileDto =
         AppConfigFileDto(
+            config.ThemeMode.ToString(),
             float config.StandardWorkTime.TotalMinutes,
             WorkEndAlarmConfigFileDto(
                 config.WorkEndAlarmConfig.IsEnabled,
@@ -21,7 +22,13 @@ module AppConfigFileDtoMapper =
         )
 
     let toDomain (dto: AppConfigFileDto) : AppConfig =
-        { StandardWorkTime = TimeSpan.FromMinutes(float dto.StandardWorkMinutes)
+        { ThemeMode =
+            match dto.ThemeMode with
+            | "SystemTheme" -> SystemTheme
+            | "LightTheme" -> LightTheme
+            | "DarkTheme" -> DarkTheme
+            | _ -> SystemTheme // Default to System if unrecognized
+          StandardWorkTime = TimeSpan.FromMinutes(float dto.StandardWorkMinutes)
           WorkEndAlarmConfig =
             { IsEnabled = dto.WorkEndAlarmConfig.IsEnabled
               BeforeEndDuration =

@@ -5,17 +5,17 @@ open R3
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Application.Dtos.Requests
+open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.UseCases.AppConfig
 open AttendanceRecord.Presentation.Utils
 
 type SettingsPageContext =
     { Form: ReactiveProperty<AppConfigSaveRequestDto>
       DefaultForm: ReadOnlyReactiveProperty<AppConfigSaveRequestDto>
-      ReloadAfterSave: unit -> unit
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool> }
 
 type SettingsPageContextProps =
-    { GetAppConfig: GetAppConfig
+    { AppConfig: Observable<AppConfigDto>
       SaveAppConfig: SaveAppConfig }
 
 module SettingsPageContext =
@@ -23,14 +23,18 @@ module SettingsPageContext =
         (props: SettingsPageContextProps)
         (disposables: CompositeDisposable)
         : SettingsPageContext =
+        let appConfig = props.AppConfig |> R3.readonly None |> R3.disposeWith disposables
+
         let form = R3.property AppConfigSaveRequestDto.empty |> R3.disposeWith disposables
 
         let defaultForm = R3.property form.CurrentValue |> R3.disposeWith disposables
 
-        let loadAppConfig () : unit =
-            let appConfig = props.GetAppConfig.Handle()
-            form.Value <- AppConfigSaveRequestDto.fromResponse appConfig
-            defaultForm.Value <- form.CurrentValue
+        appConfig
+        |> R3.subscribe (fun config ->
+            let dto = AppConfigSaveRequestDto.fromResponse config
+            form.Value <- dto
+            defaultForm.Value <- dto)
+        |> disposables.Add
 
         let confirmDiscard (ct: CancellationToken) : Tasks.Task<bool> =
             invokeTask disposables (fun _ ->
@@ -48,9 +52,6 @@ module SettingsPageContext =
                         return true
                 })
 
-        loadAppConfig ()
-
         { Form = form
           DefaultForm = defaultForm :> ReadOnlyReactiveProperty<_>
-          ReloadAfterSave = loadAppConfig
           ConfirmDiscard = confirmDiscard }

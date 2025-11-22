@@ -29,8 +29,6 @@ module private SettingsActionsViewHelpers =
                         { Title = "保存完了"
                           Message = "アプリ設定を保存しました。"
                           NotificationType = NotificationType.Success }
-
-                    ctx.ReloadAfterSave()
                 | Error e ->
                     Notification.show
                         { Title = "保存エラー"

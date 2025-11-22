@@ -37,7 +37,6 @@
     <Compile Include="UseCases/WorkRecords/SaveWorkRecord.fs" />
     <Compile Include="UseCases/WorkRecords/DeleteWorkRecord.fs" />
 
-    <Compile Include="UseCases/AppConfig/GetAppConfig.fs" />
     <Compile Include="UseCases/AppConfig/SaveAppConfig.fs" />
   </ItemGroup>
 

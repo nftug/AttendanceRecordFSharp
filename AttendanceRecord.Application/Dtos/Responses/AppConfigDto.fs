@@ -13,13 +13,15 @@ type RestStartAlarmConfigDto =
       SnoozeDurationMinutes: float }
 
 type AppConfigDto =
-    { StandardWorkTimeMinutes: float
+    { ThemeMode: ThemeMode
+      StandardWorkTimeMinutes: float
       WorkEndAlarmConfig: WorkEndAlarmConfigDto
       RestStartAlarmConfig: RestStartAlarmConfigDto }
 
 module AppConfigDto =
     let fromDomain (config: AppConfig) : AppConfigDto =
-        { StandardWorkTimeMinutes = config.StandardWorkTime.TotalMinutes
+        { ThemeMode = config.ThemeMode
+          StandardWorkTimeMinutes = config.StandardWorkTime.TotalMinutes
           WorkEndAlarmConfig =
             { IsEnabled = config.WorkEndAlarmConfig.IsEnabled
               BeforeEndDurationMinutes = config.WorkEndAlarmConfig.BeforeEndDuration.TotalMinutes

@@ -3,6 +3,11 @@ namespace AttendanceRecord.Domain.Entities
 open System
 open FsToolkit.ErrorHandling
 
+type ThemeMode =
+    | SystemTheme // Follow system theme
+    | LightTheme // Light theme
+    | DarkTheme // Dark theme
+
 type WorkEndAlarmConfig =
     { IsEnabled: bool
       BeforeEndDuration: TimeSpan
@@ -14,7 +19,8 @@ type RestStartAlarmConfig =
       SnoozeDuration: TimeSpan }
 
 type AppConfig =
-    { StandardWorkTime: TimeSpan
+    { ThemeMode: ThemeMode
+      StandardWorkTime: TimeSpan
       WorkEndAlarmConfig: WorkEndAlarmConfig
       RestStartAlarmConfig: RestStartAlarmConfig }
 
@@ -78,7 +84,8 @@ module RestStartAlarmConfig =
 
 module AppConfig =
     let initial: AppConfig =
-        { StandardWorkTime = TimeSpan.FromHours 8.0
+        { ThemeMode = SystemTheme
+          StandardWorkTime = TimeSpan.FromHours 8.0
           WorkEndAlarmConfig = WorkEndAlarmConfig.initial
           RestStartAlarmConfig = RestStartAlarmConfig.initial }
 
@@ -92,12 +99,14 @@ module AppConfig =
         }
 
     let tryCreate
+        (themeMode: ThemeMode)
         (standardWorkTime: TimeSpan)
         (workEndAlarmConfig: WorkEndAlarmConfig)
         (restStartAlarmConfig: RestStartAlarmConfig)
         : Result<AppConfig, string> =
         let config =
-            { StandardWorkTime = standardWorkTime
+            { ThemeMode = themeMode
+              StandardWorkTime = standardWorkTime
               WorkEndAlarmConfig = workEndAlarmConfig
               RestStartAlarmConfig = restStartAlarmConfig }
 

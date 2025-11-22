@@ -46,6 +46,7 @@
     <Compile Include="Views/Common/DatePickerDialog.fs" />
     <Compile Include="Views/Common/AccentToggleButton.fs" />
     <Compile Include="Views/Common/TimePickerField.fs" />
+    <Compile Include="Views/Common/ThemeContext.fs" />
     <Compile Include="Views/Common/Navigation/NavigationContext.fs" />
     <Compile Include="Views/Common/Navigation/NavigationView.fs" />
 

@@ -6,6 +6,7 @@ open Material.Icons
 open DialogHostAvalonia
 
 open AttendanceRecord.Presentation
+open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.Common.Navigation
 open AttendanceRecord.Presentation.Views.HomePage
 open AttendanceRecord.Presentation.Views.HistoryPage
@@ -36,7 +37,7 @@ module private NavigationContext =
                     ViewFn =
                       fun () ->
                           SettingsPageView.create
-                              { GetAppConfig = services.GetAppConfigUseCase
+                              { AppConfig = services.AppConfig
                                 SaveAppConfig = services.SaveAppConfigUseCase } }
                   { Path = "/about"
                     ViewFn = fun () -> AboutPageView.create () } ]
@@ -45,9 +46,11 @@ module private NavigationContext =
 
 module MainView =
     let create (services: ServiceContainer) : Avalonia.Controls.Control =
-        withLifecycle (fun disposables self ->
+        withLifecycle (fun disposables _ ->
             // Start alarm host
             AlarmHost.start services.AlarmService disposables
+
+            let themeContext = ThemeContext.create services.AppConfig disposables
 
             let menuItems =
                 [ { Path = "/"
@@ -69,4 +72,5 @@ module MainView =
                     WindowNotificationManager().PositionBottomCenter().MaxItems(1),
                     DialogHost()
                 )
-            |> NavigationContext.create services)
+            |> NavigationContext.create services
+            |> fun content -> Context.provide content themeContext)

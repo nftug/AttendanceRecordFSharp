@@ -2,7 +2,6 @@ namespace AttendanceRecord.Presentation.Views.Application
 
 open R3
 open Avalonia.Controls
-open Avalonia.Controls.Notifications
 open AttendanceRecord.Application.Services
 open AttendanceRecord.Domain.ValueObjects.Alarms
 open AttendanceRecord.Presentation.Utils
@@ -29,7 +28,10 @@ module AlarmHost =
                 | AlarmType.RestStart -> "休憩開始時間になりました。"
                 | _ -> ""
 
-            Notification.show title message NotificationType.Information
+            Notification.show
+                { Title = title
+                  Message = message
+                  NotificationType = NotificationType.Warning }
 
             task {
                 let! shouldSnooze =
@@ -43,7 +45,11 @@ module AlarmHost =
 
                 if shouldSnooze then
                     alarmService.SnoozeAlarm alarmType
-                    Notification.show title "アラームをスヌーズしました。" NotificationType.Information
+
+                    Notification.show
+                        { Title = title
+                          Message = "アラームをスヌーズしました。"
+                          NotificationType = NotificationType.Information }
             }
             |> ignore)
         |> disposables.Add

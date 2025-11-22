@@ -1,6 +1,5 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
-open Avalonia.Controls.Notifications
 open Material.Icons
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
@@ -29,10 +28,17 @@ module private WorkRecordEditViewLogic =
 
                     match result with
                     | Ok id ->
-                        Notification.show "保存完了" "勤務記録を保存しました。" NotificationType.Information
+                        Notification.show
+                            { Title = "保存完了"
+                              Message = "勤務記録を保存しました。"
+                              NotificationType = NotificationType.Success }
+
                         ctx.ReloadAfterSave(Some id)
                     | Error e ->
-                        Notification.show "保存エラー" $"勤務記録の保存に失敗しました: {e}" NotificationType.Error
+                        Notification.show
+                            { Title = "保存エラー"
+                              Message = $"勤務記録の保存に失敗しました: {e}"
+                              NotificationType = NotificationType.Error }
                 | None -> ()
             })
         |> ignore
@@ -60,11 +66,18 @@ module private WorkRecordEditViewLogic =
 
                         match result with
                         | Ok _ ->
-                            Notification.show "削除完了" "勤務記録を削除しました。" NotificationType.Information
+                            Notification.show
+                                { Title = "削除完了"
+                                  Message = "勤務記録を削除しました。"
+                                  NotificationType = NotificationType.Success }
+
                             ctx.CurrentDate.Value <- None
                             ctx.ReloadAfterSave None
                         | Error e ->
-                            Notification.show "削除エラー" $"勤務記録の削除に失敗しました: {e}" NotificationType.Error
+                            Notification.show
+                                { Title = "削除エラー"
+                                  Message = $"勤務記録の削除に失敗しました: {e}"
+                                  NotificationType = NotificationType.Error }
                 | _ -> ()
             })
         |> ignore

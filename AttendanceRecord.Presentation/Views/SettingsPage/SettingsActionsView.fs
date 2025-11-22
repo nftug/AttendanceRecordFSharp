@@ -47,6 +47,14 @@ module SettingsActionsView =
             let ctx, _ = SettingsPageContextProvider.require self
             let saveMutation = useMutation disposables props.SaveAppConfig.Handle
 
+            let isFormDirty =
+                R3.combineLatest2 ctx.Form ctx.DefaultForm
+                |> R3.map (fun (form, def) -> form <> def)
+
+            let saveButtonEnabled =
+                R3.combineLatest2 isFormDirty saveMutation.IsPending
+                |> R3.map (fun (dirty, isSaving) -> dirty && not isSaving)
+
             StackPanel()
                 .OrientationHorizontal()
                 .HorizontalAlignmentRight()
@@ -57,17 +65,13 @@ module SettingsActionsView =
                         .Width(100.0)
                         .Height(35.0)
                         .OnClickHandler(fun _ _ -> ctx.Form.Value <- ctx.DefaultForm.CurrentValue)
-                        .IsEnabled(
-                            R3.combineLatest2 ctx.Form ctx.DefaultForm
-                            |> R3.map (fun (form, def) -> form <> def)
-                            |> asBinding
-                        ),
+                        .IsEnabled(isFormDirty |> asBinding),
                     Button()
                         .Content(MaterialIconLabel.create MaterialIconKind.ContentSave "保存")
                         .Width(100.0)
                         .Height(35.0)
                         .OnClickHandler(fun _ _ ->
                             handleClickSave saveMutation.MutateTask ctx disposables)
-                        .IsEnabled(saveMutation.IsPending |> R3.map not |> asBinding)
+                        .IsEnabled(saveButtonEnabled |> asBinding)
                     |> Colors.setAccentColorBackground
                 ))

@@ -95,6 +95,49 @@ module WorkRecordEditView =
             let saveMutation = useMutation disposables props.SaveWorkRecord.Handle
             let deleteMutation = useMutation disposables props.DeleteWorkRecord.Handle
 
+            let isFormDirty =
+                R3.combineLatest2 ctx.Form ctx.DefaultForm |> R3.map (fun (f, d) -> f <> d)
+
+            let saveButtonEnabled =
+                R3.combineLatest2 saveMutation.IsPending isFormDirty
+                |> R3.map (fun (isSaving, dirty) -> not isSaving && dirty)
+
+            let deleteButtonEnabled =
+                R3.combineLatest2 ctx.CurrentRecord deleteMutation.IsPending
+                |> R3.map (fun (rOpt, isDeleting) -> rOpt.IsSome && not isDeleting)
+
+            let actionButtons =
+                StackPanel()
+                    .OrientationHorizontal()
+                    .Spacing(10.0)
+                    .Children(
+                        Button()
+                            .Content(MaterialIconLabel.create MaterialIconKind.Refresh "リセット")
+                            .OnClickHandler(fun _ _ -> ctx.Form.Value <- ctx.DefaultForm.Value)
+                            .Width(100.0)
+                            .Height(35.0)
+                            .IsEnabled(isFormDirty |> asBinding),
+                        Button()
+                            .Content(MaterialIconLabel.create MaterialIconKind.ContentSave "保存")
+                            .OnClickHandler(fun _ _ ->
+                                handleClickSave saveMutation.MutateTask ctx disposables)
+                            .Width(100.0)
+                            .Height(35.0)
+                            .IsEnabled(saveButtonEnabled |> asBinding)
+                        |> Colors.setAccentColorBackground
+                    )
+
+            let deleteButton =
+                Button()
+                    .Content(MaterialIconLabel.create MaterialIconKind.Delete "削除")
+                    .OnClickHandler(fun _ _ ->
+                        handleClickDelete deleteMutation.MutateTask ctx disposables)
+                    .Width(100.0)
+                    .Height(35.0)
+                    .IsEnabled(deleteButtonEnabled |> asBinding)
+                    .Background(Brushes.DarkRed)
+                    .Foreground(Brushes.White)
+
             ctx.Form
             |> toView (fun _ _ ->
                 function
@@ -105,52 +148,6 @@ module WorkRecordEditView =
                         .HorizontalAlignmentCenter()
                         .VerticalAlignmentCenter()
                 | Some form ->
-                    let actionButtons =
-                        StackPanel()
-                            .OrientationHorizontal()
-                            .Spacing(10.0)
-                            .Children(
-                                Button()
-                                    .Content(
-                                        MaterialIconLabel.create MaterialIconKind.ContentSave "保存"
-                                    )
-                                    .OnClickHandler(fun _ _ ->
-                                        handleClickSave saveMutation.MutateTask ctx disposables)
-                                    .Width(100.0)
-                                    .Height(35.0)
-                                    .IsEnabled(saveMutation.IsPending |> R3.map not |> asBinding),
-                                Button()
-                                    .Content(
-                                        MaterialIconLabel.create MaterialIconKind.Delete "削除"
-                                    )
-                                    .OnClickHandler(fun _ _ ->
-                                        handleClickDelete
-                                            deleteMutation.MutateTask
-                                            ctx
-                                            disposables)
-                                    .Width(100.0)
-                                    .Height(35.0)
-                                    .IsEnabled(
-                                        deleteMutation.IsPending
-                                        |> R3.map (fun v -> not v && form.Id.IsSome)
-                                        |> asBinding
-                                    )
-                                    .Background(Brushes.DarkRed)
-                                    .Foreground(Brushes.White)
-                            )
-
-                    let resetButton =
-                        Button()
-                            .Content(MaterialIconLabel.create MaterialIconKind.Refresh "リセット")
-                            .OnClickHandler(fun _ _ -> ctx.Form.Value <- ctx.DefaultForm.Value)
-                            .Width(100.0)
-                            .Height(35.0)
-                            .IsEnabled(
-                                R3.combineLatest2 ctx.Form ctx.DefaultForm
-                                |> R3.map (fun (form, def) -> form <> def)
-                                |> asBinding
-                            )
-
                     Grid()
                         .RowDefinitions("*,Auto")
                         .Margin(20.0)
@@ -176,6 +173,6 @@ module WorkRecordEditView =
                                 .Row(0),
                             Grid()
                                 .ColumnDefinitions("Auto,*,Auto")
-                                .Children(resetButton.Column(0), actionButtons.Column(2))
+                                .Children(deleteButton.Column(0), actionButtons.Column(2))
                                 .Row(1)
                         )))

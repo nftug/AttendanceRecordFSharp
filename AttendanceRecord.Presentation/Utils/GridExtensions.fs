@@ -8,7 +8,7 @@ open System.Runtime.CompilerServices
 type __GridExtensions =
     [<Extension>]
     static member RowDefinitions(grid: Grid, definitions: string) : Grid =
-        definitions.Split('.', StringSplitOptions.RemoveEmptyEntries)
+        definitions.Split(',', StringSplitOptions.RemoveEmptyEntries)
         |> Seq.iter (fun def -> grid.RowDefinitions.Add(RowDefinition(GridLength.Parse def)))
 
         grid

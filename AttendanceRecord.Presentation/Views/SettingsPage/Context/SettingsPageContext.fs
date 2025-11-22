@@ -43,7 +43,7 @@ module SettingsPageContext =
                         return!
                             MessageBox.show
                                 { Title = "変更の確認"
-                                  Message = "設定に未保存の変更があります。\n変更を破棄してもよろしいですか？"
+                                  Message = "保存されていない変更があります。\n変更を破棄してもよろしいですか？"
                                   Buttons = MessageBoxButtons.OkCancel
                                   OkContent = Some "破棄"
                                   CancelContent = Some "キャンセル" }

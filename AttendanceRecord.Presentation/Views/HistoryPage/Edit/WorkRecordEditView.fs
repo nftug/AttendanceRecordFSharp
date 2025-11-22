@@ -138,41 +138,38 @@ module WorkRecordEditView =
                     .Background(Brushes.DarkRed)
                     .Foreground(Brushes.White)
 
-            ctx.Form
-            |> toView (fun _ _ ->
-                function
-                | None ->
-                    TextBlock()
-                        .Text("日付を選択してください")
-                        .FontSize(16.0)
-                        .HorizontalAlignmentCenter()
-                        .VerticalAlignmentCenter()
-                | Some form ->
+            Grid()
+                .RowDefinitions("*,Auto")
+                .Margin(20.0)
+                .RowSpacing(20.0)
+                .Children(
                     Grid()
-                        .RowDefinitions("*,Auto")
-                        .Margin(20.0)
+                        .RowDefinitions("Auto,*")
                         .RowSpacing(20.0)
                         .Children(
-                            Grid()
-                                .RowDefinitions("Auto,*")
-                                .RowSpacing(20.0)
+                            StackPanel()
+                                .Spacing(20.0)
                                 .Children(
-                                    StackPanel()
-                                        .Spacing(20.0)
-                                        .Children(
-                                            TextBlock()
-                                                .Text(form.StartedAt.ToString "yyyy/MM/dd (ddd)")
-                                                .FontSize(28.0)
-                                                .FontWeightBold(),
-                                            WorkStatusSummarySection.create (),
-                                            WorkTimeSection.create ()
+                                    TextBlock()
+                                        .Text(
+                                            ctx.Form
+                                            |> R3.map (function
+                                                | Some f -> f.StartedAt
+                                                | None -> DateTime.MinValue)
+                                            |> R3.map _.ToString("yyyy/MM/dd (ddd)")
+                                            |> asBinding
                                         )
-                                        .Row(0),
-                                    RestTimeSection.create () |> _.Row(1)
+                                        .FontSize(28.0)
+                                        .FontWeightBold(),
+                                    WorkStatusSummarySection.create (),
+                                    WorkTimeSection.create ()
                                 )
                                 .Row(0),
-                            Grid()
-                                .ColumnDefinitions("Auto,*,Auto")
-                                .Children(deleteButton.Column(0), actionButtons.Column(2))
-                                .Row(1)
-                        )))
+                            RestTimeSection.create () |> _.Row(1)
+                        )
+                        .Row(0),
+                    Grid()
+                        .ColumnDefinitions("Auto,*,Auto")
+                        .Children(deleteButton.Column(0), actionButtons.Column(2))
+                        .Row(1)
+                ))

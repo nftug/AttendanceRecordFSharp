@@ -35,10 +35,20 @@ module HistoryPageView =
                                     .Width(1.0)
                                     .Background(Avalonia.Media.Brushes.DimGray)
                                     .ResizeDirectionColumns(),
-                                WorkRecordEditView.create
-                                    { SaveWorkRecord = props.SaveWorkRecord
-                                      DeleteWorkRecord = props.DeleteWorkRecord
-                                      GetWorkRecordDetails = props.GetWorkRecordDetails }
+                                ctx.Form
+                                |> toView (fun _ _ ->
+                                    function
+                                    | Some _ ->
+                                        WorkRecordEditView.create
+                                            { SaveWorkRecord = props.SaveWorkRecord
+                                              DeleteWorkRecord = props.DeleteWorkRecord
+                                              GetWorkRecordDetails = props.GetWorkRecordDetails }
+                                    | None ->
+                                        TextBlock()
+                                            .Text("日付を選択してください。")
+                                            .FontSize(16.0)
+                                            .HorizontalAlignmentCenter()
+                                            .VerticalAlignmentCenter())
                                 |> _.Column(2)
                             )
                     )

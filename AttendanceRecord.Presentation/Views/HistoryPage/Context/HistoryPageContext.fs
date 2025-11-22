@@ -103,7 +103,7 @@ module HistoryPageContext =
                     return!
                         MessageBox.show
                             { Title = "確認"
-                              Message = "保存されていない変更があります。このまま移動しますか?"
+                              Message = "保存されていない変更があります。\n変更を破棄してもよろしいですか？"
                               OkContent = None
                               CancelContent = None
                               Buttons = MessageBoxButtons.OkCancel }

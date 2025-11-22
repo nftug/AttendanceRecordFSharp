@@ -23,7 +23,6 @@ module ThemeSection =
                     .Content(text)
                     .GroupName("ThemeGroup")
                     .IsChecked(ctx.Form |> R3.map (fun f -> f.ThemeMode = theme) |> asBinding)
-                    .Margin(0.0, 0.0, 20.0, 0.0)
                     .OnIsCheckedChangedHandler(fun ctl _ ->
                         if ctl.IsChecked.HasValue && ctl.IsChecked.Value then
                             ctx.Form.Value <-
@@ -43,7 +42,7 @@ module ThemeSection =
                             TextBlock().Text("テーマ設定").FontSize(18.0).FontWeightBold(),
                             StackPanel()
                                 .OrientationHorizontal()
-                                .Spacing(10.0)
+                                .Spacing(30.0)
                                 .Children(
                                     createRadioButton "システム" SystemTheme,
                                     createRadioButton "ライト" LightTheme,

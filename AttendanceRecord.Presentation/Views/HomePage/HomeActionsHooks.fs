@@ -35,8 +35,8 @@ module HomeActionsHooks =
         let workToggleEnabled = toggleWorkMutation.IsPending |> R3.map not
 
         let restToggleEnabled =
-            toggleRestMutation.IsPending
-            |> R3.combineLatest2 status (fun r s -> not r && s.IsActive)
+            R3.combineLatest2 toggleRestMutation.IsPending status
+            |> R3.map (fun (isPending, status) -> not isPending && status.IsActive)
 
         let handleClickToggleWork () : unit =
             invokeTask disposables (fun ct ->

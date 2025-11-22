@@ -20,8 +20,8 @@ type CurrentStatusStore
     let monthlyRecords = R3.property ([]: WorkRecord list) |> R3.disposeWith disposable
 
     let currentStatus =
-        workRecord
-        |> R3.combineLatest2 monthlyRecords (fun workRecord monthlyRecords ->
+        R3.combineLatest2 workRecord monthlyRecords
+        |> R3.map (fun (workRecord, monthlyRecords) ->
             let now = DateTime.Now
             let standardWorkTime = getAppConfig().StandardWorkTime
 

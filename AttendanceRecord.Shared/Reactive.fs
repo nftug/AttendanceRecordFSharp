@@ -35,29 +35,26 @@ module R3 =
     let subscribe<'T> (onNext: 'T -> unit) (source: Observable<'T>) : IDisposable =
         source.Subscribe onNext
 
-    let combineLatest2<'T1, 'T2, 'TOut>
-        (source2: Observable<'T2>)
-        (combiner: 'T1 -> 'T2 -> 'TOut)
+    let combineLatest2<'T1, 'T2>
         (source1: Observable<'T1>)
-        : Observable<'TOut> =
-        source1.CombineLatest(source2, combiner)
+        (source2: Observable<'T2>)
+        : Observable<'T1 * 'T2> =
+        source1.CombineLatest(source2, fun v1 v2 -> v1, v2)
 
-    let combineLatest3<'T1, 'T2, 'T3, 'TOut>
+    let combineLatest3<'T1, 'T2, 'T3>
+        (source1: Observable<'T1>)
         (source2: Observable<'T2>)
         (source3: Observable<'T3>)
-        (combiner: 'T1 -> 'T2 -> 'T3 -> 'TOut)
-        (source1: Observable<'T1>)
-        : Observable<'TOut> =
-        source1.CombineLatest(source2, source3, combiner)
+        : Observable<'T1 * 'T2 * 'T3> =
+        source1.CombineLatest(source2, source3, fun v1 v2 v3 -> v1, v2, v3)
 
-    let combineLatest4<'T1, 'T2, 'T3, 'T4, 'TOut>
+    let combineLatest4<'T1, 'T2, 'T3, 'T4>
+        (source1: Observable<'T1>)
         (source2: Observable<'T2>)
         (source3: Observable<'T3>)
         (source4: Observable<'T4>)
-        (combiner: 'T1 -> 'T2 -> 'T3 -> 'T4 -> 'TOut)
-        (source1: Observable<'T1>)
-        : Observable<'TOut> =
-        source1.CombineLatest(source2, source3, source4, combiner)
+        : Observable<'T1 * 'T2 * 'T3 * 'T4> =
+        source1.CombineLatest(source2, source3, source4, fun v1 v2 v3 v4 -> v1, v2, v3, v4)
 
     let list<'obs when 'obs :> IDisposable>
         (initialItems: seq<'obs>)

@@ -114,14 +114,12 @@ module HistoryPageContext =
         currentMonth |> R3.subscribe loadMonthlyRecords |> disposables.Add
 
         // Load selected record when date or monthly records change
-        selectedDate
-        |> R3.combineLatest2 monthlyRecords (fun date _ -> date)
-        |> R3.subscribe loadSelectedRecord
+        R3.combineLatest2 selectedDate monthlyRecords
+        |> R3.subscribe (fun (dateOpt, _) -> loadSelectedRecord dateOpt)
         |> disposables.Add
 
         // Transfer current record to form when it changes
-        selectedDate
-        |> R3.combineLatest2 currentRecord (fun date rOpt -> date, rOpt)
+        R3.combineLatest2 selectedDate currentRecord
         |> R3.subscribe (fun (date, rOpt) ->
             form.Value <-
                 match date, rOpt with

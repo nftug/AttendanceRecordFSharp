@@ -143,8 +143,7 @@ module WorkRecordEditView =
                             .Width(100.0)
                             .Height(35.0)
                             .IsEnabled(
-                                ctx.Form
-                                |> R3.combineLatest2 ctx.DefaultForm (fun c d -> c, d)
+                                R3.combineLatest2 ctx.Form ctx.DefaultForm
                                 |> R3.map (fun (current, defaultForm) -> current <> defaultForm)
                                 |> asBinding
                             )

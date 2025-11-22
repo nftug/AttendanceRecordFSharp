@@ -25,7 +25,7 @@ type MaterialIconButtonProps =
       Tooltip: string option }
 
 module MaterialIconButton =
-    let create (props: MaterialIconButtonProps) : Avalonia.Controls.Control =
+    let create (props: MaterialIconButtonProps) : Avalonia.Controls.Button =
         let button =
             Button()
                 .Content(MaterialIcon.create props.Kind)

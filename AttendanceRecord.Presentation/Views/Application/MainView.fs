@@ -31,8 +31,8 @@ module MainView =
                                 View =
                                   HomePageView.create
                                       { Status = services.CurrentStatusStore.CurrentStatus
-                                        OnToggleWork = services.ToggleWorkUseCase.Handle
-                                        OnToggleRest = services.ToggleRestUseCase.Handle } }
+                                        ToggleWork = services.ToggleWorkUseCase
+                                        ToggleRest = services.ToggleRestUseCase } }
                               { Key = "/history"
                                 Icon = MaterialIconKind.History
                                 Title = "履歴"

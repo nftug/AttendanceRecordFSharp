@@ -18,7 +18,7 @@ module RestTimeSection =
         (ctx: HistoryPageContext)
         (handleDelete: Guid option -> unit)
         (item: ReactiveProperty<RestRecordSaveRequestDto>)
-        : Avalonia.Controls.Control =
+        =
         let handleSetStartedAt (startedAt: DateTime option) : unit =
             item.Value <-
                 { item.Value with
@@ -30,7 +30,7 @@ module RestTimeSection =
         StackPanel()
             .OrientationHorizontal()
             .Spacing(15.0)
-            .Margin(0.0, 0.0, 0.0, 5.0)
+            .Margin(0.0, 0.0, 0.0, 10.0)
             .Children(
                 TimePickerField.create
                     { Label = "開始時間"
@@ -47,11 +47,12 @@ module RestTimeSection =
                 MaterialIconButton.create
                     { Kind = MaterialIconKind.Delete
                       OnClick = fun _ -> handleDelete item.Value.Id
-                      FontSize = Some 20.0
+                      FontSize = Some 18.0
                       Tooltip = Some "休憩時間を削除" }
+                |> _.VerticalAlignmentBottom()
             )
 
-    let create () =
+    let create () : Avalonia.Controls.Control =
         withLifecycle (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
 
@@ -97,8 +98,9 @@ module RestTimeSection =
                 .BorderBrush(Brushes.Gray)
                 .Padding(15.0)
                 .Child(
-                    StackPanel()
-                        .Spacing(15.0)
+                    Grid()
+                        .RowDefinitions("Auto,*")
+                        .RowSpacing(15.0)
                         .Children(
                             Grid()
                                 .ColumnDefinitions("Auto,*,Auto")
@@ -114,7 +116,8 @@ module RestTimeSection =
                                           FontSize = Some 20.0
                                           Tooltip = Some "休憩時間を追加" }
                                     |> _.Column(2)
-                                ),
+                                )
+                                .Row(0),
                             ctx.Form
                             |> toOptView (fun _ _ form ->
                                 if form.RestRecords.IsEmpty then
@@ -123,12 +126,13 @@ module RestTimeSection =
                                         .FontSize(14.0)
                                         .Foreground(Brushes.Gray)
                                 else
-                                    StackPanel()
-                                        .Spacing(5.0)
-                                        .Children(
+                                    ScrollViewer()
+                                        .HorizontalScrollBarVisibilityDisabled()
+                                        .Content(
                                             ItemsControl()
                                                 .ItemsSource(restItems)
                                                 .ItemTemplate(createRestItemView ctx handleDelete)
                                         ))
+                            |> _.Row(1)
                         )
                 ))

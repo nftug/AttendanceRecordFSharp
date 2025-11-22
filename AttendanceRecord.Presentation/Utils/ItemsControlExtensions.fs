@@ -7,15 +7,12 @@ open Avalonia.Controls.Templates
 [<Extension>]
 type __ItemsControlExtensions =
     [<Extension>]
-    static member ItemTemplate
-        (
-            control: ItemsControl,
-            template: 'obs -> Control,
-            ?supportsRecycling: bool
-        ) : ItemsControl =
+    static member ItemTemplate<'obs, 'control when 'control :> Control>
+        (control: ItemsControl, template: 'obs -> 'control, ?supportsRecycling: bool)
+        : ItemsControl =
         let template =
             FuncDataTemplate<'obs>(
-                (fun data _ -> template data),
+                (fun data _ -> template data :> Control),
                 supportsRecycling = defaultArg supportsRecycling true
             )
 

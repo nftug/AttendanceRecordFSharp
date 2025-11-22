@@ -8,7 +8,7 @@ open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Shared
 
 [<AutoOpen>]
-module private WorkRecordListViewLogic =
+module private WorkRecordListViewHelpers =
     let handleDateSelect
         (ctx: HistoryPageContext)
         (disposables: CompositeDisposable)

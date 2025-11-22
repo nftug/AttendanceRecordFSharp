@@ -21,8 +21,8 @@ module HomeActionsHooks =
         (ctx: HomePageContext)
         (disposables: CompositeDisposable)
         : HomeActionsHooks =
-        let toggleWorkMutation = useMutation disposables ctx.OnToggleWork
-        let toggleRestMutation = useMutation disposables ctx.OnToggleRest
+        let toggleWorkMutation = useMutation disposables ctx.ToggleWork.Handle
+        let toggleRestMutation = useMutation disposables ctx.ToggleRest.Handle
 
         let status = ctx.Status |> R3.readonly None |> R3.disposeWith disposables
 
@@ -62,8 +62,6 @@ module HomeActionsHooks =
                                 { Title = "勤務状態更新"
                                   Message = message
                                   NotificationType = NotificationType.Information }
-
-                            printfn "after toggle work: %A" status
 
                         | Error e ->
                             Notification.show

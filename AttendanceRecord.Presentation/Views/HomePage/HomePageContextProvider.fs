@@ -2,14 +2,13 @@ namespace AttendanceRecord.Presentation.Views.HomePage
 
 open AttendanceRecord.Presentation.Utils
 open R3
-open System.Threading.Tasks
-open System.Threading
 open AttendanceRecord.Application.Dtos.Responses
+open AttendanceRecord.Application.UseCases.WorkRecords
 
 type HomePageContext =
     { Status: Observable<CurrentStatusDto>
-      OnToggleWork: unit -> CancellationToken -> Task<Result<CurrentStatusDto, string>>
-      OnToggleRest: unit -> CancellationToken -> Task<Result<CurrentStatusDto, string>> }
+      ToggleWork: ToggleWork
+      ToggleRest: ToggleRest }
 
 module HomePageContextProvider =
     let provide

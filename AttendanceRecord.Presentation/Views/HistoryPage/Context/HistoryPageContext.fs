@@ -15,6 +15,7 @@ type HistoryPageContext =
       CurrentDate: ReactiveProperty<DateTime option>
       MonthlyRecords: ReadOnlyReactiveProperty<WorkRecordListDto>
       Form: ReactiveProperty<WorkRecordSaveRequestDto option>
+      DefaultForm: ReactiveProperty<WorkRecordSaveRequestDto option>
       CurrentRecord: ReadOnlyReactiveProperty<WorkRecordDetailsDto option>
       ReloadAfterSave: Guid option -> unit
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool> }
@@ -135,6 +136,7 @@ module HistoryPageContext =
           CurrentDate = selectedDate
           MonthlyRecords = monthlyRecords
           Form = form
+          DefaultForm = defaultForm
           CurrentRecord = currentRecord
           ReloadAfterSave = reloadAfterSave
           ConfirmDiscard = confirmDiscard }

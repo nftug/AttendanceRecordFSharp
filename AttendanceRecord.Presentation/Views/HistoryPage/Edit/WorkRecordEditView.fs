@@ -1,6 +1,7 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
-open Material.Icons
+open System
+open System.Threading
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
@@ -14,9 +15,9 @@ type WorkRecordEditViewProps =
       GetWorkRecordDetails: GetWorkRecordDetails }
 
 [<AutoOpen>]
-module private WorkRecordEditViewLogic =
+module private WorkRecordEditViewHelpers =
     let handleSave
-        (props: WorkRecordEditViewProps)
+        (handle: WorkRecordSaveRequestDto -> CancellationToken -> Tasks.Task<Result<Guid, string>>)
         (ctx: HistoryPageContext)
         (disposables: R3.CompositeDisposable)
         : unit =
@@ -24,7 +25,7 @@ module private WorkRecordEditViewLogic =
             task {
                 match ctx.Form.Value with
                 | Some request ->
-                    let! result = props.SaveWorkRecord.Handle request ct
+                    let! result = handle request ct
 
                     match result with
                     | Ok id ->
@@ -44,7 +45,7 @@ module private WorkRecordEditViewLogic =
         |> ignore
 
     let handleDelete
-        (props: WorkRecordEditViewProps)
+        (handle: Guid -> CancellationToken -> Tasks.Task<Result<unit, string>>)
         (ctx: HistoryPageContext)
         (disposables: R3.CompositeDisposable)
         : unit =
@@ -62,7 +63,7 @@ module private WorkRecordEditViewLogic =
                             (Some ct)
 
                     if shouldDelete then
-                        let! result = props.DeleteWorkRecord.Handle r.Id.Value ct
+                        let! result = handle r.Id.Value ct
 
                         match result with
                         | Ok _ ->
@@ -85,10 +86,14 @@ module private WorkRecordEditViewLogic =
 module WorkRecordEditView =
     open NXUI.Extensions
     open type NXUI.Builders
+    open Avalonia.Media
+    open Material.Icons
 
     let create (props: WorkRecordEditViewProps) : Avalonia.Controls.Control =
         withLifecycle (fun disposables self ->
             let ctx, _ = HistoryPageContextProvider.require self
+            let saveMutation = useMutation disposables props.SaveWorkRecord.Handle
+            let deleteMutation = useMutation disposables props.DeleteWorkRecord.Handle
 
             ctx.Form
             |> toView (fun _ _ ->
@@ -104,45 +109,71 @@ module WorkRecordEditView =
                         StackPanel()
                             .OrientationHorizontal()
                             .Spacing(10.0)
-                            .Margin(10.0)
                             .Children(
                                 Button()
                                     .Content(
                                         MaterialIconLabel.create MaterialIconKind.ContentSave "保存"
                                     )
-                                    .OnClickHandler(fun _ _ -> handleSave props ctx disposables)
+                                    .OnClickHandler(fun _ _ ->
+                                        handleSave saveMutation.MutateTask ctx disposables)
                                     .Width(100.0)
-                                    .Height(35.0),
+                                    .Height(35.0)
+                                    .IsEnabled(saveMutation.IsPending |> R3.map not |> asBinding),
                                 Button()
                                     .Content(
                                         MaterialIconLabel.create MaterialIconKind.Delete "削除"
                                     )
-                                    .OnClickHandler(fun _ _ -> handleDelete props ctx disposables)
+                                    .OnClickHandler(fun _ _ ->
+                                        handleDelete deleteMutation.MutateTask ctx disposables)
                                     .Width(100.0)
                                     .Height(35.0)
-                                    .IsEnabled(form.Id.IsSome)
+                                    .IsEnabled(
+                                        deleteMutation.IsPending
+                                        |> R3.map (fun v -> not v && form.Id.IsSome)
+                                        |> asBinding
+                                    )
+                                    .Background(Brushes.DarkRed)
+                                    .Foreground(Brushes.White)
                             )
 
-                    let scrollContent =
-                        StackPanel()
-                            .Margin(20.0)
-                            .Spacing(20.0)
-                            .Children(
-                                TextBlock()
-                                    .Text(form.StartedAt.ToString "yyyy/MM/dd (ddd)")
-                                    .FontSize(28.0)
-                                    .FontWeightBold(),
-                                WorkStatusSummarySection.create (),
-                                WorkTimeSection.create (),
-                                RestTimeSection.create ()
+                    let resetButton =
+                        Button()
+                            .Content(MaterialIconLabel.create MaterialIconKind.Refresh "リセット")
+                            .OnClickHandler(fun _ _ -> ctx.Form.Value <- ctx.DefaultForm.Value)
+                            .Width(100.0)
+                            .Height(35.0)
+                            .IsEnabled(
+                                ctx.Form
+                                |> R3.combineLatest2 ctx.DefaultForm (fun c d -> c, d)
+                                |> R3.map (fun (current, defaultForm) -> current <> defaultForm)
+                                |> asBinding
                             )
 
-                    DockPanel()
-                        .LastChildFill(true)
+                    Grid()
+                        .RowDefinitions("*,Auto")
+                        .Margin(20.0)
+                        .RowSpacing(20.0)
                         .Children(
                             Grid()
-                                .ColumnDefinitions("*,Auto")
-                                .Children(actionButtons.Column(1))
-                                .DockBottom(),
-                            ScrollViewer().Content(scrollContent)
+                                .RowDefinitions("Auto,*")
+                                .RowSpacing(20.0)
+                                .Children(
+                                    StackPanel()
+                                        .Spacing(20.0)
+                                        .Children(
+                                            TextBlock()
+                                                .Text(form.StartedAt.ToString "yyyy/MM/dd (ddd)")
+                                                .FontSize(28.0)
+                                                .FontWeightBold(),
+                                            WorkStatusSummarySection.create (),
+                                            WorkTimeSection.create ()
+                                        )
+                                        .Row(0),
+                                    RestTimeSection.create () |> _.Row(1)
+                                )
+                                .Row(0),
+                            Grid()
+                                .ColumnDefinitions("Auto,*,Auto")
+                                .Children(resetButton.Column(0), actionButtons.Column(2))
+                                .Row(1)
                         )))

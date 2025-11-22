@@ -12,9 +12,11 @@ open AttendanceRecord.Shared
 
 module ThemeSection =
     let create () =
-        withLifecycle (fun disposables self ->
-            let ctx = SettingsPageContextProvider.require self |> fst
+        withLifecycle (fun _ self ->
+            let ctx, _ = Context.require<SettingsPageContext> self
             let themeCtx = Context.require<ThemeContext> self |> fst
+
+            self.DetachedFromVisualTree.Add(fun _ -> themeCtx.LoadFromConfig())
 
             let createRadioButton (text: string) (theme: ThemeMode) =
                 RadioButton()

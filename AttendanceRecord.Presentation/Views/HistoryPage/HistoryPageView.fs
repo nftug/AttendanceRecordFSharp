@@ -2,6 +2,7 @@ namespace AttendanceRecord.Presentation.Views.HistoryPage
 
 open R3
 open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.Common.Navigation
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Presentation.Views.HistoryPage.Edit
 open AttendanceRecord.Presentation.Views.HistoryPage.Navigation
@@ -11,8 +12,15 @@ module HistoryPageView =
     open type NXUI.Builders
 
     let create (props: HistoryPageContextProps) : Avalonia.Controls.Control =
-        withLifecycle (fun disposables _ ->
-            useHistoryPageContext props disposables
+        withLifecycle (fun disposables self ->
+            let ctx = createHistoryPageContext props disposables
+
+            // Register navigation guard
+            match Context.resolve<NavigationContext> self with
+            | Some(navCtx, _) -> navCtx.RegisterGuard ctx.ConfirmDiscard |> disposables.Add
+            | None -> ()
+
+            ctx
             |> HistoryPageContextProvider.provide (
                 DockPanel()
                     .LastChildFill(true)

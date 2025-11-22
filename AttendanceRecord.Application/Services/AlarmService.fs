@@ -23,8 +23,7 @@ type AlarmService(currentStatusStore: CurrentStatusStore, getAppConfig: unit -> 
 
     do
         currentStatusStore.WorkRecord
-        |> R3.subscribe (fun wr ->
-            match wr with
+        |> R3.subscribe (function
             | Some record ->
                 let now = DateTime.Now
 

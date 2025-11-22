@@ -1,47 +1,49 @@
-namespace AttendanceRecord.Presentation.Views.Common
+namespace AttendanceRecord.Presentation.Views.Common.Navigation
 
-open NXUI.Extensions
-open Avalonia.Controls
-open AttendanceRecord.Presentation.Utils
 open R3
 open Material.Icons
 open Avalonia.Media
 open AttendanceRecord.Shared
+open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.Common
 
-type PageItem<'key when 'key: comparison> =
-    { Icon: MaterialIconKind
+type PageItem =
+    { Key: string
+      Icon: MaterialIconKind
       Title: string
-      View: Control }
+      View: Avalonia.Controls.Control }
 
-type NavigationViewProps<'key when 'key: comparison> =
-    { Pages: Map<'key, PageItem<'key>>
-      InitialPageKey: 'key
-      OnPageSelected: ('key -> unit) option }
-
-type private DrawerViewProps<'key when 'key: comparison> =
-    { IsOpen: ReactiveProperty<bool>
-      Pages: Map<'key, PageItem<'key>>
-      SelectedKey: ReactiveProperty<'key> }
+type NavigationViewProps =
+    { Pages: PageItem list
+      InitialPageKey: string
+      OnPageSelected: (string -> unit) option }
 
 module NavigationView =
-    let private createDrawer (props: DrawerViewProps<'key>) =
+    open NXUI.Extensions
+    open type NXUI.Builders
+
+    let private createDrawer
+        (ctx: NavigationContext)
+        (pages: PageItem list)
+        (isDrawerOpen: ReactiveProperty<bool>)
+        =
         withLifecycle (fun disposables _ ->
             StackPanel()
                 .Margin(12.0)
                 .Children(
-                    props.Pages
-                    |> Map.map (fun key item ->
+                    pages
+                    |> List.map (fun item ->
                         let isSelected =
-                            props.SelectedKey
-                            |> R3.map (fun selectedKey -> selectedKey = key)
+                            ctx.CurrentPageKey
+                            |> R3.map (fun selectedKey -> selectedKey = item.Key)
                             |> R3.readonly None
                             |> R3.disposeWith disposables
 
                         AccentToggleButton.create isSelected
                         |> _.Content(MaterialIconLabel.create item.Icon item.Title)
                             .OnClickHandler(fun _ _ ->
-                                props.SelectedKey.Value <- key
-                                props.IsOpen.Value <- false)
+                                ctx.NavigateTo item.Key |> ignore
+                                isDrawerOpen.Value <- false)
                             .Margin(0, 5, 0, 5)
                             .Height(40.0)
                             .FontSize(16.0)
@@ -49,35 +51,33 @@ module NavigationView =
                             .HorizontalContentAlignmentLeft()
                             .Background(Brushes.Transparent)
                             .BorderBrush(Brushes.Transparent))
-                    |> Map.toList
-                    |> List.map snd
                     |> toChildren
                 ))
 
-    let create (props: NavigationViewProps<'key>) : Control =
+    let create (props: NavigationViewProps) : Avalonia.Controls.Control =
         withLifecycle (fun disposables _ ->
-            let isDrawerOpen = R3.property false |> R3.disposeWith disposables
+            let ctx = createNavigationContext props.InitialPageKey disposables
 
-            let selectedPageKey = R3.property props.InitialPageKey |> R3.disposeWith disposables
-
-            selectedPageKey
+            ctx.CurrentPageKey
             |> R3.subscribe (fun key ->
                 match props.OnPageSelected with
                 | Some callback -> callback key
                 | None -> ())
             |> disposables.Add
 
+            let isDrawerOpen = R3.property false |> R3.disposeWith disposables
+
             let pageTitle =
-                selectedPageKey
+                ctx.CurrentPageKey
                 |> R3.map (fun key ->
-                    match props.Pages |> Map.tryFind key with
+                    match props.Pages |> List.tryFind (fun page -> page.Key = key) with
                     | Some item -> item.Title
                     | None -> "Unknown")
 
             let pageContent =
-                selectedPageKey
+                ctx.CurrentPageKey
                 |> R3.map (fun key ->
-                    match props.Pages |> Map.tryFind key with
+                    match props.Pages |> List.tryFind (fun page -> page.Key = key) with
                     | Some item -> item.View
                     | None -> ContentControl())
 
@@ -101,20 +101,18 @@ module NavigationView =
                             .Margin(20.0, 0.0, 0.0, 0.0)
                     )
 
-            SplitView()
-                .DisplayModeOverlay()
-                .UseLightDismissOverlayMode(true)
-                .OpenPaneLength(250.0)
-                .IsPaneOpen(isDrawerOpen |> asBinding)
-                .OnPaneClosedHandler(fun _ _ -> isDrawerOpen.Value <- false)
-                .Pane(
-                    createDrawer
-                        { IsOpen = isDrawerOpen
-                          Pages = props.Pages
-                          SelectedKey = selectedPageKey }
-                )
-                .Content(
-                    DockPanel()
-                        .LastChildFill(true)
-                        .Children(header, ContentControl().Content(pageContent |> asBinding))
-                ))
+            ctx
+            |> Context.provide (
+                SplitView()
+                    .DisplayModeOverlay()
+                    .UseLightDismissOverlayMode(true)
+                    .OpenPaneLength(250.0)
+                    .IsPaneOpen(isDrawerOpen |> asBinding)
+                    .OnPaneClosedHandler(fun _ _ -> isDrawerOpen.Value <- false)
+                    .Pane(createDrawer ctx props.Pages isDrawerOpen)
+                    .Content(
+                        DockPanel()
+                            .LastChildFill(true)
+                            .Children(header, ContentControl().Content(pageContent |> asBinding))
+                    )
+            ))

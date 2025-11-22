@@ -23,15 +23,17 @@ module private HistoryToolbarLogic =
             })
         |> ignore
 
+    let private jumpToDate (ctx: HistoryPageContext) (date: DateTime) : unit =
+        ctx.CurrentMonth.Value <- DateTime(date.Year, date.Month, 1)
+        ctx.CurrentDate.Value <- Some date
+
     let handleJumpToToday (ctx: HistoryPageContext) (disposables: CompositeDisposable) : unit =
         invokeTask disposables (fun ct ->
             task {
                 let! shouldProceed = ctx.ConfirmDiscard ct
 
                 if shouldProceed then
-                    let today = DateTime.Now.Date
-                    ctx.CurrentMonth.Value <- DateTime(today.Year, today.Month, 1)
-                    ctx.CurrentDate.Value <- Some today
+                    jumpToDate ctx DateTime.Today
             })
         |> ignore
 
@@ -48,9 +50,7 @@ module private HistoryToolbarLogic =
                             (Some ct)
 
                     match result with
-                    | Some date when result <> ctx.CurrentDate.CurrentValue ->
-                        ctx.CurrentDate.Value <- Some date
-                        ctx.CurrentMonth.Value <- DateTime(date.Year, date.Month, 1)
+                    | Some date when result <> ctx.CurrentDate.CurrentValue -> jumpToDate ctx date
                     | _ -> ()
             })
         |> ignore
@@ -92,7 +92,7 @@ module HistoryToolbar =
                                 { Kind = MaterialIconKind.Home
                                   OnClick = fun _ -> handleJumpToToday ctx disposables
                                   FontSize = Some 18.0
-                                  Tooltip = Some "今月へ移動" }
+                                  Tooltip = Some "今日の記録へ移動" }
                             |> _.Width(50.0).Height(50.0),
                             MaterialIconButton.create
                                 { Kind = MaterialIconKind.CalendarToday

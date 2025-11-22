@@ -27,7 +27,7 @@ type HistoryPageContextProps =
 
 [<AutoOpen>]
 module HistoryPageContext =
-    let useHistoryPageContext
+    let createHistoryPageContext
         (props: HistoryPageContextProps)
         (disposables: CompositeDisposable)
         : HistoryPageContext =

@@ -40,17 +40,17 @@ module ApplicationUtils =
 
     let invokeTask
         (disposables: CompositeDisposable)
-        (work: CancellationToken -> Task<unit>)
-        : Task<unit> =
+        (work: CancellationToken -> Task<'a>)
+        : Task<'a> =
         task {
             let cts = new CancellationTokenSource()
             disposables.Add(Disposable.Create(fun () -> cts.Cancel()))
 
             try
-                do! work cts.Token
+                return! work cts.Token
             with
-            | :? OperationCanceledException -> ()
-            | :? ObjectDisposedException -> ()
+            | :? OperationCanceledException -> return Unchecked.defaultof<'a>
+            | :? ObjectDisposedException -> return Unchecked.defaultof<'a>
         }
 
     let withLifecycle<'t when 't :> Control>

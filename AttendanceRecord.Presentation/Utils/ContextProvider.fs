@@ -87,12 +87,10 @@ module Context =
             | Some n -> ctx.Name = n
             | None -> true)
 
-    let resolve<'T when 'T: not struct>
-        (control: Control)
-        : ('T option * CompositeDisposable option) =
+    let resolve<'T when 'T: not struct> (control: Control) : ('T * CompositeDisposable) option =
         match findContextFromAncestors control None with
-        | None -> None, None
-        | Some ctx -> Some ctx.ValueInternal, Some ctx.DisposablesInternal
+        | None -> None
+        | Some ctx -> Some(ctx.ValueInternal, ctx.DisposablesInternal)
 
     let require<'T when 'T: not struct> (control: Control) : ('T * CompositeDisposable) =
         match findContextFromAncestors control None with

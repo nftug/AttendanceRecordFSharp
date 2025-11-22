@@ -29,28 +29,31 @@ module MainView =
                                 Icon = MaterialIconKind.Home
                                 Title = "ホーム"
                                 View =
-                                  HomePageView.create
-                                      { Status = services.CurrentStatusStore.CurrentStatus
-                                        ToggleWork = services.ToggleWorkUseCase
-                                        ToggleRest = services.ToggleRestUseCase } }
+                                  fun () ->
+                                      HomePageView.create
+                                          { Status = services.CurrentStatusStore.CurrentStatus
+                                            ToggleWork = services.ToggleWorkUseCase
+                                            ToggleRest = services.ToggleRestUseCase } }
                               { Key = "/history"
                                 Icon = MaterialIconKind.History
                                 Title = "履歴"
                                 View =
-                                  HistoryPageView.create
-                                      { GetMonthlyWorkRecords =
-                                          services.GetMonthlyWorkRecordsUseCase
-                                        GetWorkRecordDetails = services.GetWorkRecordDetailsUseCase
-                                        SaveWorkRecord = services.SaveWorkRecordUseCase
-                                        DeleteWorkRecord = services.DeleteWorkRecordUseCase } }
+                                  fun () ->
+                                      HistoryPageView.create
+                                          { GetMonthlyWorkRecords =
+                                              services.GetMonthlyWorkRecordsUseCase
+                                            GetWorkRecordDetails =
+                                              services.GetWorkRecordDetailsUseCase
+                                            SaveWorkRecord = services.SaveWorkRecordUseCase
+                                            DeleteWorkRecord = services.DeleteWorkRecordUseCase } }
                               { Key = "/settings"
                                 Icon = MaterialIconKind.Settings
                                 Title = "設定"
-                                View = SettingsPageView.create () }
+                                View = fun () -> SettingsPageView.create () }
                               { Key = "/about"
                                 Icon = MaterialIconKind.Info
                                 Title = "このアプリについて"
-                                View = AboutPageView.create () } ] },
+                                View = fun () -> AboutPageView.create () } ] },
                     WindowNotificationManager().PositionBottomCenter().MaxItems(1),
                     DialogHost()
                 ))

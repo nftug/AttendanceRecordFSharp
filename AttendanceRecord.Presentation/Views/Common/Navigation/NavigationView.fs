@@ -11,7 +11,7 @@ type PageItem =
     { Key: string
       Icon: MaterialIconKind
       Title: string
-      View: Avalonia.Controls.Control }
+      View: unit -> Avalonia.Controls.Control }
 
 type NavigationViewProps =
     { Pages: PageItem list
@@ -78,7 +78,7 @@ module NavigationView =
                 ctx.CurrentPageKey
                 |> R3.map (fun key ->
                     match props.Pages |> List.tryFind (fun page -> page.Key = key) with
-                    | Some item -> item.View
+                    | Some item -> item.View()
                     | None -> ContentControl())
 
             let header =

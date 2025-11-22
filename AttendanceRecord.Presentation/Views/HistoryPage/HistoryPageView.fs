@@ -6,6 +6,7 @@ open AttendanceRecord.Presentation.Views.Common.Navigation
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Presentation.Views.HistoryPage.Edit
 open AttendanceRecord.Presentation.Views.HistoryPage.Navigation
+open AttendanceRecord.Shared
 
 module HistoryPageView =
     open NXUI.Extensions
@@ -35,7 +36,7 @@ module HistoryPageView =
                                     .Width(1.0)
                                     .Background(Avalonia.Media.Brushes.DimGray)
                                     .ResizeDirectionColumns(),
-                                ctx.Form
+                                ctx.CurrentDate
                                 |> toView (fun _ _ ->
                                     function
                                     | Some _ ->

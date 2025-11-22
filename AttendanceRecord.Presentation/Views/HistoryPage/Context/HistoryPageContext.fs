@@ -14,8 +14,8 @@ type HistoryPageContext =
     { CurrentMonth: ReactiveProperty<DateTime>
       CurrentDate: ReactiveProperty<DateTime option>
       MonthlyRecords: ReadOnlyReactiveProperty<WorkRecordListDto>
-      Form: ReactiveProperty<WorkRecordSaveRequestDto option>
-      DefaultForm: ReactiveProperty<WorkRecordSaveRequestDto option>
+      Form: ReactiveProperty<WorkRecordSaveRequestDto>
+      DefaultForm: ReadOnlyReactiveProperty<WorkRecordSaveRequestDto>
       CurrentRecord: ReadOnlyReactiveProperty<WorkRecordDetailsDto option>
       ReloadAfterSave: Guid option -> unit
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool> }
@@ -43,7 +43,7 @@ module HistoryPageContext =
             R3.property (WorkRecordListDto.empty now) |> R3.disposeWith disposables
 
         let form =
-            R3.property (None: WorkRecordSaveRequestDto option)
+            R3.property (WorkRecordSaveRequestDto.empty DateTime.MinValue)
             |> R3.disposeWith disposables
 
         let defaultForm = R3.property form.CurrentValue |> R3.disposeWith disposables
@@ -123,9 +123,9 @@ module HistoryPageContext =
         |> R3.subscribe (fun (date, rOpt) ->
             form.Value <-
                 match date, rOpt with
-                | Some _, Some r -> Some(WorkRecordSaveRequestDto.fromResponse r)
-                | Some date, None -> Some(WorkRecordSaveRequestDto.empty date)
-                | None, _ -> None
+                | Some _, Some r -> WorkRecordSaveRequestDto.fromResponse r
+                | Some date, None -> WorkRecordSaveRequestDto.empty date
+                | None, _ -> WorkRecordSaveRequestDto.empty DateTime.MinValue
 
             defaultForm.Value <- form.CurrentValue)
         |> disposables.Add

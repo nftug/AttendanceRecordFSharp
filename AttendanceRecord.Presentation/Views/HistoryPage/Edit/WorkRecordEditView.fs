@@ -23,24 +23,21 @@ module private WorkRecordEditViewHelpers =
         : unit =
         invokeTask disposables (fun ct ->
             task {
-                match ctx.Form.Value with
-                | Some request ->
-                    let! result = handle request ct
+                let! result = handle ctx.Form.Value ct
 
-                    match result with
-                    | Ok id ->
-                        Notification.show
-                            { Title = "保存完了"
-                              Message = "勤務記録を保存しました。"
-                              NotificationType = NotificationType.Success }
+                match result with
+                | Ok id ->
+                    Notification.show
+                        { Title = "保存完了"
+                          Message = "勤務記録を保存しました。"
+                          NotificationType = NotificationType.Success }
 
-                        ctx.ReloadAfterSave(Some id)
-                    | Error e ->
-                        Notification.show
-                            { Title = "保存エラー"
-                              Message = $"勤務記録の保存に失敗しました: {e}"
-                              NotificationType = NotificationType.Error }
-                | None -> ()
+                    ctx.ReloadAfterSave(Some id)
+                | Error e ->
+                    Notification.show
+                        { Title = "保存エラー"
+                          Message = $"勤務記録の保存に失敗しました: {e}"
+                          NotificationType = NotificationType.Error }
             })
         |> ignore
 
@@ -51,8 +48,8 @@ module private WorkRecordEditViewHelpers =
         : unit =
         invokeTask disposables (fun ct ->
             task {
-                match ctx.Form.Value with
-                | Some r when r.Id.IsSome ->
+                match ctx.Form.Value.Id with
+                | Some id ->
                     let! shouldDelete =
                         MessageBox.show
                             { Title = "削除の確認"
@@ -63,7 +60,7 @@ module private WorkRecordEditViewHelpers =
                             (Some ct)
 
                     if shouldDelete then
-                        let! result = handle r.Id.Value ct
+                        let! result = handle id ct
 
                         match result with
                         | Ok _ ->
@@ -103,8 +100,8 @@ module WorkRecordEditView =
                 |> R3.map (fun (isSaving, dirty) -> not isSaving && dirty)
 
             let deleteButtonEnabled =
-                R3.combineLatest2 ctx.CurrentRecord deleteMutation.IsPending
-                |> R3.map (fun (rOpt, isDeleting) -> rOpt.IsSome && not isDeleting)
+                R3.combineLatest2 ctx.Form deleteMutation.IsPending
+                |> R3.map (fun (f, isDeleting) -> f.Id.IsSome && not isDeleting)
 
             let actionButtons =
                 StackPanel()
@@ -113,7 +110,8 @@ module WorkRecordEditView =
                     .Children(
                         Button()
                             .Content(MaterialIconLabel.create MaterialIconKind.Refresh "リセット")
-                            .OnClickHandler(fun _ _ -> ctx.Form.Value <- ctx.DefaultForm.Value)
+                            .OnClickHandler(fun _ _ ->
+                                ctx.Form.Value <- ctx.DefaultForm.CurrentValue)
                             .Width(100.0)
                             .Height(35.0)
                             .IsEnabled(isFormDirty |> asBinding),
@@ -153,9 +151,7 @@ module WorkRecordEditView =
                                     TextBlock()
                                         .Text(
                                             ctx.Form
-                                            |> R3.map (function
-                                                | Some f -> f.StartedAt
-                                                | None -> DateTime.MinValue)
+                                            |> R3.map _.StartedAt
                                             |> R3.map _.ToString("yyyy/MM/dd (ddd)")
                                             |> asBinding
                                         )

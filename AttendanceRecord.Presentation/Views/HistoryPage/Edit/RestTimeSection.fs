@@ -61,23 +61,18 @@ module RestTimeSection =
 
             // Sync from ctx.Form to restItems
             ctx.Form
-            |> R3.subscribe (fun formOpt ->
+            |> R3.subscribe (fun form ->
                 restItems.Clear()
-
-                match formOpt with
-                | Some form -> form.RestRecords |> List.map R3.property |> restItems.AddRange
-                | None -> ())
+                form.RestRecords |> List.map R3.property |> restItems.AddRange)
             |> disposables.Add
 
             // Sync from restItems to ctx.Form
             restItems
             |> R3.mapFromListChanged (fun _ -> ()) ()
             |> R3.subscribe (fun _ ->
-                match ctx.Form.Value with
-                | Some form ->
-                    let updated = restItems |> Seq.map _.Value |> Seq.toList
-                    ctx.Form.Value <- Some { form with RestRecords = updated }
-                | None -> ())
+                ctx.Form.Value <-
+                    { ctx.Form.Value with
+                        RestRecords = restItems |> Seq.map _.Value |> Seq.toList })
             |> disposables.Add
 
             let handleDelete (id: Guid option) =
@@ -86,12 +81,11 @@ module RestTimeSection =
                 | None -> ()
 
             let handleAdd () =
-                match ctx.Form.Value with
-                | Some form ->
-                    RestRecordSaveRequestDto.empty form.StartedAt.Date
-                    |> R3.property
-                    |> restItems.Add
-                | None -> ()
+                RestRecordSaveRequestDto.empty ctx.Form.Value.StartedAt.Date
+                |> R3.property
+                |> restItems.Add
+
+            let isEmpty = ctx.Form |> R3.map (fun f -> f.RestRecords.IsEmpty)
 
             Border()
                 .BorderThickness(1.0)
@@ -118,21 +112,20 @@ module RestTimeSection =
                                     |> _.Column(2)
                                 )
                                 .Row(0),
-                            ctx.Form
-                            |> toOptView (fun _ _ form ->
-                                if form.RestRecords.IsEmpty then
-                                    TextBlock()
-                                        .Text("休憩記録がありません。")
-                                        .FontSize(14.0)
-                                        .Foreground(Brushes.Gray)
-                                else
-                                    ScrollViewer()
-                                        .HorizontalScrollBarVisibilityDisabled()
-                                        .Content(
-                                            ItemsControl()
-                                                .ItemsSource(restItems)
-                                                .ItemTemplate(createRestItemView ctx handleDelete)
-                                        ))
-                            |> _.Row(1)
+                            ScrollViewer()
+                                .HorizontalScrollBarVisibilityDisabled()
+                                .Content(
+                                    ItemsControl()
+                                        .ItemsSource(restItems.ToNotifyCollectionChangedSlim())
+                                        .ItemTemplate(createRestItemView ctx handleDelete)
+                                )
+                                .IsVisible(isEmpty |> R3.map not |> asBinding)
+                                .Row(1),
+                            TextBlock()
+                                .Text("休憩記録がありません。")
+                                .FontSize(14.0)
+                                .Foreground(Brushes.Gray)
+                                .IsVisible(isEmpty |> asBinding)
+                                .Row(1)
                         )
                 ))

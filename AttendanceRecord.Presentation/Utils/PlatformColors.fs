@@ -1,10 +1,7 @@
 namespace AttendanceRecord.Presentation.Utils
 
 open Avalonia.Media
-
-type AccentColors =
-    { Background: IBrush
-      Foreground: IBrush }
+open Avalonia.Controls.Primitives
 
 module Colors =
     let determineForeground (background: IBrush) : IBrush =
@@ -21,9 +18,11 @@ module Colors =
                 SolidColorBrush(Colors.White) :> IBrush
         | _ -> SolidColorBrush(Colors.Black) :> IBrush
 
-    let getAccentColors () : AccentColors =
+    let setAccentColorBackground (control: 'a :> TemplatedControl) : 'a =
         let background = getPlatformColors().AccentColor1 |> SolidColorBrush :> IBrush
         let foreground = determineForeground background
 
-        { Background = background
-          Foreground = foreground }
+        control.Background <- background
+        control.Foreground <- foreground
+
+        control

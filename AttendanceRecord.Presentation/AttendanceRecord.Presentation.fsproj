@@ -66,6 +66,13 @@
     <Compile Include="Views/HistoryPage/Navigation/WorkRecordListView.fs" />
     <Compile Include="Views/HistoryPage/HistoryPageView.fs" />
 
+    <Compile Include="Views/SettingsPage/Context/SettingsPageContext.fs" />
+    <Compile Include="Views/SettingsPage/Context/SettingsPageContextProvider.fs" />
+    <Compile Include="Views/SettingsPage/Sections/ThemeSection.fs" />
+    <Compile Include="Views/SettingsPage/Sections/BasicSettingsSection.fs" />
+    <Compile Include="Views/SettingsPage/Sections/WorkEndAlarmSection.fs" />
+    <Compile Include="Views/SettingsPage/Sections/RestStartAlarmSection.fs" />
+    <Compile Include="Views/SettingsPage/SettingsActionsView.fs" />
     <Compile Include="Views/SettingsPage/SettingsPageView.fs" />
 
     <Compile Include="Views/AboutPage/AboutPageView.fs" />

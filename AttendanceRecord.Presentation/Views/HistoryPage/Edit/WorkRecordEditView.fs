@@ -16,7 +16,7 @@ type WorkRecordEditViewProps =
 
 [<AutoOpen>]
 module private WorkRecordEditViewHelpers =
-    let handleSave
+    let handleClickSave
         (handle: WorkRecordSaveRequestDto -> CancellationToken -> Tasks.Task<Result<Guid, string>>)
         (ctx: HistoryPageContext)
         (disposables: R3.CompositeDisposable)
@@ -44,7 +44,7 @@ module private WorkRecordEditViewHelpers =
             })
         |> ignore
 
-    let handleDelete
+    let handleClickDelete
         (handle: Guid -> CancellationToken -> Tasks.Task<Result<unit, string>>)
         (ctx: HistoryPageContext)
         (disposables: R3.CompositeDisposable)
@@ -115,7 +115,7 @@ module WorkRecordEditView =
                                         MaterialIconLabel.create MaterialIconKind.ContentSave "保存"
                                     )
                                     .OnClickHandler(fun _ _ ->
-                                        handleSave saveMutation.MutateTask ctx disposables)
+                                        handleClickSave saveMutation.MutateTask ctx disposables)
                                     .Width(100.0)
                                     .Height(35.0)
                                     .IsEnabled(saveMutation.IsPending |> R3.map not |> asBinding),
@@ -124,7 +124,10 @@ module WorkRecordEditView =
                                         MaterialIconLabel.create MaterialIconKind.Delete "削除"
                                     )
                                     .OnClickHandler(fun _ _ ->
-                                        handleDelete deleteMutation.MutateTask ctx disposables)
+                                        handleClickDelete
+                                            deleteMutation.MutateTask
+                                            ctx
+                                            disposables)
                                     .Width(100.0)
                                     .Height(35.0)
                                     .IsEnabled(
@@ -144,7 +147,7 @@ module WorkRecordEditView =
                             .Height(35.0)
                             .IsEnabled(
                                 R3.combineLatest2 ctx.Form ctx.DefaultForm
-                                |> R3.map (fun (current, defaultForm) -> current <> defaultForm)
+                                |> R3.map (fun (form, def) -> form <> def)
                                 |> asBinding
                             )
 

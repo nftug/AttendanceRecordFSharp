@@ -33,7 +33,11 @@ module private NavigationContext =
                                 SaveWorkRecord = services.SaveWorkRecordUseCase
                                 DeleteWorkRecord = services.DeleteWorkRecordUseCase } }
                   { Path = "/settings"
-                    ViewFn = fun () -> SettingsPageView.create () }
+                    ViewFn =
+                      fun () ->
+                          SettingsPageView.create
+                              { GetAppConfig = services.GetAppConfigUseCase
+                                SaveAppConfig = services.SaveAppConfigUseCase } }
                   { Path = "/about"
                     ViewFn = fun () -> AboutPageView.create () } ]
 

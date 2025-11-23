@@ -7,7 +7,7 @@ open AttendanceRecord.Application.Dtos.Responses
 open FsToolkit.ErrorHandling
 
 type RestRecordSaveRequestDto =
-    { Id: Guid option
+    { Id: Guid
       StartedAt: DateTime
       EndedAt: DateTime option }
 
@@ -19,16 +19,13 @@ type WorkRecordSaveRequestDto =
 
 module RestRecordSaveRequestDto =
     let empty (baseDate: DateTime) : RestRecordSaveRequestDto =
-        { Id = None
+        { Id = Guid.NewGuid()
           StartedAt = baseDate.Date
           EndedAt = None }
 
     let tryToDomain (dto: RestRecordSaveRequestDto) : Result<RestRecord, string> =
         TimeDuration.tryCreate dto.StartedAt dto.EndedAt
-        |> Result.map (fun duration ->
-            match dto.Id with
-            | Some id -> RestRecord.hydrate id duration
-            | None -> RestRecord.create duration)
+        |> Result.map (RestRecord.create dto.Id)
 
     let tryToDomainOfList (dtos: RestRecordSaveRequestDto list) : Result<RestRecord list, string> =
         dtos
@@ -50,6 +47,6 @@ module WorkRecordSaveRequestDto =
           RestRecords =
             dto.RestTimes
             |> List.map (fun rt ->
-                { Id = Some rt.Id
+                { Id = rt.Id
                   StartedAt = rt.Duration.StartedAt
                   EndedAt = rt.Duration.EndedAt }) }

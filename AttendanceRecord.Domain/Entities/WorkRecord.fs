@@ -121,7 +121,7 @@ module WorkRecord =
 
                     let! restRecords =
                         TimeDuration.tryCreate endedAt (Some now)
-                        |> Result.map RestRecord.create
+                        |> Result.map (RestRecord.create (Guid.NewGuid()))
                         |> Result.map (fun rr -> record.RestRecords |> RestRecord.addToList rr)
 
                     return

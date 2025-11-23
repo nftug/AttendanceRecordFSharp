@@ -17,7 +17,7 @@ module RestTimeSection =
 
     let private createRestItemView
         (ctx: HistoryPageContext)
-        (handleDelete: Guid option -> unit)
+        (handleDelete: Guid -> unit)
         (items: ObservableList<RestRecordSaveRequestDto>)
         (item: RestRecordSaveRequestDto)
         =
@@ -77,7 +77,7 @@ module RestTimeSection =
                         RestRecords = restItems |> Seq.toList })
             |> disposables.Add
 
-            let handleDelete (id: Guid option) =
+            let handleDelete (id: Guid) =
                 match restItems |> Seq.tryFind (fun rp -> rp.Id = id) with
                 | Some rp -> restItems.Remove rp |> ignore
                 | None -> ()
@@ -85,7 +85,7 @@ module RestTimeSection =
             let handleAdd () =
                 RestRecordSaveRequestDto.empty ctx.Form.Value.StartedAt.Date |> restItems.Add
 
-            let isEmpty = ctx.Form |> R3.map (fun f -> f.RestRecords.IsEmpty)
+            let isEmpty = ctx.Form |> R3.map _.RestRecords.IsEmpty
 
             Border()
                 .BorderThickness(1.0)

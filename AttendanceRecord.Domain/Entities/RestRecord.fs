@@ -10,11 +10,10 @@ module RestRecord =
     // Factory methods
     let hydrate (id: Guid) (duration: TimeDuration) : RestRecord = { Id = id; Duration = duration }
 
-    let create (duration: TimeDuration) : RestRecord =
-        { Id = Guid.NewGuid()
-          Duration = duration }
+    let create (id: Guid) (duration: TimeDuration) : RestRecord = { Id = id; Duration = duration }
 
-    let createStart () : RestRecord = create (TimeDuration.createStart ())
+    let createStart () : RestRecord =
+        create (Guid.NewGuid()) (TimeDuration.createStart ())
 
     let tryCreateEnd (now: DateTime) (record: RestRecord) : Result<RestRecord, string> =
         match record.Duration |> TimeDuration.isActive now with

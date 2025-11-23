@@ -22,9 +22,7 @@ module private WorkRecordEditViewHelpers =
         : unit =
         invokeTask disposables (fun ct ->
             task {
-                let! result = handle ctx.Form.Value ct
-
-                match result with
+                match! handle ctx.Form.Value ct with
                 | Ok id ->
                     Notification.show
                         { Title = "保存完了"
@@ -59,9 +57,7 @@ module private WorkRecordEditViewHelpers =
                             (Some ct)
 
                     if shouldDelete then
-                        let! result = handle id ct
-
-                        match result with
+                        match! handle id ct with
                         | Ok _ ->
                             Notification.show
                                 { Title = "削除完了"
@@ -102,54 +98,6 @@ module WorkRecordEditView =
                 R3.combineLatest2 ctx.Form deleteMutation.IsPending
                 |> R3.map (fun (f, isDeleting) -> f.Id.IsSome && not isDeleting)
 
-            let actionButtons =
-                StackPanel()
-                    .OrientationHorizontal()
-                    .Spacing(10.0)
-                    .Children(
-                        Button()
-                            .Content(
-                                MaterialIconLabel.create
-                                    { Kind = MaterialIconKind.Refresh |> R3.ret
-                                      Label = "リセット" |> R3.ret
-                                      Spacing = None |> R3.ret }
-                            )
-                            .OnClickHandler(fun _ _ ->
-                                ctx.Form.Value <- ctx.DefaultForm.CurrentValue)
-                            .Width(100.0)
-                            .Height(35.0)
-                            .IsEnabled(isFormDirty |> asBinding),
-                        Button()
-                            .Content(
-                                MaterialIconLabel.create
-                                    { Kind = MaterialIconKind.ContentSave |> R3.ret
-                                      Label = "保存" |> R3.ret
-                                      Spacing = None |> R3.ret }
-                            )
-                            .OnClickHandler(fun _ _ ->
-                                handleClickSave saveMutation.MutateTask ctx disposables)
-                            .Width(100.0)
-                            .Height(35.0)
-                            .IsEnabled(saveButtonEnabled |> asBinding)
-                        |> Colors.setAccentColorBackground
-                    )
-
-            let deleteButton =
-                Button()
-                    .Content(
-                        MaterialIconLabel.create
-                            { Kind = MaterialIconKind.Delete |> R3.ret
-                              Label = "削除" |> R3.ret
-                              Spacing = None |> R3.ret }
-                    )
-                    .OnClickHandler(fun _ _ ->
-                        handleClickDelete deleteMutation.MutateTask ctx disposables)
-                    .Width(100.0)
-                    .Height(35.0)
-                    .IsEnabled(deleteButtonEnabled |> asBinding)
-                    .Background(Brushes.DarkRed)
-                    .Foreground(Brushes.White)
-
             Grid()
                 .RowDefinitions("*,Auto")
                 .Margin(20.0)
@@ -175,7 +123,51 @@ module WorkRecordEditView =
                         )
                         .Row(0),
                     Grid()
-                        .ColumnDefinitions("Auto,*,Auto")
-                        .Children(deleteButton.Column(0), actionButtons.Column(2))
+                        .ColumnDefinitions("Auto,*,Auto,Auto")
+                        .ColumnSpacing(10.0)
+                        .Children(
+                            Button()
+                                .Content(
+                                    MaterialIconLabel.create
+                                        { Kind = MaterialIconKind.Delete |> R3.ret
+                                          Label = "削除" |> R3.ret
+                                          Spacing = None |> R3.ret }
+                                )
+                                .OnClickHandler(fun _ _ ->
+                                    handleClickDelete deleteMutation.MutateTask ctx disposables)
+                                .Width(100.0)
+                                .Height(35.0)
+                                .IsEnabled(deleteButtonEnabled |> asBinding)
+                                .Background(Brushes.DarkRed)
+                                .Foreground(Brushes.White)
+                                .Column(0),
+                            Button()
+                                .Content(
+                                    MaterialIconLabel.create
+                                        { Kind = MaterialIconKind.Refresh |> R3.ret
+                                          Label = "リセット" |> R3.ret
+                                          Spacing = None |> R3.ret }
+                                )
+                                .OnClickHandler(fun _ _ ->
+                                    ctx.Form.Value <- ctx.DefaultForm.CurrentValue)
+                                .Width(100.0)
+                                .Height(35.0)
+                                .IsEnabled(isFormDirty |> asBinding)
+                                .Column(2),
+                            Button()
+                                .Content(
+                                    MaterialIconLabel.create
+                                        { Kind = MaterialIconKind.ContentSave |> R3.ret
+                                          Label = "保存" |> R3.ret
+                                          Spacing = None |> R3.ret }
+                                )
+                                .OnClickHandler(fun _ _ ->
+                                    handleClickSave saveMutation.MutateTask ctx disposables)
+                                .Width(100.0)
+                                .Height(35.0)
+                                .IsEnabled(saveButtonEnabled |> asBinding)
+                                .Column(3)
+                            |> Colors.setAccentColorBackground
+                        )
                         .Row(1)
                 ))

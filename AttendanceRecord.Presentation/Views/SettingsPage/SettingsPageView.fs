@@ -17,29 +17,26 @@ module SettingsPageView =
             | Some(navCtx, _) -> navCtx.RegisterGuard ctx.ConfirmDiscard |> disposables.Add
             | None -> ()
 
-            ctx
-            |> Context.provide (
-                Grid()
-                    .RowDefinitions("*,Auto")
-                    .Margin(20.0)
-                    .RowSpacing(20.0)
-                    .Children(
-                        ScrollViewer()
-                            .HorizontalScrollBarVisibilityDisabled()
-                            .VerticalScrollBarVisibilityAuto()
-                            .Content(
-                                StackPanel()
-                                    .HorizontalAlignmentStretch()
-                                    .Spacing(20.0)
-                                    .Children(
-                                        ThemeSection.create (),
-                                        BasicSettingsSection.create (),
-                                        WorkEndAlarmSection.create (),
-                                        RestStartAlarmSection.create ()
-                                    )
-                            )
-                            .Row(0),
-                        SettingsActionsView.create { SaveAppConfig = props.SaveAppConfig }
-                        |> _.Row(1)
-                    )
-            ))
+            Grid()
+                .RowDefinitions("*,Auto")
+                .Margin(20.0)
+                .RowSpacing(20.0)
+                .Children(
+                    ScrollViewer()
+                        .HorizontalScrollBarVisibilityDisabled()
+                        .VerticalScrollBarVisibilityAuto()
+                        .Content(
+                            StackPanel()
+                                .HorizontalAlignmentStretch()
+                                .Spacing(20.0)
+                                .Children(
+                                    ThemeSection.create (),
+                                    BasicSettingsSection.create (),
+                                    WorkEndAlarmSection.create (),
+                                    RestStartAlarmSection.create ()
+                                )
+                        )
+                        .Row(0),
+                    SettingsActionsView.create { SaveAppConfig = props.SaveAppConfig } |> _.Row(1)
+                )
+            |> Context.provide ctx)

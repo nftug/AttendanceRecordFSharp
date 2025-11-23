@@ -8,7 +8,7 @@ open AttendanceRecord.Presentation.Views.Application
 open AttendanceRecord.Shared
 
 [<AutoOpen>]
-module private MainWindowLogic =
+module private MainWindowHelpers =
     let initialize (services: ServiceContainer) (window: Window) : Window =
         getApplicationLifetime()
             .ShutdownRequested.Add(fun _ -> services.SingleInstanceGuard.ReleaseLock())

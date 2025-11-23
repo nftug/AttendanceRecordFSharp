@@ -15,62 +15,56 @@ open AttendanceRecord.Presentation.Views.SettingsPage
 open AttendanceRecord.Presentation.Utils
 
 module private NavigationContext =
-    let create (services: ServiceContainer) (content: Avalonia.Controls.Control) =
-        withLifecycle (fun disposables _ ->
-            let routes =
-                [ { Path = "/"
-                    ViewFn =
-                      fun () ->
-                          HomePageView.create
-                              { Status = services.CurrentStatusStore.CurrentStatus
-                                ToggleWork = services.ToggleWorkUseCase
-                                ToggleRest = services.ToggleRestUseCase } }
-                  { Path = "/history"
-                    ViewFn =
-                      fun () ->
-                          HistoryPageView.create
-                              { GetMonthlyWorkRecords = services.GetMonthlyWorkRecordsUseCase
-                                GetWorkRecordDetails = services.GetWorkRecordDetailsUseCase
-                                SaveWorkRecord = services.SaveWorkRecordUseCase
-                                DeleteWorkRecord = services.DeleteWorkRecordUseCase } }
-                  { Path = "/settings"
-                    ViewFn =
-                      fun () ->
-                          SettingsPageView.create
-                              { AppConfig = services.AppConfig
-                                SaveAppConfig = services.SaveAppConfigUseCase } }
-                  { Path = "/about"
-                    ViewFn = fun () -> AboutPageView.create () } ]
+    let provide (services: ServiceContainer) (content: Avalonia.Controls.Control) =
+        let routes =
+            [ { Path = "/"
+                ViewFn =
+                  fun () ->
+                      HomePageView.create
+                          { Status = services.CurrentStatusStore.CurrentStatus
+                            ToggleWork = services.ToggleWorkUseCase
+                            ToggleRest = services.ToggleRestUseCase } }
+              { Path = "/history"
+                ViewFn =
+                  fun () ->
+                      HistoryPageView.create
+                          { GetMonthlyWorkRecords = services.GetMonthlyWorkRecordsUseCase
+                            GetWorkRecordDetails = services.GetWorkRecordDetailsUseCase
+                            SaveWorkRecord = services.SaveWorkRecordUseCase
+                            DeleteWorkRecord = services.DeleteWorkRecordUseCase } }
+              { Path = "/settings"
+                ViewFn =
+                  fun () ->
+                      SettingsPageView.create
+                          { AppConfig = services.AppConfig
+                            SaveAppConfig = services.SaveAppConfigUseCase } }
+              { Path = "/about"
+                ViewFn = fun () -> AboutPageView.create () } ]
 
-            NavigationContext.create routes "/" disposables |> Context.provide content)
+        Context.provideWithBuilder (NavigationContext.create routes "/") content
 
 module MainView =
-    let create (services: ServiceContainer) : Avalonia.Controls.Control =
-        withLifecycle (fun disposables _ ->
-            // Start alarm host
-            AlarmHost.start services.AlarmService disposables
+    let create (services: ServiceContainer) =
+        let menuItems =
+            [ { Path = "/"
+                Icon = MaterialIconKind.Home
+                Title = "ホーム" }
+              { Path = "/history"
+                Icon = MaterialIconKind.History
+                Title = "履歴" }
+              { Path = "/settings"
+                Icon = MaterialIconKind.Settings
+                Title = "設定" }
+              { Path = "/about"
+                Icon = MaterialIconKind.Info
+                Title = "このアプリについて" } ]
 
-            let themeContext = ThemeContext.create services.AppConfig disposables
-
-            let menuItems =
-                [ { Path = "/"
-                    Icon = MaterialIconKind.Home
-                    Title = "ホーム" }
-                  { Path = "/history"
-                    Icon = MaterialIconKind.History
-                    Title = "履歴" }
-                  { Path = "/settings"
-                    Icon = MaterialIconKind.Settings
-                    Title = "設定" }
-                  { Path = "/about"
-                    Icon = MaterialIconKind.Info
-                    Title = "このアプリについて" } ]
-
-            Grid()
-                .Children(
-                    NavigationView.create menuItems,
-                    WindowNotificationManager().PositionBottomCenter().MaxItems(1),
-                    DialogHost()
-                )
-            |> NavigationContext.create services
-            |> fun content -> Context.provide content themeContext)
+        Grid()
+            .Children(
+                NavigationView.create menuItems,
+                AlarmHost.create services.AlarmService,
+                WindowNotificationManager().PositionBottomCenter().MaxItems(1),
+                DialogHost()
+            )
+        |> NavigationContext.provide services
+        |> Context.provideWithBuilder (ThemeContext.create services.AppConfig)

@@ -34,17 +34,18 @@ module WorkRecordListView =
     open AttendanceRecord.Application.Dtos.Responses
 
     let create () : Avalonia.Controls.Control =
-        withLifecycle (fun disposables self ->
+        withLifecycle (fun _ self ->
             let ctx, _ = Context.require<HistoryPageContext> self
+            let records = ctx.MonthlyRecords |> R3.map _.WorkRecords
 
-            let itemTemplate _ _ (item: WorkRecordListItemDto) : Avalonia.Controls.Control =
+            let itemTemplate d _ (item: WorkRecordListItemDto) : Avalonia.Controls.Control =
                 let isSelected =
                     ctx.CurrentDate
                     |> R3.map (function
                         | Some date -> date.Date = item.Date.Date
                         | None -> false)
                     |> R3.readonly None
-                    |> R3.disposeWith disposables
+                    |> R3.disposeWith d
 
                 AccentToggleButton.create isSelected
                 |> _.HorizontalAlignmentStretch()
@@ -53,7 +54,7 @@ module WorkRecordListView =
                     .FontSize(14.0)
                     .Background(Brushes.Transparent)
                     .BorderBrush(Brushes.Transparent)
-                    .OnClickHandler(fun _ _ -> handleDateSelect ctx disposables item.Date)
+                    .OnClickHandler(fun _ _ -> handleDateSelect ctx d item.Date)
                     .Content(
                         StackPanel()
                             .OrientationHorizontal()
@@ -75,7 +76,5 @@ module WorkRecordListView =
                     ScrollViewer()
                         .VerticalScrollBarVisibilityAuto()
                         .MinWidth(200.0)
-                        .Content(
-                            ctx.MonthlyRecords |> R3.map _.WorkRecords |> toListView itemTemplate
-                        )
+                        .Content(records |> toListView itemTemplate)
                 ))

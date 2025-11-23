@@ -11,8 +11,7 @@ open AttendanceRecord.Application.UseCases.WorkRecords
 
 type WorkRecordEditViewProps =
     { SaveWorkRecord: SaveWorkRecord
-      DeleteWorkRecord: DeleteWorkRecord
-      GetWorkRecordDetails: GetWorkRecordDetails }
+      DeleteWorkRecord: DeleteWorkRecord }
 
 [<AutoOpen>]
 module private WorkRecordEditViewHelpers =
@@ -142,26 +141,22 @@ module WorkRecordEditView =
                 .RowSpacing(20.0)
                 .Children(
                     Grid()
-                        .RowDefinitions("Auto,*")
+                        .RowDefinitions("Auto,Auto,Auto,*")
                         .RowSpacing(20.0)
                         .Children(
-                            StackPanel()
-                                .Spacing(20.0)
-                                .Children(
-                                    TextBlock()
-                                        .Text(
-                                            ctx.Form
-                                            |> R3.map _.StartedAt
-                                            |> R3.map _.ToString("yyyy/MM/dd (ddd)")
-                                            |> asBinding
-                                        )
-                                        .FontSize(28.0)
-                                        .FontWeightBold(),
-                                    WorkStatusSummarySection.create (),
-                                    WorkTimeSection.create ()
+                            TextBlock()
+                                .Text(
+                                    ctx.Form
+                                    |> R3.map _.StartedAt
+                                    |> R3.map _.ToString("yyyy/MM/dd (ddd)")
+                                    |> asBinding
                                 )
+                                .FontSize(28.0)
+                                .FontWeightBold()
                                 .Row(0),
-                            RestTimeSection.create () |> _.Row(1)
+                            WorkStatusSummarySection.create () |> _.Row(1),
+                            WorkTimeSection.create () |> _.Row(2),
+                            RestTimeSection.create () |> _.Row(3)
                         )
                         .Row(0),
                     Grid()

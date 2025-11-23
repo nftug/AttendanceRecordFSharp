@@ -7,7 +7,7 @@ open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
 
 [<AutoOpen>]
-module private HistoryToolbarLogic =
+module private HistoryToolbarHelpers =
     let handleNavigateMonth
         (ctx: HistoryPageContext)
         (disposables: CompositeDisposable)

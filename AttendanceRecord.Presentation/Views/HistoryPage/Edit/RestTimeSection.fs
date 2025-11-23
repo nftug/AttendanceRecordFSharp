@@ -62,9 +62,10 @@ module RestTimeSection =
 
             // Sync from ctx.Form to restItems
             ctx.Form
-            |> R3.subscribe (fun form ->
+            |> R3.map _.RestRecords
+            |> R3.subscribe (fun items ->
                 restItems.Clear()
-                form.RestRecords |> restItems.AddRange)
+                restItems.AddRange items)
             |> disposables.Add
 
             // Sync from restItems to ctx.Form

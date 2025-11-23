@@ -21,36 +21,31 @@ module HistoryPageView =
             | Some(navCtx, _) -> navCtx.RegisterGuard ctx.ConfirmDiscard |> disposables.Add
             | None -> ()
 
-            ctx
-            |> Context.provide (
-                DockPanel()
-                    .LastChildFill(true)
-                    .Children(
-                        HistoryToolbar.create () |> _.DockTop(),
-                        Grid()
-                            .ColumnDefinitions("250,5,*")
-                            .Children(
-                                WorkRecordListView.create () |> _.Column(0),
-                                GridSplitter()
-                                    .Column(1)
-                                    .Width(1.0)
-                                    .Background(Avalonia.Media.Brushes.DimGray)
-                                    .ResizeDirectionColumns(),
-                                ctx.CurrentDate
-                                |> toView (fun _ _ ->
-                                    function
-                                    | Some _ ->
-                                        WorkRecordEditView.create
-                                            { SaveWorkRecord = props.SaveWorkRecord
-                                              DeleteWorkRecord = props.DeleteWorkRecord
-                                              GetWorkRecordDetails = props.GetWorkRecordDetails }
-                                    | None ->
-                                        TextBlock()
-                                            .Text("日付を選択してください。")
-                                            .FontSize(16.0)
-                                            .HorizontalAlignmentCenter()
-                                            .VerticalAlignmentCenter())
-                                |> _.Column(2)
-                            )
-                    )
-            ))
+            let showEditView = ctx.CurrentDate |> R3.map Option.isSome
+
+            DockPanel()
+                .LastChildFill(true)
+                .Children(
+                    HistoryToolbar.create () |> _.DockTop(),
+                    Grid()
+                        .ColumnDefinitions("250,5,*")
+                        .Children(
+                            WorkRecordListView.create () |> _.Column(0),
+                            GridSplitter()
+                                .Column(1)
+                                .Width(1.0)
+                                .Background(Avalonia.Media.Brushes.DimGray)
+                                .ResizeDirectionColumns(),
+                            WorkRecordEditView.create
+                                { SaveWorkRecord = props.SaveWorkRecord
+                                  DeleteWorkRecord = props.DeleteWorkRecord }
+                            |> _.Column(2).IsVisible(showEditView |> asBinding),
+                            TextBlock()
+                                .Text("日付を選択してください。")
+                                .FontSize(16.0)
+                                .HorizontalAlignmentCenter()
+                                .VerticalAlignmentCenter()
+                            |> _.Column(2).IsVisible(showEditView |> R3.map not |> asBinding)
+                        )
+                )
+            |> Context.provide ctx)

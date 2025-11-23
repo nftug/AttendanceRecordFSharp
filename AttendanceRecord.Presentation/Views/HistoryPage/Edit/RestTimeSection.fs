@@ -82,8 +82,10 @@ module RestTimeSection =
                 | Some rp -> restItems.Remove rp |> ignore
                 | None -> ()
 
-            let handleAdd () =
-                RestRecordSaveRequestDto.empty ctx.Form.Value.StartedAt.Date |> restItems.Add
+            let addCommand =
+                R3.command ()
+                |> R3.withSubscribe disposables (fun () ->
+                    RestRecordSaveRequestDto.empty ctx.Form.Value.StartedAt.Date |> restItems.Add)
 
             let buildContent () =
                 ctx.Form
@@ -107,8 +109,13 @@ module RestTimeSection =
                                         .HorizontalScrollBarVisibilityDisabled()
                                         .Content(ItemsPresenter())
 
+                                // Scroll to top when date changes, scroll to bottom when new item is added
                                 ctx.CurrentDate
                                 |> R3.subscribe (fun _ -> sv.ScrollToHome())
+                                |> disposables.Add
+
+                                addCommand
+                                |> R3.subscribe (fun _ -> nextTick (fun () -> sv.ScrollToEnd()))
                                 |> disposables.Add
 
                                 sv)
@@ -133,7 +140,7 @@ module RestTimeSection =
                                         .Column(0),
                                     MaterialIconButton.create
                                         { Kind = MaterialIconKind.AddCircleOutline |> R3.ret
-                                          OnClick = fun _ -> handleAdd ()
+                                          OnClick = fun _ -> addCommand.Execute()
                                           FontSize = Some 20.0 |> R3.ret
                                           Tooltip = Some "休憩時間を追加" |> R3.ret }
                                     |> _.Column(2)

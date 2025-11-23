@@ -93,7 +93,13 @@ module HistoryToolbar =
                                   OnClick = fun _ -> handleJumpToToday ctx disposables
                                   FontSize = Some 18.0 |> R3.ret
                                   Tooltip = Some "今日の記録へ移動" |> R3.ret }
-                            |> _.Width(50.0).Height(50.0),
+                            |> _.Width(50.0)
+                                .Height(50.0)
+                                .IsEnabled(
+                                    ctx.CurrentDate
+                                    |> R3.map (fun d -> d <> Some DateTime.Today)
+                                    |> asBinding
+                                ),
                             MaterialIconButton.create
                                 { Kind = MaterialIconKind.CalendarToday |> R3.ret
                                   OnClick = fun _ -> handleShowDatePicker ctx disposables

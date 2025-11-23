@@ -4,6 +4,7 @@ open Avalonia
 open Avalonia.Controls
 open Avalonia.VisualTree
 open Avalonia.Controls.ApplicationLifetimes
+open Avalonia.Threading
 open System
 open System.Threading
 open System.Threading.Tasks
@@ -34,6 +35,9 @@ module ApplicationUtils =
 
     let getPlatformColors () : Platform.PlatformColorValues =
         Application.Current.PlatformSettings.GetColorValues()
+
+    let nextTick (work: unit -> unit) : unit =
+        Dispatcher.UIThread.Post(work, DispatcherPriority.Loaded)
 
     let asBinding<'T> (source: Observable<'T>) : Data.IBinding =
         source.AsSystemObservable().ToBinding()

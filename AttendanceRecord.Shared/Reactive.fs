@@ -19,14 +19,14 @@ module R3 =
 
     let ret (value: 'T) : Observable<'T> = Observable.Return value |> _.Share()
 
-    let command<'T> () : ReactiveCommand<'T> = new ReactiveCommand<'T>()
-
     let disposeWith<'T when 'T :> IDisposable>
         (disposables: CompositeDisposable)
         (disposable: 'T)
         : 'T =
         disposables.Add(R3.Disposable.Create(fun () -> disposable.Dispose()))
         disposable
+
+    let command<'T> () : ReactiveCommand<'T> = new ReactiveCommand<'T>()
 
     let filter<'T> (predicate: 'T -> bool) (source: Observable<'T>) : Observable<'T> =
         source.Where predicate
@@ -36,6 +36,15 @@ module R3 =
 
     let subscribe<'T> (onNext: 'T -> unit) (source: Observable<'T>) : IDisposable =
         source.Subscribe onNext
+
+    let withSubscribe
+        (disposables: CompositeDisposable)
+        (onNext: 'T -> unit)
+        (command: ReactiveCommand<'T>)
+        : ReactiveCommand<'T> =
+        command |> subscribe onNext |> disposables.Add
+
+        command
 
     let combineLatest2<'T1, 'T2>
         (source1: Observable<'T1>)

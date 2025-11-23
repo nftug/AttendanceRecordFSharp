@@ -85,7 +85,34 @@ module RestTimeSection =
             let handleAdd () =
                 RestRecordSaveRequestDto.empty ctx.Form.Value.StartedAt.Date |> restItems.Add
 
-            let isEmpty = ctx.Form |> R3.map _.RestRecords.IsEmpty
+            let buildContent () =
+                ctx.Form
+                |> R3.map _.RestRecords.IsEmpty
+                |> R3.distinctUntilChanged
+                |> toView (fun disposables _ hasNoItems ->
+                    if hasNoItems then
+                        TextBlock()
+                            .Text("休憩記録がありません。")
+                            .FontSize(14.0)
+                            .Foreground(Brushes.Gray)
+                            .Row(1)
+                    else
+                        ItemsControl()
+                            .ItemsSource(restItems.ToNotifyCollectionChangedSlim())
+                            .ItemsPanelFunc(fun () -> VirtualizingStackPanel())
+                            .TemplateFunc(fun () ->
+                                let sv =
+                                    ScrollViewer()
+                                        .VerticalScrollBarVisibilityAuto()
+                                        .HorizontalScrollBarVisibilityDisabled()
+                                        .Content(ItemsPresenter())
+
+                                ctx.CurrentDate
+                                |> R3.subscribe (fun _ -> sv.ScrollToHome())
+                                |> disposables.Add
+
+                                sv)
+                            .ItemTemplateFunc(createRestItemView ctx handleDelete restItems))
 
             Border()
                 .BorderThickness(1.0)
@@ -112,22 +139,6 @@ module RestTimeSection =
                                     |> _.Column(2)
                                 )
                                 .Row(0),
-                            ScrollViewer()
-                                .HorizontalScrollBarVisibilityDisabled()
-                                .Content(
-                                    ItemsControl()
-                                        .ItemsSource(restItems.ToNotifyCollectionChangedSlim())
-                                        .ItemTemplate(
-                                            createRestItemView ctx handleDelete restItems
-                                        )
-                                )
-                                .IsVisible(isEmpty |> R3.map not |> asBinding)
-                                .Row(1),
-                            TextBlock()
-                                .Text("休憩記録がありません。")
-                                .FontSize(14.0)
-                                .Foreground(Brushes.Gray)
-                                .IsVisible(isEmpty |> asBinding)
-                                .Row(1)
+                            buildContent () |> _.Row(1)
                         )
                 ))

@@ -18,6 +18,7 @@ module RestStartAlarmSection =
 
             ctx.Form
             |> R3.map _.RestStartAlarmConfig
+            |> R3.distinctUntilChanged
             |> R3.subscribe (fun config ->
                 alarmEnabled.Value <- config.IsEnabled
                 beforeStartMinutes.Value <- decimal config.BeforeStartDurationMinutes
@@ -25,6 +26,7 @@ module RestStartAlarmSection =
             |> disposables.Add
 
             R3.combineLatest3 alarmEnabled beforeStartMinutes snoozeMinutes
+            |> R3.distinctUntilChanged
             |> R3.subscribe (fun (isEnabled, beforeMinutes, snoozeMinutes) ->
                 ctx.Form.Value <-
                     { ctx.Form.Value with

@@ -15,10 +15,12 @@ module BasicSettingsSection =
 
             ctx.Form
             |> R3.map _.StandardWorkTimeMinutes
+            |> R3.distinctUntilChanged
             |> R3.subscribe (fun minutes -> standardWorkMinutes.Value <- decimal minutes)
             |> disposables.Add
 
             standardWorkMinutes
+            |> R3.distinctUntilChanged
             |> R3.subscribe (fun minutes ->
                 ctx.Form.Value <-
                     { ctx.Form.Value with

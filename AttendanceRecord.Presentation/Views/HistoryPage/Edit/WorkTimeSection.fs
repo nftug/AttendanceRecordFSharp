@@ -16,15 +16,8 @@ module WorkTimeSection =
         withLifecycle (fun _ self ->
             let ctx, _ = Context.require<HistoryPageContext> self
 
-            let handleSetStartedAt (startedAt: DateTime option) : unit =
-                ctx.Form.Value <-
-                    { ctx.Form.Value with
-                        StartedAt = defaultArg startedAt ctx.Form.Value.StartedAt }
-
-            let handleSetEndedAt (endedAt: DateTime option) : unit =
-                ctx.Form.Value <-
-                    { ctx.Form.Value with
-                        EndedAt = endedAt }
+            let update (updater: WorkRecordSaveRequestDto -> WorkRecordSaveRequestDto) =
+                ctx.Form.Value <- updater ctx.Form.Value
 
             Border()
                 .BorderThickness(1.0)
@@ -43,13 +36,18 @@ module WorkTimeSection =
                                         { Label = "出勤時間" |> R3.ret
                                           BaseDate = ctx.CurrentDate
                                           Value = ctx.Form |> R3.map (Some << _.StartedAt)
-                                          OnSetValue = handleSetStartedAt
+                                          OnSetValue =
+                                            fun v ->
+                                                update (fun wr ->
+                                                    { wr with
+                                                        StartedAt = defaultArg v wr.StartedAt })
                                           IsClearable = false |> R3.ret },
                                     TimePickerField.create
                                         { Label = "退勤時間" |> R3.ret
                                           BaseDate = ctx.CurrentDate
                                           Value = ctx.Form |> R3.map _.EndedAt
-                                          OnSetValue = handleSetEndedAt
+                                          OnSetValue =
+                                            fun v -> update (fun wr -> { wr with EndedAt = v })
                                           IsClearable = true |> R3.ret }
                                 )
                         )

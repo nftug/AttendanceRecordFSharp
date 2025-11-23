@@ -18,6 +18,7 @@ module WorkEndAlarmSection =
 
             ctx.Form
             |> R3.map _.WorkEndAlarmConfig
+            |> R3.distinctUntilChanged
             |> R3.subscribe (fun config ->
                 alarmEnabled.Value <- config.IsEnabled
                 beforeEndMinutes.Value <- decimal config.BeforeEndDurationMinutes
@@ -25,6 +26,7 @@ module WorkEndAlarmSection =
             |> disposables.Add
 
             R3.combineLatest3 alarmEnabled beforeEndMinutes snoozeMinutes
+            |> R3.distinctUntilChanged
             |> R3.subscribe (fun (isEnabled, beforeMinutes, snoozeMinutes) ->
                 ctx.Form.Value <-
                     { ctx.Form.Value with

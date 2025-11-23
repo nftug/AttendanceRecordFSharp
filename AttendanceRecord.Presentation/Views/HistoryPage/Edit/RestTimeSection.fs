@@ -21,7 +21,10 @@ module RestTimeSection =
         (items: ObservableList<RestRecordSaveRequestDto>)
         (item: RestRecordSaveRequestDto)
         =
-        let index = items.IndexOf item
+        let update (updater: RestRecordSaveRequestDto -> RestRecordSaveRequestDto) =
+            let index = items |> Seq.findIndex (fun rp -> rp.Id = item.Id)
+            items[index] <- updater item
+
         let startedAt = item |> R3.everyValueChanged _.StartedAt |> R3.map Some
         let endedAt = item |> R3.everyValueChanged _.EndedAt
 
@@ -36,15 +39,15 @@ module RestTimeSection =
                       Value = startedAt
                       OnSetValue =
                         fun v ->
-                            items[index] <-
-                                { item with
-                                    StartedAt = defaultArg v item.StartedAt }
+                            update (fun rp ->
+                                { rp with
+                                    StartedAt = defaultArg v rp.StartedAt })
                       IsClearable = false |> R3.ret },
                 TimePickerField.create
                     { Label = "終了時間" |> R3.ret
                       BaseDate = ctx.CurrentDate
                       Value = endedAt
-                      OnSetValue = fun v -> items[index] <- { item with EndedAt = v }
+                      OnSetValue = fun v -> update (fun rp -> { rp with EndedAt = v })
                       IsClearable = true |> R3.ret },
                 MaterialIconButton.create
                     { Kind = MaterialIconKind.Delete |> R3.ret
@@ -63,6 +66,7 @@ module RestTimeSection =
             // Sync from ctx.Form to restItems
             ctx.Form
             |> R3.map _.RestRecords
+            |> R3.distinctUntilChanged
             |> R3.subscribe (fun items ->
                 restItems.Clear()
                 restItems.AddRange items)

@@ -17,6 +17,8 @@ module R3 =
                 | None -> Unchecked.defaultof<'T>
             )
 
+    let ret (value: 'T) : Observable<'T> = Observable.Return value |> _.Share()
+
     let command<'T> () : ReactiveCommand<'T> = new ReactiveCommand<'T>()
 
     let disposeWith<'T when 'T :> IDisposable>

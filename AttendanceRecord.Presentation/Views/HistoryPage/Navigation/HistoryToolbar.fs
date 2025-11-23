@@ -5,6 +5,7 @@ open R3
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
+open AttendanceRecord.Shared
 
 [<AutoOpen>]
 module private HistoryToolbarHelpers =
@@ -59,7 +60,6 @@ module HistoryToolbar =
     open NXUI.Extensions
     open type NXUI.Builders
     open Material.Icons
-    open AttendanceRecord.Shared
 
     let create () : Avalonia.Controls.Control =
         withLifecycle (fun disposables self ->
@@ -77,28 +77,28 @@ module HistoryToolbar =
                         .Column(0)
                         .Children(
                             MaterialIconButton.create
-                                { Kind = MaterialIconKind.NavigateBefore
+                                { Kind = MaterialIconKind.NavigateBefore |> R3.ret
                                   OnClick = fun _ -> handleNavigateMonth ctx disposables -1
-                                  FontSize = Some 18.0
-                                  Tooltip = Some "前の月へ移動" }
+                                  FontSize = Some 18.0 |> R3.ret
+                                  Tooltip = Some "前の月へ移動" |> R3.ret }
                             |> _.Width(50.0).Height(50.0),
                             MaterialIconButton.create
-                                { Kind = MaterialIconKind.NavigateNext
+                                { Kind = MaterialIconKind.NavigateNext |> R3.ret
                                   OnClick = fun _ -> handleNavigateMonth ctx disposables 1
-                                  FontSize = Some 18.0
-                                  Tooltip = Some "次の月へ移動" }
+                                  FontSize = Some 18.0 |> R3.ret
+                                  Tooltip = Some "次の月へ移動" |> R3.ret }
                             |> _.Width(50.0).Height(50.0),
                             MaterialIconButton.create
-                                { Kind = MaterialIconKind.Home
+                                { Kind = MaterialIconKind.Home |> R3.ret
                                   OnClick = fun _ -> handleJumpToToday ctx disposables
-                                  FontSize = Some 18.0
-                                  Tooltip = Some "今日の記録へ移動" }
+                                  FontSize = Some 18.0 |> R3.ret
+                                  Tooltip = Some "今日の記録へ移動" |> R3.ret }
                             |> _.Width(50.0).Height(50.0),
                             MaterialIconButton.create
-                                { Kind = MaterialIconKind.CalendarToday
+                                { Kind = MaterialIconKind.CalendarToday |> R3.ret
                                   OnClick = fun _ -> handleShowDatePicker ctx disposables
-                                  FontSize = Some 18.0
-                                  Tooltip = Some "日付を選択" }
+                                  FontSize = Some 18.0 |> R3.ret
+                                  Tooltip = Some "日付を選択" |> R3.ret }
                             |> _.Width(50.0).Height(50.0)
                         ),
                     StackPanel()
@@ -108,7 +108,7 @@ module HistoryToolbar =
                         .Margin(8.0, 0.0)
                         .Column(2)
                         .Children(
-                            MaterialIcon.create MaterialIconKind.CalendarMonth,
+                            MaterialIcon.create (MaterialIconKind.CalendarMonth |> R3.ret),
                             TextBlock()
                                 .Text(monthText |> asBinding)
                                 .FontSize(16.0)

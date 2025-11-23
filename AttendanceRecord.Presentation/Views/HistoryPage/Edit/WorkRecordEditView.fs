@@ -108,14 +108,24 @@ module WorkRecordEditView =
                     .Spacing(10.0)
                     .Children(
                         Button()
-                            .Content(MaterialIconLabel.create MaterialIconKind.Refresh "リセット")
+                            .Content(
+                                MaterialIconLabel.create
+                                    { Kind = MaterialIconKind.Refresh |> R3.ret
+                                      Label = "リセット" |> R3.ret
+                                      Spacing = None |> R3.ret }
+                            )
                             .OnClickHandler(fun _ _ ->
                                 ctx.Form.Value <- ctx.DefaultForm.CurrentValue)
                             .Width(100.0)
                             .Height(35.0)
                             .IsEnabled(isFormDirty |> asBinding),
                         Button()
-                            .Content(MaterialIconLabel.create MaterialIconKind.ContentSave "保存")
+                            .Content(
+                                MaterialIconLabel.create
+                                    { Kind = MaterialIconKind.ContentSave |> R3.ret
+                                      Label = "保存" |> R3.ret
+                                      Spacing = None |> R3.ret }
+                            )
                             .OnClickHandler(fun _ _ ->
                                 handleClickSave saveMutation.MutateTask ctx disposables)
                             .Width(100.0)
@@ -126,7 +136,12 @@ module WorkRecordEditView =
 
             let deleteButton =
                 Button()
-                    .Content(MaterialIconLabel.create MaterialIconKind.Delete "削除")
+                    .Content(
+                        MaterialIconLabel.create
+                            { Kind = MaterialIconKind.Delete |> R3.ret
+                              Label = "削除" |> R3.ret
+                              Spacing = None |> R3.ret }
+                    )
                     .OnClickHandler(fun _ _ ->
                         handleClickDelete deleteMutation.MutateTask ctx disposables)
                     .Width(100.0)

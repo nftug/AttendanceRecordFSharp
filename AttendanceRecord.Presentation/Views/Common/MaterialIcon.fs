@@ -4,39 +4,44 @@ open Material.Icons
 open type NXUI.Builders
 open NXUI.Extensions
 open R3
+open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Shared
 
 module MaterialIcon =
-    let create (kind: MaterialIconKind) : Avalonia.MaterialIcon =
+    let create (kind: Observable<MaterialIconKind>) : Avalonia.MaterialIcon =
         let icon = Avalonia.MaterialIcon()
-        icon.Kind <- kind
+
+        let binding =
+            Avalonia.MaterialIcon.KindProperty.Bind().WithMode(Avalonia.Data.BindingMode.OneWay)
+
+        icon[binding] <- kind |> asBinding
+
         icon
 
+type MaterialIconLabelProps =
+    { Kind: Observable<MaterialIconKind>
+      Label: Observable<string>
+      Spacing: Observable<float option> }
+
 module MaterialIconLabel =
-    let create (kind: MaterialIconKind) (label: string) : Avalonia.Controls.Control =
+    let create (props: MaterialIconLabelProps) =
         StackPanel()
             .OrientationHorizontal()
-            .Spacing(10.0)
-            .Children(MaterialIcon.create kind, TextBlock().Text(label))
+            .Spacing(props.Spacing |> R3.map (Option.defaultValue 10.0) |> asBinding)
+            .Children(MaterialIcon.create props.Kind, TextBlock().Text(props.Label |> asBinding))
 
 type MaterialIconButtonProps =
-    { Kind: MaterialIconKind
+    { Kind: Observable<MaterialIconKind>
       OnClick: Avalonia.Interactivity.RoutedEventArgs -> unit
-      FontSize: float option
-      Tooltip: string option }
+      FontSize: Observable<float option>
+      Tooltip: Observable<string option> }
 
 module MaterialIconButton =
     let create (props: MaterialIconButtonProps) : Avalonia.Controls.Button =
-        let button =
-            Button()
-                .Content(MaterialIcon.create props.Kind)
-                .OnClickHandler(fun _ -> props.OnClick)
-                .Background(Avalonia.Media.Brushes.Transparent)
-                .BorderBrush(Avalonia.Media.Brushes.Transparent)
-
-        match props.FontSize with
-        | Some size -> button.FontSize size
-        | None -> button
-        |> fun b ->
-            match props.Tooltip with
-            | Some tip -> b.Tip tip
-            | None -> b
+        Button()
+            .Content(MaterialIcon.create props.Kind)
+            .OnClickHandler(fun _ -> props.OnClick)
+            .Background(Avalonia.Media.Brushes.Transparent)
+            .BorderBrush(Avalonia.Media.Brushes.Transparent)
+            .FontSize(props.FontSize |> R3.map (Option.defaultValue 14.0) |> asBinding)
+            .Tip(props.Tooltip |> R3.map Option.toObj |> asBinding)

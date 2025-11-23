@@ -40,17 +40,17 @@ module WorkTimeSection =
                                 .Spacing(15.0)
                                 .Children(
                                     TimePickerField.create
-                                        { Label = "出勤時間"
+                                        { Label = "出勤時間" |> R3.ret
                                           BaseDate = ctx.CurrentDate
                                           Value = ctx.Form |> R3.map (Some << _.StartedAt)
                                           OnSetValue = handleSetStartedAt
-                                          IsClearable = false },
+                                          IsClearable = false |> R3.ret },
                                     TimePickerField.create
-                                        { Label = "退勤時間"
+                                        { Label = "退勤時間" |> R3.ret
                                           BaseDate = ctx.CurrentDate
                                           Value = ctx.Form |> R3.map _.EndedAt
                                           OnSetValue = handleSetEndedAt
-                                          IsClearable = true }
+                                          IsClearable = true |> R3.ret }
                                 )
                         )
                 ))

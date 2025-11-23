@@ -61,13 +61,23 @@ module SettingsActionsView =
                 .Spacing(10.0)
                 .Children(
                     Button()
-                        .Content(MaterialIconLabel.create MaterialIconKind.Refresh "リセット")
+                        .Content(
+                            MaterialIconLabel.create
+                                { Kind = MaterialIconKind.Refresh |> R3.ret
+                                  Label = "リセット" |> R3.ret
+                                  Spacing = None |> R3.ret }
+                        )
                         .Width(100.0)
                         .Height(35.0)
                         .OnClickHandler(fun _ _ -> ctx.Form.Value <- ctx.DefaultForm.CurrentValue)
                         .IsEnabled(isFormDirty |> asBinding),
                     Button()
-                        .Content(MaterialIconLabel.create MaterialIconKind.ContentSave "保存")
+                        .Content(
+                            MaterialIconLabel.create
+                                { Kind = MaterialIconKind.ContentSave |> R3.ret
+                                  Label = "保存" |> R3.ret
+                                  Spacing = None |> R3.ret }
+                        )
                         .Width(100.0)
                         .Height(35.0)
                         .OnClickHandler(fun _ _ ->

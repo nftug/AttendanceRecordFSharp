@@ -44,8 +44,6 @@ module WorkRecordListView =
                     |> R3.map (function
                         | Some date -> date.Date = item.Date.Date
                         | None -> false)
-                    |> R3.readonly None
-                    |> R3.disposeWith d
 
                 AccentToggleButton.create isSelected
                 |> _.HorizontalAlignmentStretch()
@@ -61,7 +59,7 @@ module WorkRecordListView =
                             .Spacing(10.0)
                             .Children(
                                 MaterialIcon
-                                    .create(MaterialIconKind.CalendarToday)
+                                    .create(MaterialIconKind.CalendarToday |> R3.ret)
                                     .Foreground(Brushes.DarkGray),
                                 TextBlock()
                                     .Text(item.Date.ToString "yyyy/MM/dd (ddd)")

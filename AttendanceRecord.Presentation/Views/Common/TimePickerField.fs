@@ -9,11 +9,11 @@ open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Shared
 
 type TimePickerFieldProps =
-    { Label: string
+    { Label: Observable<string>
       BaseDate: Observable<DateTime option>
       Value: Observable<DateTime option>
       OnSetValue: (DateTime option -> unit)
-      IsClearable: bool }
+      IsClearable: Observable<bool> }
 
 module TimePickerField =
     let create (props: TimePickerFieldProps) =
@@ -34,10 +34,10 @@ module TimePickerField =
             StackPanel()
                 .Spacing(5.0)
                 .Children(
-                    TextBlock().Text(props.Label).FontSize(12.0),
+                    TextBlock().Text(props.Label |> asBinding).FontSize(12.0),
                     StackPanel()
                         .OrientationHorizontal()
-                        .Spacing(2.0)
+                        .Spacing(3.0)
                         .Children(
                             TimePicker()
                                 .SelectedTime(
@@ -51,10 +51,11 @@ module TimePickerField =
                                         handleTimeChange (Option.ofNullable ctl.SelectedTime))
                                     |> disposables.Add),
                             MaterialIconButton.create
-                                { Kind = MaterialIconKind.Close
+                                { Kind = MaterialIconKind.Close |> R3.ret
                                   OnClick = fun _ -> handleTimeChange None
-                                  FontSize = Some 12.0
-                                  Tooltip = Some "時間をクリア" }
-                            |> _.IsVisible(props.IsClearable)
+                                  FontSize = Some 12.0 |> R3.ret
+                                  Tooltip = Some "時間をクリア" |> R3.ret }
+                            |> _.IsEnabled(props.Value |> R3.map Option.isSome |> asBinding)
+                                .IsVisible(props.IsClearable |> asBinding)
                         )
                 ))

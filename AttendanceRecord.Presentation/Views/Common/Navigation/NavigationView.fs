@@ -17,7 +17,7 @@ module NavigationView =
     open type NXUI.Builders
 
     let private createDrawer (pages: DrawerMenuItems list) (closeDrawer: unit -> unit) =
-        withLifecycle (fun disposables self ->
+        withLifecycle (fun _ self ->
             let ctx, _ = Context.require<NavigationContext> self
 
             StackPanel()
@@ -25,18 +25,19 @@ module NavigationView =
                 .Children(
                     pages
                     |> List.map (fun item ->
-                        let isSelected =
-                            ctx.CurrentRoute
-                            |> R3.map (fun r -> r.Path = item.Path)
-                            |> R3.readonly None
-                            |> R3.disposeWith disposables
+                        let isSelected = ctx.CurrentRoute |> R3.map (fun r -> r.Path = item.Path)
 
                         AccentToggleButton.create isSelected
-                        |> _.Content(MaterialIconLabel.create item.Icon item.Title)
+                        |> _.Margin(0, 5, 0, 5)
+                            .Content(
+                                MaterialIconLabel.create
+                                    { Kind = item.Icon |> R3.ret
+                                      Label = item.Title |> R3.ret
+                                      Spacing = None |> R3.ret }
+                            )
                             .OnClickHandler(fun _ _ ->
                                 ctx.NavigateTo item.Path |> ignore
                                 closeDrawer ())
-                            .Margin(0, 5, 0, 5)
                             .Height(40.0)
                             .FontSize(16.0)
                             .HorizontalAlignmentStretch()
@@ -67,10 +68,10 @@ module NavigationView =
                     .Margin(5.0)
                     .Children(
                         MaterialIconButton.create
-                            { Kind = MaterialIconKind.Menu
+                            { Kind = MaterialIconKind.Menu |> R3.ret
                               OnClick = fun _ -> isDrawerOpen.Value <- true
-                              FontSize = Some 18.0
-                              Tooltip = Some "メニューを開く" }
+                              FontSize = Some 18.0 |> R3.ret
+                              Tooltip = None |> R3.ret }
                         |> _.Width(50.0).Height(50.0),
                         TextBlock()
                             .Text(pageTitle |> asBinding)

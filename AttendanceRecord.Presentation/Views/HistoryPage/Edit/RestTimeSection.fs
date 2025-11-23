@@ -31,7 +31,7 @@ module RestTimeSection =
             .Margin(0.0, 0.0, 0.0, 10.0)
             .Children(
                 TimePickerField.create
-                    { Label = "開始時間"
+                    { Label = "開始時間" |> R3.ret
                       BaseDate = ctx.CurrentDate
                       Value = startedAt
                       OnSetValue =
@@ -39,18 +39,18 @@ module RestTimeSection =
                             items[index] <-
                                 { item with
                                     StartedAt = defaultArg v item.StartedAt }
-                      IsClearable = false },
+                      IsClearable = false |> R3.ret },
                 TimePickerField.create
-                    { Label = "終了時間"
+                    { Label = "終了時間" |> R3.ret
                       BaseDate = ctx.CurrentDate
                       Value = endedAt
                       OnSetValue = fun v -> items[index] <- { item with EndedAt = v }
-                      IsClearable = true },
+                      IsClearable = true |> R3.ret },
                 MaterialIconButton.create
-                    { Kind = MaterialIconKind.Delete
+                    { Kind = MaterialIconKind.Delete |> R3.ret
                       OnClick = fun _ -> handleDelete item.Id
-                      FontSize = Some 18.0
-                      Tooltip = Some "休憩時間を削除" }
+                      FontSize = Some 18.0 |> R3.ret
+                      Tooltip = Some "休憩時間を削除" |> R3.ret }
                 |> _.VerticalAlignmentBottom()
             )
 
@@ -132,10 +132,10 @@ module RestTimeSection =
                                         .FontWeightBold()
                                         .Column(0),
                                     MaterialIconButton.create
-                                        { Kind = MaterialIconKind.AddCircleOutline
+                                        { Kind = MaterialIconKind.AddCircleOutline |> R3.ret
                                           OnClick = fun _ -> handleAdd ()
-                                          FontSize = Some 20.0
-                                          Tooltip = Some "休憩時間を追加" }
+                                          FontSize = Some 20.0 |> R3.ret
+                                          Tooltip = Some "休憩時間を追加" |> R3.ret }
                                     |> _.Column(2)
                                 )
                                 .Row(0),

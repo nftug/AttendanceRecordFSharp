@@ -4,7 +4,6 @@ open Avalonia.Controls
 open System.Runtime.CompilerServices
 open Avalonia.Controls.Templates
 open Avalonia.Controls.Primitives
-open Avalonia.Controls.Primitives
 
 [<Extension>]
 type __ItemsControlExtensions =

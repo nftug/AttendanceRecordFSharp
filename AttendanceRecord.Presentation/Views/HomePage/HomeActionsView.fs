@@ -11,31 +11,21 @@ open AttendanceRecord.Presentation.Views.HomePage.Context
 
 module HomeActionsView =
     let create () : Avalonia.Controls.Control =
-        withLifecycle (fun disposables self ->
+        withLifecycle (fun _ self ->
             let ctx, ctxDisposables = Context.require<HomePageContext> self
             let hooks = useHomeActionsHooks ctx ctxDisposables
-
-            let isWorking =
-                hooks.Status
-                |> R3.map _.IsWorking
-                |> R3.readonly None
-                |> R3.disposeWith disposables
-
-            let isResting =
-                hooks.Status
-                |> R3.map _.IsResting
-                |> R3.readonly None
-                |> R3.disposeWith disposables
 
             Grid()
                 .RowDefinitions("Auto")
                 .ColumnDefinitions("*,*")
                 .Children(
-                    AccentToggleButton.create isWorking
+                    AccentToggleButton.create (hooks.Status |> R3.map _.IsWorking)
                     |> _.Column(0)
                         .Content(
-                            hooks.WorkButtonLabel
-                            |> toView (fun _ _ -> MaterialIconLabel.create MaterialIconKind.Work)
+                            MaterialIconLabel.create
+                                { Kind = MaterialIconKind.WorkOutline |> R3.ret
+                                  Label = hooks.WorkButtonLabel
+                                  Spacing = None |> R3.ret }
                         )
                         .OnClickHandler(fun _ _ -> hooks.HandleClickToggleWork())
                         .IsEnabled(hooks.WorkToggleEnabled |> asBinding)
@@ -43,11 +33,13 @@ module HomeActionsView =
                         .FontSize(16.0)
                         .HorizontalAlignmentStretch()
                         .Margin(0, 0, 10.0, 0),
-                    AccentToggleButton.create isResting
+                    AccentToggleButton.create (hooks.Status |> R3.map _.IsResting)
                     |> _.Column(1)
                         .Content(
-                            hooks.RestButtonLabel
-                            |> toView (fun _ _ -> MaterialIconLabel.create MaterialIconKind.Coffee)
+                            MaterialIconLabel.create
+                                { Kind = MaterialIconKind.Coffee |> R3.ret
+                                  Label = hooks.RestButtonLabel
+                                  Spacing = None |> R3.ret }
                         )
                         .OnClickHandler(fun _ _ -> hooks.HandleClickToggleRest())
                         .IsEnabled(hooks.RestToggleEnabled |> asBinding)

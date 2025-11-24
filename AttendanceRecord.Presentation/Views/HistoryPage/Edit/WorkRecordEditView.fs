@@ -87,11 +87,8 @@ module WorkRecordEditView =
             let saveMutation = useMutation disposables props.SaveWorkRecord.Handle
             let deleteMutation = useMutation disposables props.DeleteWorkRecord.Handle
 
-            let isFormDirty =
-                R3.combineLatest2 ctx.Form ctx.DefaultForm |> R3.map (fun (f, d) -> f <> d)
-
             let saveButtonEnabled =
-                R3.combineLatest2 saveMutation.IsPending isFormDirty
+                R3.combineLatest2 saveMutation.IsPending ctx.IsFormDirty
                 |> R3.map (fun (isSaving, dirty) -> not isSaving && dirty)
 
             let deleteButtonEnabled =
@@ -149,10 +146,10 @@ module WorkRecordEditView =
                                           Spacing = None |> R3.ret }
                                 )
                                 .OnClickHandler(fun _ _ ->
-                                    ctx.Form.Value <- ctx.DefaultForm.CurrentValue)
+                                    ctx.ResetCommand.Execute ctx.DefaultForm.CurrentValue)
                                 .Width(100.0)
                                 .Height(35.0)
-                                .IsEnabled(isFormDirty |> asBinding)
+                                .IsEnabled(ctx.IsFormDirty |> asBinding)
                                 .Column(2),
                             Button()
                                 .Content(

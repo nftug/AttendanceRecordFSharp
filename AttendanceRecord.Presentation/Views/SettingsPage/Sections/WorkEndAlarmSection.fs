@@ -16,9 +16,9 @@ module WorkEndAlarmSection =
             let snoozeMinutes = R3.property 0m |> R3.disposeWith disposables
             let maxMinutes = ctx.Form |> R3.map _.StandardWorkTimeMinutes |> R3.map decimal
 
-            ctx.Form
+            ctx.ResetCommand
+            |> R3.prepend ctx.DefaultForm.CurrentValue
             |> R3.map _.WorkEndAlarmConfig
-            |> R3.distinctUntilChanged
             |> R3.subscribe (fun config ->
                 alarmEnabled.Value <- config.IsEnabled
                 beforeEndMinutes.Value <- decimal config.BeforeEndDurationMinutes

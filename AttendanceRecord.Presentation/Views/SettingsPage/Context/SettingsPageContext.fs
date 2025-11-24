@@ -12,6 +12,8 @@ open AttendanceRecord.Presentation.Utils
 type SettingsPageContext =
     { Form: ReactiveProperty<AppConfigSaveRequestDto>
       DefaultForm: ReadOnlyReactiveProperty<AppConfigSaveRequestDto>
+      IsFormDirty: ReadOnlyReactiveProperty<bool>
+      ResetCommand: ReactiveCommand<AppConfigSaveRequestDto>
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool> }
 
 type SettingsPageContextProps =
@@ -29,17 +31,31 @@ module SettingsPageContext =
 
         let defaultForm = R3.property form.CurrentValue |> R3.disposeWith disposables
 
+        let isFormDirty =
+            R3.combineLatest2 form defaultForm
+            |> R3.map (fun (f, df) -> f <> df)
+            |> R3.readonly None
+            |> R3.disposeWith disposables
+
+        let resetCommand =
+            isFormDirty
+            |> R3.toCommand<AppConfigSaveRequestDto>
+            |> R3.withSubscribe disposables (fun next ->
+                form.Value <- next
+
+                if next <> defaultForm.CurrentValue then
+                    defaultForm.Value <- next)
+
         appConfig
         |> R3.subscribe (fun config ->
-            let dto = AppConfigSaveRequestDto.fromResponse config
-            form.Value <- dto
-            defaultForm.Value <- dto)
+            let request = AppConfigSaveRequestDto.fromResponse config
+            resetCommand.Execute request)
         |> disposables.Add
 
         let confirmDiscard (ct: CancellationToken) : Tasks.Task<bool> =
             invokeTask disposables (fun _ ->
                 task {
-                    if form.CurrentValue <> defaultForm.CurrentValue then
+                    if isFormDirty.CurrentValue then
                         return!
                             MessageBox.show
                                 { Title = "変更の確認"
@@ -54,4 +70,6 @@ module SettingsPageContext =
 
         { Form = form
           DefaultForm = defaultForm :> ReadOnlyReactiveProperty<_>
+          IsFormDirty = isFormDirty
+          ResetCommand = resetCommand
           ConfirmDiscard = confirmDiscard }

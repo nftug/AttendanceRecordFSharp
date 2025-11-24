@@ -16,7 +16,9 @@ type HistoryPageContext =
       MonthlyRecords: ReadOnlyReactiveProperty<WorkRecordListDto>
       Form: ReactiveProperty<WorkRecordSaveRequestDto>
       DefaultForm: ReadOnlyReactiveProperty<WorkRecordSaveRequestDto>
+      IsFormDirty: ReadOnlyReactiveProperty<bool>
       CurrentRecord: ReadOnlyReactiveProperty<WorkRecordDetailsDto option>
+      ResetCommand: ReactiveCommand<WorkRecordSaveRequestDto>
       ReloadAfterSave: Guid option -> unit
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool> }
 
@@ -48,8 +50,23 @@ module HistoryPageContext =
 
         let defaultForm = R3.property form.CurrentValue |> R3.disposeWith disposables
 
+        let isFormDirty =
+            R3.combineLatest2 form defaultForm
+            |> R3.map (fun (f, df) -> f <> df)
+            |> R3.readonly None
+            |> R3.disposeWith disposables
+
         let currentRecord =
             R3.property (None: WorkRecordDetailsDto option) |> R3.disposeWith disposables
+
+        let resetCommand =
+            isFormDirty
+            |> R3.toCommand<WorkRecordSaveRequestDto>
+            |> R3.withSubscribe disposables (fun next ->
+                form.Value <- next
+
+                if next <> defaultForm.CurrentValue then
+                    defaultForm.Value <- next)
 
         let loadMonthlyRecords (month: DateTime) : unit =
             invokeTask disposables (fun ct ->
@@ -97,9 +114,7 @@ module HistoryPageContext =
 
         let confirmDiscard (ct: CancellationToken) : Tasks.Task<bool> =
             task {
-                if form.CurrentValue = defaultForm.CurrentValue then
-                    return true
-                else
+                if isFormDirty.CurrentValue then
                     return!
                         MessageBox.show
                             { Title = "確認"
@@ -108,6 +123,8 @@ module HistoryPageContext =
                               CancelContent = None
                               Buttons = MessageBoxButtons.OkCancel }
                             (Some ct)
+                else
+                    return true
             }
 
         // Load monthly records when month changes
@@ -121,13 +138,13 @@ module HistoryPageContext =
         // Transfer current record to form when it changes
         R3.combineLatest2 selectedDate currentRecord
         |> R3.subscribe (fun (date, rOpt) ->
-            form.Value <-
+            let request =
                 match date, rOpt with
                 | Some _, Some r -> WorkRecordSaveRequestDto.fromResponse r
                 | Some date, None -> WorkRecordSaveRequestDto.empty date
                 | None, _ -> WorkRecordSaveRequestDto.empty DateTime.MinValue
 
-            defaultForm.Value <- form.CurrentValue)
+            resetCommand.Execute request)
         |> disposables.Add
 
         { CurrentMonth = currentMonth
@@ -135,6 +152,8 @@ module HistoryPageContext =
           MonthlyRecords = monthlyRecords
           Form = form
           DefaultForm = defaultForm
+          IsFormDirty = isFormDirty
+          ResetCommand = resetCommand
           CurrentRecord = currentRecord
           ReloadAfterSave = reloadAfterSave
           ConfirmDiscard = confirmDiscard }

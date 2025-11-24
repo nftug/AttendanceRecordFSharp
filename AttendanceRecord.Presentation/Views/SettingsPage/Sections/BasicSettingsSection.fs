@@ -1,22 +1,25 @@
 namespace AttendanceRecord.Presentation.Views.SettingsPage.Sections
 
+open R3
 open Avalonia.Media
 open NXUI.Extensions
 open type NXUI.Builders
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
 open AttendanceRecord.Shared
+open AttendanceRecord.Application.Dtos.Requests
 
 module BasicSettingsSection =
+
     let create () =
         withLifecycle (fun disposables self ->
             let ctx, _ = Context.require<SettingsPageContext> self
             let standardWorkMinutes = R3.property 0m |> R3.disposeWith disposables
 
-            ctx.Form
-            |> R3.map _.StandardWorkTimeMinutes
-            |> R3.distinctUntilChanged
-            |> R3.subscribe (fun minutes -> standardWorkMinutes.Value <- decimal minutes)
+            ctx.ResetCommand
+            |> R3.prepend ctx.DefaultForm.CurrentValue
+            |> R3.subscribe (fun form ->
+                standardWorkMinutes.Value <- decimal form.StandardWorkTimeMinutes)
             |> disposables.Add
 
             standardWorkMinutes

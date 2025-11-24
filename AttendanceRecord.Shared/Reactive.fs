@@ -46,6 +46,9 @@ module R3 =
 
         command
 
+    let toCommand<'T> (source: Observable<bool>) : ReactiveCommand<'T> =
+        source.ToReactiveCommand<'T>()
+
     let combineLatest2<'T1, 'T2>
         (source1: Observable<'T1>)
         (source2: Observable<'T2>)
@@ -90,7 +93,5 @@ module R3 =
         : Observable<'T> =
         source.DistinctUntilChangedBy selector
 
-    let observeCollection (source: ObservableList<'T>) : Observable<unit> =
-        let changed = source |> everyValueChanged _.Count |> map (fun _ -> ())
-        let replaced = source.ObserveReplace().Select(fun _ -> ())
-        merge [ changed; replaced ] |> map (fun _ -> ())
+    let collectionChanged (source: ObservableList<'T>) : Observable<CollectionChangedEvent<'T>> =
+        source.ObserveChanged()

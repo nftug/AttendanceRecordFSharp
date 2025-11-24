@@ -47,12 +47,8 @@ module SettingsActionsView =
             let ctx, _ = Context.require<SettingsPageContext> self
             let saveMutation = useMutation disposables props.SaveAppConfig.Handle
 
-            let isFormDirty =
-                R3.combineLatest2 ctx.Form ctx.DefaultForm
-                |> R3.map (fun (form, def) -> form <> def)
-
             let saveButtonEnabled =
-                R3.combineLatest2 isFormDirty saveMutation.IsPending
+                R3.combineLatest2 ctx.IsFormDirty saveMutation.IsPending
                 |> R3.map (fun (dirty, isSaving) -> dirty && not isSaving)
 
             StackPanel()
@@ -69,8 +65,9 @@ module SettingsActionsView =
                         )
                         .Width(100.0)
                         .Height(35.0)
-                        .OnClickHandler(fun _ _ -> ctx.Form.Value <- ctx.DefaultForm.CurrentValue)
-                        .IsEnabled(isFormDirty |> asBinding),
+                        .OnClickHandler(fun _ _ ->
+                            ctx.ResetCommand.Execute ctx.DefaultForm.CurrentValue)
+                        .IsEnabled(ctx.IsFormDirty |> asBinding),
                     Button()
                         .Content(
                             MaterialIconLabel.create

@@ -4,6 +4,7 @@ open Avalonia.Controls
 open System.Runtime.CompilerServices
 open Avalonia.Controls.Templates
 open Avalonia.Controls.Primitives
+open ObservableCollections
 
 [<Extension>]
 type __ItemsControlExtensions =
@@ -31,4 +32,11 @@ type __ItemsControlExtensions =
         (control: ItemsControl, builder: unit -> 'panel)
         : ItemsControl =
         control.ItemsPanel <- FuncTemplate<Panel>(fun () -> builder () :> Panel)
+        control
+
+    [<Extension>]
+    static member ItemsSourceObservable
+        (control: ItemsControl, source: ObservableList<'T>)
+        : ItemsControl =
+        control.ItemsSource <- source.ToNotifyCollectionChangedSlim()
         control

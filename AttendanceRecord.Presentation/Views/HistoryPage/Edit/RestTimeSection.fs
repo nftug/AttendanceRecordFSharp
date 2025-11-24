@@ -63,18 +63,16 @@ module RestTimeSection =
 
             let restItems = ObservableList<RestRecordSaveRequestDto>()
 
-            // Sync from ctx.Form to restItems
-            ctx.Form
-            |> R3.map _.RestRecords
-            |> R3.distinctUntilChanged
-            |> R3.subscribe (fun items ->
+            ctx.ResetCommand
+            |> R3.prepend ctx.DefaultForm.CurrentValue
+            |> R3.subscribe (fun form ->
                 restItems.Clear()
-                restItems.AddRange items)
+                restItems.AddRange form.RestRecords)
             |> disposables.Add
 
             // Sync from restItems to ctx.Form
             restItems
-            |> R3.observeCollection
+            |> R3.collectionChanged
             |> R3.subscribe (fun _ ->
                 ctx.Form.Value <-
                     { ctx.Form.Value with
@@ -104,7 +102,7 @@ module RestTimeSection =
                             .Row(1)
                     else
                         ItemsControl()
-                            .ItemsSource(restItems.ToNotifyCollectionChangedSlim())
+                            .ItemsSourceObservable(restItems)
                             .ItemsPanelFunc(fun () -> VirtualizingStackPanel())
                             .TemplateFunc(fun () ->
                                 let sv =
@@ -113,8 +111,7 @@ module RestTimeSection =
                                         .HorizontalScrollBarVisibilityDisabled()
                                         .Content(ItemsPresenter())
 
-                                // Scroll to top when date changes, scroll to bottom when new item is added
-                                ctx.CurrentDate
+                                ctx.ResetCommand
                                 |> R3.subscribe (fun _ -> sv.ScrollToHome())
                                 |> disposables.Add
 

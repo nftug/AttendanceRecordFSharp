@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Compile Include="Dtos/Responses/TimeDurationDto.fs" />
+    <Compile Include="Dtos/Responses/WorkRecordSummaryDto.fs" />
     <Compile Include="Dtos/Responses/RestRecordDetailsDto.fs" />
     <Compile Include="Dtos/Responses/WorkRecordListDto.fs" />
     <Compile Include="Dtos/Responses/WorkRecordDetailsDto.fs" />

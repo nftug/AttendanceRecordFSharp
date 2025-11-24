@@ -9,14 +9,15 @@ open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Application.UseCases.WorkRecords
+open AttendanceRecord.Application.Services
 
 type HistoryPageContext =
     { CurrentMonth: ReactiveProperty<DateTime>
-      CurrentDate: ReactiveProperty<DateTime option>
-      MonthlyRecords: ReadOnlyReactiveProperty<WorkRecordListDto>
+      SelectedDate: ReactiveProperty<DateTime option>
+      CurrentDate: ReadOnlyReactiveProperty<DateTime>
+      MonthlyRecords: Observable<WorkRecordListDto>
       FormCtx: FormContext<WorkRecordSaveRequestDto>
-      CurrentRecord: ReadOnlyReactiveProperty<WorkRecordDetailsDto option>
-      ReloadAfterSave: Guid option -> unit
+      CurrentSummary: Observable<WorkRecordSummaryDto option>
       SaveMutation: UseMutationResult<unit, unit>
       DeleteMutation: UseMutationResult<unit, unit>
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool> }
@@ -25,7 +26,8 @@ type HistoryPageContextProps =
     { GetMonthlyWorkRecords: GetMonthlyWorkRecords
       GetWorkRecordDetails: GetWorkRecordDetails
       SaveWorkRecord: SaveWorkRecord
-      DeleteWorkRecord: DeleteWorkRecord }
+      DeleteWorkRecord: DeleteWorkRecord
+      CurrentStatusStore: CurrentStatusStore }
 
 [<AutoOpen>]
 module HistoryPageContext =
@@ -49,6 +51,22 @@ module HistoryPageContext =
         let currentRecord =
             R3.property (None: WorkRecordDetailsDto option) |> R3.disposeWith disposables
 
+        let currentDate =
+            formCtx.Form
+            |> R3.map _.StartedAt.Date
+            |> R3.readonly None
+            |> R3.disposeWith disposables
+
+        let currentSummary =
+            R3.combineLatest3
+                selectedDate
+                (currentRecord |> R3.map (Option.map _.Summary))
+                (props.CurrentStatusStore.CurrentStatus |> R3.map _.Summary)
+            |> R3.map (fun (dateOpt, recordSummaryOpt, todaysSummary) ->
+                match dateOpt with
+                | Some date when date = DateTime.Today -> Some todaysSummary
+                | _ -> recordSummaryOpt)
+
         let loadMonthlyRecords (month: DateTime) : unit =
             invokeTask disposables (fun ct ->
                 task {
@@ -59,37 +77,21 @@ module HistoryPageContext =
             |> ignore
 
         let loadSelectedRecord (dateOpt: DateTime option) : unit =
-            match dateOpt with
-            | None -> currentRecord.Value <- None
-            | Some date ->
-                let matchingRecord =
-                    monthlyRecords.CurrentValue.WorkRecords
-                    |> List.tryFind (fun r -> r.Date.Date = date.Date)
+            invokeTask disposables (fun ct ->
+                task {
+                    match dateOpt with
+                    | None -> currentRecord.Value <- None
+                    | Some date ->
+                        let matchingRecord =
+                            monthlyRecords.CurrentValue.WorkRecords
+                            |> List.tryFind (fun r -> r.Date.Date = date.Date)
 
-                match matchingRecord with
-                | Some record ->
-                    invokeTask disposables (fun ct ->
-                        task {
+                        match matchingRecord with
+                        | Some record ->
                             match! props.GetWorkRecordDetails.Handle record.Id ct with
                             | Ok(Some details) -> currentRecord.Value <- Some details
                             | _ -> currentRecord.Value <- None
-                        })
-                    |> ignore
-                | None -> currentRecord.Value <- None
-
-        let reloadAfterSave (idOpt: Guid option) =
-            invokeTask disposables (fun ct ->
-                task {
-                    // 月次レコードを再読み込み
-                    loadMonthlyRecords currentMonth.CurrentValue
-
-                    // 指定されたIDのレコードを再読み込み
-                    match idOpt with
-                    | Some id ->
-                        match! props.GetWorkRecordDetails.Handle id ct with
-                        | Ok(Some details) -> currentRecord.Value <- Some details
-                        | _ -> currentRecord.Value <- None
-                    | None -> currentRecord.Value <- None
+                        | None -> currentRecord.Value <- None
                 })
             |> ignore
 
@@ -109,8 +111,24 @@ module HistoryPageContext =
                         return true
                 })
 
+        let reloadAfterSave (idOpt: Guid option) : unit =
+            invokeTask disposables (fun ct ->
+                task {
+                    // 月次レコードを再読み込み
+                    loadMonthlyRecords currentMonth.CurrentValue
+
+                    // 指定されたIDのレコードを再読み込み
+                    match idOpt with
+                    | Some id ->
+                        match! props.GetWorkRecordDetails.Handle id ct with
+                        | Ok(Some details) -> currentRecord.Value <- Some details
+                        | _ -> currentRecord.Value <- None
+                    | None -> currentRecord.Value <- None
+                })
+            |> ignore
+
         let saveMutation =
-            useMutation disposables (fun () (ct: CancellationToken) ->
+            useMutation disposables (fun () ct ->
                 task {
                     match! props.SaveWorkRecord.Handle formCtx.Form.Value ct with
                     | Ok id ->
@@ -131,7 +149,7 @@ module HistoryPageContext =
                 })
 
         let deleteMutation =
-            useMutation disposables (fun () (ct: CancellationToken) ->
+            useMutation disposables (fun () ct ->
                 task {
                     match formCtx.Form.Value.Id with
                     | Some id ->
@@ -189,11 +207,11 @@ module HistoryPageContext =
         |> disposables.Add
 
         { CurrentMonth = currentMonth
-          CurrentDate = selectedDate
+          SelectedDate = selectedDate
+          CurrentDate = currentDate
           MonthlyRecords = monthlyRecords
           FormCtx = formCtx
-          CurrentRecord = currentRecord
-          ReloadAfterSave = reloadAfterSave
+          CurrentSummary = currentSummary
           ConfirmDiscard = confirmDiscard
           SaveMutation = saveMutation
           DeleteMutation = deleteMutation }

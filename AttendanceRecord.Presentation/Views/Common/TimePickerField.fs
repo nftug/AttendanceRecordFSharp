@@ -10,7 +10,7 @@ open AttendanceRecord.Shared
 
 type TimePickerFieldProps =
     { Label: Observable<string>
-      BaseDate: Observable<DateTime option>
+      BaseDate: Observable<DateTime> option
       Value: Observable<DateTime option>
       OnSetValue: (DateTime option -> unit)
       IsClearable: Observable<bool> }
@@ -20,7 +20,8 @@ module TimePickerField =
         withLifecycle (fun disposables _ ->
             let baseDate =
                 props.BaseDate
-                |> R3.map (fun dateOpt -> defaultArg dateOpt DateTime.Today |> _.Date)
+                |> Option.defaultWith (fun () -> R3.ret DateTime.Today)
+                |> R3.map _.Date
                 |> R3.readonly None
                 |> R3.disposeWith disposables
 

@@ -35,8 +35,8 @@ module WorkRecordEditView =
                         .Children(
                             TextBlock()
                                 .Text(
-                                    ctx.FormCtx.Form
-                                    |> R3.map _.StartedAt.ToString("yyyy/MM/dd (ddd)")
+                                    ctx.CurrentDate
+                                    |> R3.map _.ToString("yyyy/MM/dd (ddd)")
                                     |> asBinding
                                 )
                                 .FontSize(28.0)

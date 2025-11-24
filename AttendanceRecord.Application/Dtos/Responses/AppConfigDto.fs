@@ -4,30 +4,29 @@ open AttendanceRecord.Domain.Entities
 
 type WorkEndAlarmConfigDto =
     { IsEnabled: bool
-      BeforeEndDurationMinutes: float
-      SnoozeDurationMinutes: float }
+      BeforeEndMinutes: float
+      SnoozeMinutes: float }
 
 type RestStartAlarmConfigDto =
     { IsEnabled: bool
-      BeforeStartDurationMinutes: float
-      SnoozeDurationMinutes: float }
+      BeforeStartMinutes: float
+      SnoozeMinutes: float }
 
 type AppConfigDto =
     { ThemeMode: ThemeMode
       StandardWorkTimeMinutes: float
-      WorkEndAlarmConfig: WorkEndAlarmConfigDto
-      RestStartAlarmConfig: RestStartAlarmConfigDto }
+      WorkEndAlarm: WorkEndAlarmConfigDto
+      RestStartAlarm: RestStartAlarmConfigDto }
 
 module AppConfigDto =
     let fromDomain (config: AppConfig) : AppConfigDto =
         { ThemeMode = config.ThemeMode
           StandardWorkTimeMinutes = config.StandardWorkTime.TotalMinutes
-          WorkEndAlarmConfig =
-            { IsEnabled = config.WorkEndAlarmConfig.IsEnabled
-              BeforeEndDurationMinutes = config.WorkEndAlarmConfig.BeforeEndDuration.TotalMinutes
-              SnoozeDurationMinutes = config.WorkEndAlarmConfig.SnoozeDuration.TotalMinutes }
-          RestStartAlarmConfig =
-            { IsEnabled = config.RestStartAlarmConfig.IsEnabled
-              BeforeStartDurationMinutes =
-                config.RestStartAlarmConfig.BeforeStartDuration.TotalMinutes
-              SnoozeDurationMinutes = config.RestStartAlarmConfig.SnoozeDuration.TotalMinutes } }
+          WorkEndAlarm =
+            { IsEnabled = config.WorkEndAlarm.IsEnabled
+              BeforeEndMinutes = config.WorkEndAlarm.BeforeEndDuration.TotalMinutes
+              SnoozeMinutes = config.WorkEndAlarm.SnoozeDuration.TotalMinutes }
+          RestStartAlarm =
+            { IsEnabled = config.RestStartAlarm.IsEnabled
+              BeforeStartMinutes = config.RestStartAlarm.BeforeStartDuration.TotalMinutes
+              SnoozeMinutes = config.RestStartAlarm.SnoozeDuration.TotalMinutes } }

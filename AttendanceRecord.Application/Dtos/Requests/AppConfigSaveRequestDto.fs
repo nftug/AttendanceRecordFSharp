@@ -7,76 +7,75 @@ open AttendanceRecord.Application.Dtos.Responses
 
 type WorkEndAlarmConfigSaveRequestDto =
     { IsEnabled: bool
-      BeforeEndDurationMinutes: float
-      SnoozeDurationMinutes: float }
+      BeforeEndMinutes: float
+      SnoozeMinutes: float }
 
 type RestStartAlarmConfigSaveRequestDto =
     { IsEnabled: bool
-      BeforeStartDurationMinutes: float
-      SnoozeDurationMinutes: float }
+      BeforeStartMinutes: float
+      SnoozeMinutes: float }
 
 type AppConfigSaveRequestDto =
     { ThemeMode: ThemeMode
       StandardWorkTimeMinutes: float
-      WorkEndAlarmConfig: WorkEndAlarmConfigSaveRequestDto
-      RestStartAlarmConfig: RestStartAlarmConfigSaveRequestDto }
+      WorkEndAlarm: WorkEndAlarmConfigSaveRequestDto
+      RestStartAlarm: RestStartAlarmConfigSaveRequestDto }
 
 module WorkEndAlarmConfigSaveRequestDto =
     let empty: WorkEndAlarmConfigSaveRequestDto =
         { IsEnabled = true
-          BeforeEndDurationMinutes = 15.0
-          SnoozeDurationMinutes = 5.0 }
+          BeforeEndMinutes = 15.0
+          SnoozeMinutes = 5.0 }
 
     let tryToDomain (dto: WorkEndAlarmConfigSaveRequestDto) : Result<WorkEndAlarmConfig, string> =
         WorkEndAlarmConfig.tryCreate
             dto.IsEnabled
-            (TimeSpan.FromMinutes dto.BeforeEndDurationMinutes)
-            (TimeSpan.FromMinutes dto.SnoozeDurationMinutes)
+            (TimeSpan.FromMinutes dto.BeforeEndMinutes)
+            (TimeSpan.FromMinutes dto.SnoozeMinutes)
 
 module RestStartAlarmConfigSaveRequestDto =
     let empty: RestStartAlarmConfigSaveRequestDto =
         { IsEnabled = true
-          BeforeStartDurationMinutes = 240.0
-          SnoozeDurationMinutes = 5.0 }
+          BeforeStartMinutes = 240.0
+          SnoozeMinutes = 5.0 }
 
     let tryToDomain
         (dto: RestStartAlarmConfigSaveRequestDto)
         : Result<RestStartAlarmConfig, string> =
         RestStartAlarmConfig.tryCreate
             dto.IsEnabled
-            (TimeSpan.FromMinutes dto.BeforeStartDurationMinutes)
-            (TimeSpan.FromMinutes dto.SnoozeDurationMinutes)
+            (TimeSpan.FromMinutes dto.BeforeStartMinutes)
+            (TimeSpan.FromMinutes dto.SnoozeMinutes)
 
 module AppConfigSaveRequestDto =
     let empty: AppConfigSaveRequestDto =
         { ThemeMode = SystemTheme
           StandardWorkTimeMinutes = 480.0
-          WorkEndAlarmConfig = WorkEndAlarmConfigSaveRequestDto.empty
-          RestStartAlarmConfig = RestStartAlarmConfigSaveRequestDto.empty }
+          WorkEndAlarm = WorkEndAlarmConfigSaveRequestDto.empty
+          RestStartAlarm = RestStartAlarmConfigSaveRequestDto.empty }
 
     let tryToDomain (dto: AppConfigSaveRequestDto) : Result<AppConfig, string> =
         result {
-            let! workEndAlarmConfig =
-                WorkEndAlarmConfigSaveRequestDto.tryToDomain dto.WorkEndAlarmConfig
+            let! workEndAlarmConfig = WorkEndAlarmConfigSaveRequestDto.tryToDomain dto.WorkEndAlarm
 
             let! restStartAlarmConfig =
-                RestStartAlarmConfigSaveRequestDto.tryToDomain dto.RestStartAlarmConfig
+                RestStartAlarmConfigSaveRequestDto.tryToDomain dto.RestStartAlarm
 
             return
                 { ThemeMode = dto.ThemeMode
                   StandardWorkTime = TimeSpan.FromMinutes dto.StandardWorkTimeMinutes
-                  WorkEndAlarmConfig = workEndAlarmConfig
-                  RestStartAlarmConfig = restStartAlarmConfig }
+                  WorkEndAlarm = workEndAlarmConfig
+                  RestStartAlarm = restStartAlarmConfig }
         }
 
     let fromResponse (dto: AppConfigDto) : AppConfigSaveRequestDto =
         { AppConfigSaveRequestDto.ThemeMode = dto.ThemeMode
           AppConfigSaveRequestDto.StandardWorkTimeMinutes = dto.StandardWorkTimeMinutes
-          WorkEndAlarmConfig =
-            { IsEnabled = dto.WorkEndAlarmConfig.IsEnabled
-              BeforeEndDurationMinutes = dto.WorkEndAlarmConfig.BeforeEndDurationMinutes
-              SnoozeDurationMinutes = dto.WorkEndAlarmConfig.SnoozeDurationMinutes }
-          RestStartAlarmConfig =
-            { IsEnabled = dto.RestStartAlarmConfig.IsEnabled
-              BeforeStartDurationMinutes = dto.RestStartAlarmConfig.BeforeStartDurationMinutes
-              SnoozeDurationMinutes = dto.RestStartAlarmConfig.SnoozeDurationMinutes } }
+          WorkEndAlarm =
+            { IsEnabled = dto.WorkEndAlarm.IsEnabled
+              BeforeEndMinutes = dto.WorkEndAlarm.BeforeEndMinutes
+              SnoozeMinutes = dto.WorkEndAlarm.SnoozeMinutes }
+          RestStartAlarm =
+            { IsEnabled = dto.RestStartAlarm.IsEnabled
+              BeforeStartMinutes = dto.RestStartAlarm.BeforeStartMinutes
+              SnoozeMinutes = dto.RestStartAlarm.SnoozeMinutes } }

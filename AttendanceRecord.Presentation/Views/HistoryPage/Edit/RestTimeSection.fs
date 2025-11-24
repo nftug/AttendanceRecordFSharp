@@ -17,16 +17,17 @@ module RestTimeSection =
 
     let private createRestItemView
         (ctx: HistoryPageContext)
-        (handleDelete: Guid -> unit)
         (items: ObservableList<RestRecordSaveRequestDto>)
         (item: RestRecordSaveRequestDto)
         =
         let update (updater: RestRecordSaveRequestDto -> RestRecordSaveRequestDto) =
             let index = items |> Seq.findIndex (fun rp -> rp.Id = item.Id)
-            items[index] <- updater item
+            items[index] <- updater items[index]
 
-        let startedAt = item |> R3.everyValueChanged _.StartedAt |> R3.map Some
-        let endedAt = item |> R3.everyValueChanged _.EndedAt
+        let handleDelete (id: Guid) =
+            match items |> Seq.tryFind (fun rp -> rp.Id = id) with
+            | Some rp -> items.Remove rp |> ignore
+            | None -> ()
 
         StackPanel()
             .OrientationHorizontal()
@@ -35,8 +36,8 @@ module RestTimeSection =
             .Children(
                 TimePickerField.create
                     { Label = "開始時間" |> R3.ret
-                      BaseDate = ctx.CurrentDate
-                      Value = startedAt
+                      BaseDate = Some ctx.CurrentDate
+                      Value = Some item.StartedAt |> R3.ret
                       OnSetValue =
                         fun v ->
                             update (fun rp ->
@@ -45,8 +46,8 @@ module RestTimeSection =
                       IsClearable = false |> R3.ret },
                 TimePickerField.create
                     { Label = "終了時間" |> R3.ret
-                      BaseDate = ctx.CurrentDate
-                      Value = endedAt
+                      BaseDate = Some ctx.CurrentDate
+                      Value = item.EndedAt |> R3.ret
                       OnSetValue = fun v -> update (fun rp -> { rp with EndedAt = v })
                       IsClearable = true |> R3.ret },
                 MaterialIconButton.create
@@ -78,16 +79,10 @@ module RestTimeSection =
                         RestRecords = restItems |> Seq.toList })
             |> disposables.Add
 
-            let handleDelete (id: Guid) =
-                match restItems |> Seq.tryFind (fun rp -> rp.Id = id) with
-                | Some rp -> restItems.Remove rp |> ignore
-                | None -> ()
-
             let addCommand =
                 R3.command ()
                 |> R3.withSubscribe disposables (fun () ->
-                    RestRecordSaveRequestDto.empty ctx.FormCtx.Form.Value.StartedAt
-                    |> restItems.Add)
+                    RestRecordSaveRequestDto.empty ctx.CurrentDate.CurrentValue |> restItems.Add)
 
             let buildContent () =
                 let isEmpty = ctx.FormCtx.Form |> R3.map _.RestRecords.IsEmpty
@@ -119,7 +114,7 @@ module RestTimeSection =
                                 |> disposables.Add
 
                                 sv)
-                            .ItemTemplateFunc(createRestItemView ctx handleDelete restItems)
+                            .ItemTemplateFunc(createRestItemView ctx restItems)
                             .IsVisible(isEmpty |> R3.map not |> asBinding)
                     )
 

@@ -19,11 +19,11 @@ module WorkEndAlarmSection =
                 ctx.FormCtx.Form |> R3.map _.StandardWorkTimeMinutes |> R3.map decimal
 
             ctx.FormCtx.OnReset
-            |> R3.map _.WorkEndAlarmConfig
+            |> R3.map _.WorkEndAlarm
             |> R3.subscribe (fun config ->
                 alarmEnabled.Value <- config.IsEnabled
-                beforeEndMinutes.Value <- decimal config.BeforeEndDurationMinutes
-                snoozeMinutes.Value <- decimal config.SnoozeDurationMinutes)
+                beforeEndMinutes.Value <- decimal config.BeforeEndMinutes
+                snoozeMinutes.Value <- decimal config.SnoozeMinutes)
             |> disposables.Add
 
             R3.combineLatest3 alarmEnabled beforeEndMinutes snoozeMinutes
@@ -31,9 +31,9 @@ module WorkEndAlarmSection =
             |> R3.subscribe (fun (isEnabled, beforeMinutes, snoozeMinutes) ->
                 ctx.FormCtx.Form.Value <-
                     { ctx.FormCtx.Form.Value with
-                        WorkEndAlarmConfig.IsEnabled = isEnabled
-                        WorkEndAlarmConfig.BeforeEndDurationMinutes = float beforeMinutes
-                        WorkEndAlarmConfig.SnoozeDurationMinutes = float snoozeMinutes })
+                        WorkEndAlarm.IsEnabled = isEnabled
+                        WorkEndAlarm.BeforeEndMinutes = float beforeMinutes
+                        WorkEndAlarm.SnoozeMinutes = float snoozeMinutes })
             |> disposables.Add
 
             Border()

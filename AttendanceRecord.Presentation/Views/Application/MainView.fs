@@ -31,7 +31,8 @@ module private NavigationContext =
                           { GetMonthlyWorkRecords = services.GetMonthlyWorkRecordsUseCase
                             GetWorkRecordDetails = services.GetWorkRecordDetailsUseCase
                             SaveWorkRecord = services.SaveWorkRecordUseCase
-                            DeleteWorkRecord = services.DeleteWorkRecordUseCase } }
+                            DeleteWorkRecord = services.DeleteWorkRecordUseCase
+                            CurrentStatusStore = services.CurrentStatusStore } }
               { Path = "/settings"
                 ViewFn =
                   fun () ->

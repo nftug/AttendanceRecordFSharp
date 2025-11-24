@@ -21,7 +21,7 @@ module HistoryPageView =
             | Some(navCtx, _) -> navCtx.RegisterGuard ctx.ConfirmDiscard |> disposables.Add
             | None -> ()
 
-            let showEditView = ctx.CurrentDate |> R3.map Option.isSome
+            let toShowEditView = ctx.SelectedDate |> R3.map Option.isSome
 
             DockPanel()
                 .LastChildFill(true)
@@ -37,13 +37,13 @@ module HistoryPageView =
                                 .Background(Avalonia.Media.Brushes.DimGray)
                                 .ResizeDirectionColumns(),
                             WorkRecordEditView.create ()
-                            |> _.Column(2).IsVisible(showEditView |> asBinding),
+                            |> _.Column(2).IsVisible(toShowEditView |> asBinding),
                             TextBlock()
                                 .Text("日付を選択してください。")
                                 .FontSize(16.0)
                                 .HorizontalAlignmentCenter()
                                 .VerticalAlignmentCenter()
-                            |> _.Column(2).IsVisible(showEditView |> R3.map not |> asBinding)
+                            |> _.Column(2).IsVisible(toShowEditView |> R3.map not |> asBinding)
                         )
                 )
             |> Context.provide ctx)

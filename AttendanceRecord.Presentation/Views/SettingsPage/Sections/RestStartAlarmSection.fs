@@ -19,11 +19,11 @@ module RestStartAlarmSection =
                 ctx.FormCtx.Form |> R3.map _.StandardWorkTimeMinutes |> R3.map decimal
 
             ctx.FormCtx.OnReset
-            |> R3.map _.RestStartAlarmConfig
+            |> R3.map _.RestStartAlarm
             |> R3.subscribe (fun config ->
                 alarmEnabled.Value <- config.IsEnabled
-                beforeStartMinutes.Value <- decimal config.BeforeStartDurationMinutes
-                snoozeMinutes.Value <- decimal config.SnoozeDurationMinutes)
+                beforeStartMinutes.Value <- decimal config.BeforeStartMinutes
+                snoozeMinutes.Value <- decimal config.SnoozeMinutes)
             |> disposables.Add
 
             R3.combineLatest3 alarmEnabled beforeStartMinutes snoozeMinutes
@@ -31,9 +31,9 @@ module RestStartAlarmSection =
             |> R3.subscribe (fun (isEnabled, beforeMinutes, snoozeMinutes) ->
                 ctx.FormCtx.Form.Value <-
                     { ctx.FormCtx.Form.Value with
-                        RestStartAlarmConfig.IsEnabled = isEnabled
-                        RestStartAlarmConfig.BeforeStartDurationMinutes = float beforeMinutes
-                        RestStartAlarmConfig.SnoozeDurationMinutes = float snoozeMinutes })
+                        RestStartAlarm.IsEnabled = isEnabled
+                        RestStartAlarm.BeforeStartMinutes = float beforeMinutes
+                        RestStartAlarm.SnoozeMinutes = float snoozeMinutes })
             |> disposables.Add
 
             Border()

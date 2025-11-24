@@ -20,13 +20,13 @@ module private HistoryToolbarHelpers =
 
                 if shouldProceed then
                     ctx.CurrentMonth.Value <- ctx.CurrentMonth.CurrentValue.AddMonths delta
-                    ctx.CurrentDate.Value <- None
+                    ctx.SelectedDate.Value <- None
             })
         |> ignore
 
     let private jumpToDate (ctx: HistoryPageContext) (date: DateTime) : unit =
         ctx.CurrentMonth.Value <- DateTime(date.Year, date.Month, 1)
-        ctx.CurrentDate.Value <- Some date
+        ctx.SelectedDate.Value <- Some date
 
     let handleJumpToToday (ctx: HistoryPageContext) (disposables: CompositeDisposable) : unit =
         invokeTask disposables (fun ct ->
@@ -46,12 +46,12 @@ module private HistoryToolbarHelpers =
                 if shouldProceed then
                     let! result =
                         DatePickerDialog.show
-                            { InitialDate = ctx.CurrentDate.CurrentValue
+                            { InitialDate = ctx.SelectedDate.CurrentValue
                               InitialMonth = Some ctx.CurrentMonth.CurrentValue }
                             (Some ct)
 
                     match result with
-                    | Some date when result <> ctx.CurrentDate.CurrentValue -> jumpToDate ctx date
+                    | Some date when result <> ctx.SelectedDate.CurrentValue -> jumpToDate ctx date
                     | _ -> ()
             })
         |> ignore
@@ -69,7 +69,7 @@ module HistoryToolbar =
             Grid()
                 .ColumnDefinitions("Auto,*,Auto")
                 .Height(50.0)
-                .Margin(5.0)
+                .Margin(0.0, 5.0)
                 .Children(
                     StackPanel()
                         .OrientationHorizontal()
@@ -96,7 +96,7 @@ module HistoryToolbar =
                             |> _.Width(50.0)
                                 .Height(50.0)
                                 .IsEnabled(
-                                    ctx.CurrentDate
+                                    ctx.SelectedDate
                                     |> R3.map (fun d -> d <> Some DateTime.Today)
                                     |> asBinding
                                 ),
@@ -110,8 +110,8 @@ module HistoryToolbar =
                     StackPanel()
                         .OrientationHorizontal()
                         .VerticalAlignmentCenter()
+                        .Margin(0.0, 0.0, 20.0, 0.0)
                         .Spacing(10.0)
-                        .Margin(8.0, 0.0)
                         .Column(2)
                         .Children(
                             MaterialIcon.create (MaterialIconKind.CalendarMonth |> R3.ret),

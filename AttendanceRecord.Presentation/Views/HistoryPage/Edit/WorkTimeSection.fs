@@ -1,6 +1,5 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
-open System
 open Avalonia.Media
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
@@ -34,7 +33,7 @@ module WorkTimeSection =
                                 .Children(
                                     TimePickerField.create
                                         { Label = "出勤時間" |> R3.ret
-                                          BaseDate = ctx.CurrentDate
+                                          BaseDate = Some ctx.CurrentDate
                                           Value = ctx.FormCtx.Form |> R3.map (Some << _.StartedAt)
                                           OnSetValue =
                                             fun v ->
@@ -44,7 +43,7 @@ module WorkTimeSection =
                                           IsClearable = false |> R3.ret },
                                     TimePickerField.create
                                         { Label = "退勤時間" |> R3.ret
-                                          BaseDate = ctx.CurrentDate
+                                          BaseDate = Some ctx.CurrentDate
                                           Value = ctx.FormCtx.Form |> R3.map _.EndedAt
                                           OnSetValue =
                                             fun v -> update (fun wr -> { wr with EndedAt = v })

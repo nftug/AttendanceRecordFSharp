@@ -9,10 +9,10 @@ module WorkEndAlarm =
         { AlarmType = AlarmType.WorkEnd
           ShouldTrigger =
             fun wr cfg now ->
-                cfg.WorkEndAlarmConfig.IsEnabled
+                cfg.WorkEndAlarm.IsEnabled
                 && wr |> WorkRecord.isActive now
                 && wr |> WorkRecord.getOvertimeDuration now cfg.StandardWorkTime
-                   >= -cfg.WorkEndAlarmConfig.BeforeEndDuration
-          GetSnoozeDuration = _.WorkEndAlarmConfig.SnoozeDuration }
+                   >= -cfg.WorkEndAlarm.BeforeEndDuration
+          GetSnoozeDuration = _.WorkEndAlarm.SnoozeDuration }
 
     let createInitialAlarm () : WorkEndAlarm = Alarm.initial rule

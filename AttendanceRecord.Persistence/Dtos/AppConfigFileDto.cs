@@ -7,5 +7,5 @@ public record RestStartAlarmConfigFileDto(bool IsEnabled, double BeforeStartMinu
 public record AppConfigFileDto(
     string ThemeMode,
     double StandardWorkMinutes,
-    WorkEndAlarmConfigFileDto WorkEndAlarmConfig,
-    RestStartAlarmConfigFileDto RestStartAlarmConfig);
+    WorkEndAlarmConfigFileDto WorkEndAlarm,
+    RestStartAlarmConfigFileDto RestStartAlarm);

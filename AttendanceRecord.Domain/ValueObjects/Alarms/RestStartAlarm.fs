@@ -10,11 +10,10 @@ module RestStartAlarm =
         { AlarmType = AlarmType.RestStart
           ShouldTrigger =
             fun wr cfg now ->
-                cfg.RestStartAlarmConfig.IsEnabled
+                cfg.RestStartAlarm.IsEnabled
                 && wr |> WorkRecord.isActive now
                 && wr |> WorkRecord.getRestDuration now = TimeSpan.Zero
-                && wr |> WorkRecord.getDuration now >= cfg.RestStartAlarmConfig.BeforeStartDuration
-          GetSnoozeDuration = _.RestStartAlarmConfig.SnoozeDuration }
+                && wr |> WorkRecord.getDuration now >= cfg.RestStartAlarm.BeforeStartDuration
+          GetSnoozeDuration = _.RestStartAlarm.SnoozeDuration }
 
-    let createInitialAlarm () : RestStartAlarm =
-        Alarm.initial rule
+    let createInitialAlarm () : RestStartAlarm = Alarm.initial rule

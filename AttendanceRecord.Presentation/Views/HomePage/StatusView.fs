@@ -3,6 +3,7 @@ namespace AttendanceRecord.Presentation.Views.HomePage
 open type NXUI.Builders
 open NXUI.Extensions
 open R3
+open System
 open Material.Icons
 open Avalonia.Media
 open AttendanceRecord.Shared
@@ -10,26 +11,16 @@ open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Presentation.Views.HomePage.Context
 
-type private StatusInfo = { Label: string; Value: string }
-
 module StatusView =
-    let private getStatusInfo status =
-        [ { Label = "勤務時間"
-            Value = TimeSpan.formatDuration status.WorkDuration }
-          { Label = "休憩時間"
-            Value = TimeSpan.formatDuration status.RestDuration }
-          { Label = "本日の残業時間"
-            Value = TimeSpan.formatDuration status.OvertimeDuration }
-          { Label = "今月の残業時間"
-            Value = TimeSpan.formatDuration status.OvertimeMonthlyDuration } ]
+    let private createSummaryInfoRow (label: string) (duration: Observable<TimeSpan>) =
+        let durationText = duration |> R3.map TimeSpan.formatDuration
 
-    let private createStatusRow (info: StatusInfo) =
         StackPanel()
             .OrientationHorizontal()
             .Spacing(5.0)
             .Children(
-                TextBlock().Text(info.Label).FontWeightBold().FontSize(16.0).Width(150.0),
-                TextBlock().Text(info.Value).FontSize(16.0).VerticalAlignmentCenter()
+                TextBlock().Text(label).FontWeightBold().FontSize(16.0).Width(150.0),
+                TextBlock().Text(durationText |> asBinding).FontSize(16.0).VerticalAlignmentCenter()
             )
 
     let create () : Avalonia.Controls.Control =
@@ -42,11 +33,19 @@ module StatusView =
                 .Padding(25.0)
                 .Height(250.0)
                 .Child(
-                    ctx.Status
-                    |> R3.map getStatusInfo
-                    |> toView (fun _ _ rows ->
-                        StackPanel()
-                            .Spacing(8.0)
-                            .VerticalAlignmentCenter()
-                            .Children(rows |> List.map createStatusRow |> toChildren))
+                    StackPanel()
+                        .Spacing(8.0)
+                        .VerticalAlignmentCenter()
+                        .Children(
+                            createSummaryInfoRow
+                                "勤務時間"
+                                (ctx.Status |> R3.map _.Summary.TotalWorkTime),
+                            createSummaryInfoRow
+                                "休憩時間"
+                                (ctx.Status |> R3.map _.Summary.TotalRestTime),
+                            createSummaryInfoRow
+                                "今日の残業時間"
+                                (ctx.Status |> R3.map _.Summary.Overtime),
+                            createSummaryInfoRow "今月の残業時間" (ctx.Status |> R3.map _.OvertimeMonthly)
+                        )
                 ))

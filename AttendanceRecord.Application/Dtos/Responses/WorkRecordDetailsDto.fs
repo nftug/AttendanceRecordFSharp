@@ -8,12 +8,7 @@ type WorkRecordDetailsDto =
       Date: DateTime
       WorkTimeDuration: TimeDurationDto
       RestTimes: RestRecordDetailsDto list
-      WorkTime: TimeSpan
-      RestTime: TimeSpan
-      Overtime: TimeSpan
-      IsActive: bool
-      IsWorking: bool
-      IsResting: bool }
+      Summary: WorkRecordSummaryDto }
 
 module WorkRecordDetailsDto =
     let fromDomain
@@ -25,9 +20,4 @@ module WorkRecordDetailsDto =
           Date = workRecord |> WorkRecord.getDate
           WorkTimeDuration = workRecord.Duration |> TimeDurationDto.fromDomain now
           RestTimes = workRecord.RestRecords |> List.map (RestRecordDetailsDto.fromDomain now)
-          WorkTime = workRecord |> WorkRecord.getDuration now
-          RestTime = workRecord |> WorkRecord.getRestDuration now
-          Overtime = workRecord |> WorkRecord.getOvertimeDuration now standardWorkTime
-          IsActive = workRecord |> WorkRecord.isActive now
-          IsWorking = workRecord |> WorkRecord.isWorking now
-          IsResting = workRecord |> WorkRecord.isResting now }
+          Summary = workRecord |> WorkRecordSummaryDto.fromDomain now standardWorkTime }

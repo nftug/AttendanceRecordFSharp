@@ -5,10 +5,8 @@ open AttendanceRecord.Domain.Entities
 
 type CurrentStatusDto =
     { CurrentTime: DateTime
-      WorkDuration: TimeSpan
-      RestDuration: TimeSpan
-      OvertimeDuration: TimeSpan
-      OvertimeMonthlyDuration: TimeSpan
+      Summary: WorkRecordSummaryDto
+      OvertimeMonthly: TimeSpan
       IsActive: bool
       IsWorking: bool
       IsResting: bool }
@@ -16,10 +14,8 @@ type CurrentStatusDto =
 module CurrentStatusDto =
     let getEmpty () : CurrentStatusDto =
         { CurrentTime = DateTime.Now
-          WorkDuration = TimeSpan.Zero
-          RestDuration = TimeSpan.Zero
-          OvertimeDuration = TimeSpan.Zero
-          OvertimeMonthlyDuration = TimeSpan.Zero
+          Summary = WorkRecordSummaryDto.empty
+          OvertimeMonthly = TimeSpan.Zero
           IsActive = false
           IsWorking = false
           IsResting = false }
@@ -33,13 +29,11 @@ module CurrentStatusDto =
         match workRecord with
         | Some record ->
             { CurrentTime = now
-              WorkDuration = record |> WorkRecord.getDuration now
-              RestDuration = record |> WorkRecord.getRestDuration now
-              OvertimeDuration = record |> WorkRecord.getOvertimeDuration now standardWorkTime
-              OvertimeMonthlyDuration = monthlyOvertime
+              Summary = record |> WorkRecordSummaryDto.fromDomain now standardWorkTime
+              OvertimeMonthly = monthlyOvertime
               IsActive = record |> WorkRecord.isActive now
               IsWorking = record |> WorkRecord.isWorking now
               IsResting = record |> WorkRecord.isResting now }
         | None ->
             { getEmpty () with
-                OvertimeMonthlyDuration = monthlyOvertime }
+                OvertimeMonthly = monthlyOvertime }

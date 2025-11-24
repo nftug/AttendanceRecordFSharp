@@ -14,7 +14,7 @@ module private WorkRecordListViewHelpers =
         (disposables: CompositeDisposable)
         (date: DateTime)
         : unit =
-        match ctx.CurrentDate.CurrentValue with
+        match ctx.SelectedDate.CurrentValue with
         | Some currentDate when date.Date = currentDate.Date -> ()
         | _ ->
             invokeTask disposables (fun ct ->
@@ -22,7 +22,7 @@ module private WorkRecordListViewHelpers =
                     let! shouldProceed = ctx.ConfirmDiscard ct
 
                     if shouldProceed then
-                        ctx.CurrentDate.Value <- Some date
+                        ctx.SelectedDate.Value <- Some date
                 })
             |> ignore
 
@@ -34,25 +34,18 @@ module WorkRecordListView =
     open AttendanceRecord.Application.Dtos.Responses
 
     let create () : Avalonia.Controls.Control =
-        withLifecycle (fun _ self ->
+        withLifecycle (fun disposables self ->
             let ctx, _ = Context.require<HistoryPageContext> self
             let records = ctx.MonthlyRecords |> R3.map _.WorkRecords
 
-            let itemTemplate d _ (item: WorkRecordListItemDto) : Avalonia.Controls.Control =
+            let itemTemplate (item: WorkRecordListItemDto) =
                 let isSelected =
-                    ctx.CurrentDate
+                    ctx.SelectedDate
                     |> R3.map (function
                         | Some date -> date.Date = item.Date.Date
                         | None -> false)
 
-                AccentToggleButton.create isSelected
-                |> _.HorizontalAlignmentStretch()
-                    .HorizontalContentAlignmentLeft()
-                    .Padding(10.0)
-                    .FontSize(14.0)
-                    .Background(Brushes.Transparent)
-                    .BorderBrush(Brushes.Transparent)
-                    .OnClickHandler(fun _ _ -> handleDateSelect ctx d item.Date)
+                (AccentToggleButton.create isSelected)
                     .Content(
                         StackPanel()
                             .OrientationHorizontal()
@@ -66,13 +59,21 @@ module WorkRecordListView =
                                     .VerticalAlignmentCenter()
                             )
                     )
+                    .OnClickHandler(fun _ _ -> handleDateSelect ctx disposables item.Date)
+                    .HorizontalAlignmentStretch()
+                    .HorizontalContentAlignmentLeft()
+                    .Background(Brushes.Transparent)
+                    .BorderBrush(Brushes.Transparent)
+                    .CornerRadius(0.0)
+                    .Padding(10.0)
+                    .FontSize(14.0)
 
-            Border()
-                .BorderThickness(1.0)
-                .BorderBrush(Brushes.Gray)
-                .Child(
-                    ScrollViewer()
-                        .VerticalScrollBarVisibilityAuto()
-                        .MinWidth(200.0)
-                        .Content(records |> toListView itemTemplate)
-                ))
+            ItemsControl()
+                .ItemsSource(records |> asBinding)
+                .TemplateFunc(fun _ ->
+                    Border()
+                        .BorderThickness(1.0)
+                        .BorderBrush(Brushes.Gray)
+                        .Child(ScrollViewer().Content(ItemsPresenter())))
+                .ItemTemplateFunc(itemTemplate)
+                .MinWidth(200.0))

@@ -7,7 +7,7 @@ open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 
-type DrawerMenuItems =
+type DrawerMenuItem =
     { Path: string
       Icon: MaterialIconKind
       Title: string }
@@ -16,38 +16,37 @@ module NavigationView =
     open NXUI.Extensions
     open type NXUI.Builders
 
-    let private createDrawer (pages: DrawerMenuItems list) (closeDrawer: unit -> unit) =
-        withLifecycle (fun _ self ->
-            let ctx, _ = Context.require<NavigationContext> self
+    let private createDrawer
+        (ctx: NavigationContext)
+        (pages: DrawerMenuItem list)
+        (closeDrawer: unit -> unit)
+        =
+        ItemsControl()
+            .HorizontalAlignmentStretch()
+            .ItemsSource(pages |> List.toArray)
+            .TemplateFunc(fun _ -> ScrollViewer().Margin(15.0).Content(ItemsPresenter()))
+            .ItemTemplateFunc(fun (item: DrawerMenuItem) ->
+                let isSelected = ctx.CurrentRoute |> R3.map (fun r -> r.Path = item.Path)
 
-            StackPanel()
-                .Margin(12.0)
-                .Children(
-                    pages
-                    |> List.map (fun item ->
-                        let isSelected = ctx.CurrentRoute |> R3.map (fun r -> r.Path = item.Path)
+                (AccentToggleButton.create isSelected)
+                    .Content(
+                        MaterialIconLabel.create
+                            { Kind = item.Icon |> R3.ret
+                              Label = item.Title |> R3.ret
+                              Spacing = Some 12.0 |> R3.ret }
+                    )
+                    .OnClickHandler(fun _ _ ->
+                        ctx.NavigateTo item.Path |> ignore
+                        closeDrawer ())
+                    .HorizontalAlignmentStretch()
+                    .HorizontalContentAlignmentLeft()
+                    .Background(Brushes.Transparent)
+                    .BorderBrush(Brushes.Transparent)
+                    .CornerRadius(0.0)
+                    .Height(50.0)
+                    .FontSize(16.0))
 
-                        AccentToggleButton.create isSelected
-                        |> _.Margin(0, 5, 0, 5)
-                            .Content(
-                                MaterialIconLabel.create
-                                    { Kind = item.Icon |> R3.ret
-                                      Label = item.Title |> R3.ret
-                                      Spacing = None |> R3.ret }
-                            )
-                            .OnClickHandler(fun _ _ ->
-                                ctx.NavigateTo item.Path |> ignore
-                                closeDrawer ())
-                            .Height(40.0)
-                            .FontSize(16.0)
-                            .HorizontalAlignmentStretch()
-                            .HorizontalContentAlignmentLeft()
-                            .Background(Brushes.Transparent)
-                            .BorderBrush(Brushes.Transparent))
-                    |> toChildren
-                ))
-
-    let create (menuItems: DrawerMenuItems list) : Avalonia.Controls.Control =
+    let create (menuItems: DrawerMenuItem list) : Avalonia.Controls.Control =
         withLifecycle (fun disposables self ->
             let ctx, _ = Context.require<NavigationContext> self
 
@@ -60,7 +59,7 @@ module NavigationView =
                     | Some item -> item.Title
                     | None -> "Unknown")
 
-            let header =
+            let buildHeader () =
                 StackPanel()
                     .DockTop()
                     .OrientationHorizontal()
@@ -86,13 +85,12 @@ module NavigationView =
                 .OpenPaneLength(250.0)
                 .IsPaneOpen(isDrawerOpen |> asBinding)
                 .OnPaneClosedHandler(fun _ _ -> isDrawerOpen.Value <- false)
-                .Pane(createDrawer menuItems (fun () -> isDrawerOpen.Value <- false))
+                .Pane(createDrawer ctx menuItems (fun () -> isDrawerOpen.Value <- false))
                 .Content(
                     DockPanel()
                         .LastChildFill(true)
                         .Children(
-                            header,
-                            ContentControl()
-                                .Content(ctx.CurrentRoute |> R3.map _.ViewFn() |> asBinding)
+                            buildHeader (),
+                            ctx.CurrentRoute |> toView (fun _ _ r -> r.ViewFn())
                         )
                 ))

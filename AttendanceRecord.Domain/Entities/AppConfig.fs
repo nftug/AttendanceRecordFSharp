@@ -21,8 +21,8 @@ type RestStartAlarmConfig =
 type AppConfig =
     { ThemeMode: ThemeMode
       StandardWorkTime: TimeSpan
-      WorkEndAlarmConfig: WorkEndAlarmConfig
-      RestStartAlarmConfig: RestStartAlarmConfig }
+      WorkEndAlarm: WorkEndAlarmConfig
+      RestStartAlarm: RestStartAlarmConfig }
 
 module WorkEndAlarmConfig =
     let initial: WorkEndAlarmConfig =
@@ -86,13 +86,13 @@ module AppConfig =
     let initial: AppConfig =
         { ThemeMode = SystemTheme
           StandardWorkTime = TimeSpan.FromHours 8.0
-          WorkEndAlarmConfig = WorkEndAlarmConfig.initial
-          RestStartAlarmConfig = RestStartAlarmConfig.initial }
+          WorkEndAlarm = WorkEndAlarmConfig.initial
+          RestStartAlarm = RestStartAlarmConfig.initial }
 
     let validate (config: AppConfig) : Result<unit, string> =
         result {
-            do! WorkEndAlarmConfig.validate config.WorkEndAlarmConfig
-            do! RestStartAlarmConfig.validate config.RestStartAlarmConfig
+            do! WorkEndAlarmConfig.validate config.WorkEndAlarm
+            do! RestStartAlarmConfig.validate config.RestStartAlarm
 
             if config.StandardWorkTime <= TimeSpan.Zero then
                 return! Error "Standard work time must be positive."
@@ -107,8 +107,8 @@ module AppConfig =
         let config =
             { ThemeMode = themeMode
               StandardWorkTime = standardWorkTime
-              WorkEndAlarmConfig = workEndAlarmConfig
-              RestStartAlarmConfig = restStartAlarmConfig }
+              WorkEndAlarm = workEndAlarmConfig
+              RestStartAlarm = restStartAlarmConfig }
 
         result {
             do! validate config

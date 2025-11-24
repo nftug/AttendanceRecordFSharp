@@ -17,6 +17,8 @@ type HistoryPageContext =
       FormCtx: FormContext<WorkRecordSaveRequestDto>
       CurrentRecord: ReadOnlyReactiveProperty<WorkRecordDetailsDto option>
       ReloadAfterSave: Guid option -> unit
+      SaveMutation: UseMutationResult<unit, unit>
+      DeleteMutation: UseMutationResult<unit, unit>
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool> }
 
 type HistoryPageContextProps =
@@ -107,6 +109,64 @@ module HistoryPageContext =
                         return true
                 })
 
+        let saveMutation =
+            useMutation disposables (fun () (ct: CancellationToken) ->
+                task {
+                    match! props.SaveWorkRecord.Handle formCtx.Form.Value ct with
+                    | Ok id ->
+                        Notification.show
+                            { Title = "保存完了"
+                              Message = "勤務記録を保存しました。"
+                              NotificationType = NotificationType.Success }
+
+                        reloadAfterSave (Some id)
+                        return Ok()
+                    | Error e ->
+                        Notification.show
+                            { Title = "保存エラー"
+                              Message = $"勤務記録の保存に失敗しました: {e}"
+                              NotificationType = NotificationType.Error }
+
+                        return Error e
+                })
+
+        let deleteMutation =
+            useMutation disposables (fun () (ct: CancellationToken) ->
+                task {
+                    match formCtx.Form.Value.Id with
+                    | Some id ->
+                        let! shouldDelete =
+                            MessageBox.show
+                                { Title = "削除の確認"
+                                  Message = "この記録を削除してもよろしいですか?"
+                                  OkContent = Some "削除"
+                                  CancelContent = None
+                                  Buttons = MessageBoxButtons.OkCancel }
+                                (Some ct)
+
+                        if shouldDelete then
+                            match! props.DeleteWorkRecord.Handle id ct with
+                            | Ok _ ->
+                                Notification.show
+                                    { Title = "削除完了"
+                                      Message = "勤務記録を削除しました。"
+                                      NotificationType = NotificationType.Success }
+
+                                selectedDate.Value <- None
+                                reloadAfterSave None
+                                return Ok()
+                            | Error e ->
+                                Notification.show
+                                    { Title = "削除エラー"
+                                      Message = $"勤務記録の削除に失敗しました: {e}"
+                                      NotificationType = NotificationType.Error }
+
+                                return Error e
+                        else
+                            return Ok()
+                    | _ -> return Ok()
+                })
+
         // Load monthly records when month changes
         currentMonth |> R3.subscribe loadMonthlyRecords |> disposables.Add
 
@@ -134,4 +194,6 @@ module HistoryPageContext =
           FormCtx = formCtx
           CurrentRecord = currentRecord
           ReloadAfterSave = reloadAfterSave
-          ConfirmDiscard = confirmDiscard }
+          ConfirmDiscard = confirmDiscard
+          SaveMutation = saveMutation
+          DeleteMutation = deleteMutation }

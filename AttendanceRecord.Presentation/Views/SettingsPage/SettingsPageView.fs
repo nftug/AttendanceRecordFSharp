@@ -37,6 +37,6 @@ module SettingsPageView =
                                 )
                         )
                         .Row(0),
-                    SettingsActionsView.create { SaveAppConfig = props.SaveAppConfig } |> _.Row(1)
+                    SettingsActionsView.create () |> _.Row(1)
                 )
             |> Context.provide ctx)

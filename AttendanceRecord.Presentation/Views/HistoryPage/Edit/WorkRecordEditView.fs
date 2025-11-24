@@ -1,79 +1,10 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
-open System
-open System.Threading
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Shared
-open AttendanceRecord.Application.UseCases.WorkRecords
-
-type WorkRecordEditViewProps =
-    { SaveWorkRecord: SaveWorkRecord
-      DeleteWorkRecord: DeleteWorkRecord }
-
-[<AutoOpen>]
-module private WorkRecordEditViewHelpers =
-    let handleClickSave
-        (handle: WorkRecordSaveRequestDto -> CancellationToken -> Tasks.Task<Result<Guid, string>>)
-        (ctx: HistoryPageContext)
-        (disposables: R3.CompositeDisposable)
-        : unit =
-        invokeTask disposables (fun ct ->
-            task {
-                match! handle ctx.FormCtx.Form.Value ct with
-                | Ok id ->
-                    Notification.show
-                        { Title = "保存完了"
-                          Message = "勤務記録を保存しました。"
-                          NotificationType = NotificationType.Success }
-
-                    ctx.ReloadAfterSave(Some id)
-                | Error e ->
-                    Notification.show
-                        { Title = "保存エラー"
-                          Message = $"勤務記録の保存に失敗しました: {e}"
-                          NotificationType = NotificationType.Error }
-            })
-        |> ignore
-
-    let handleClickDelete
-        (handle: Guid -> CancellationToken -> Tasks.Task<Result<unit, string>>)
-        (ctx: HistoryPageContext)
-        (disposables: R3.CompositeDisposable)
-        : unit =
-        invokeTask disposables (fun ct ->
-            task {
-                match ctx.FormCtx.Form.Value.Id with
-                | Some id ->
-                    let! shouldDelete =
-                        MessageBox.show
-                            { Title = "削除の確認"
-                              Message = "この記録を削除してもよろしいですか?"
-                              OkContent = Some "削除"
-                              CancelContent = None
-                              Buttons = MessageBoxButtons.OkCancel }
-                            (Some ct)
-
-                    if shouldDelete then
-                        match! handle id ct with
-                        | Ok _ ->
-                            Notification.show
-                                { Title = "削除完了"
-                                  Message = "勤務記録を削除しました。"
-                                  NotificationType = NotificationType.Success }
-
-                            ctx.CurrentDate.Value <- None
-                            ctx.ReloadAfterSave None
-                        | Error e ->
-                            Notification.show
-                                { Title = "削除エラー"
-                                  Message = $"勤務記録の削除に失敗しました: {e}"
-                                  NotificationType = NotificationType.Error }
-                | _ -> ()
-            })
-        |> ignore
 
 module WorkRecordEditView =
     open NXUI.Extensions
@@ -81,18 +12,16 @@ module WorkRecordEditView =
     open Avalonia.Media
     open Material.Icons
 
-    let create (props: WorkRecordEditViewProps) : Avalonia.Controls.Control =
-        withLifecycle (fun disposables self ->
+    let create () : Avalonia.Controls.Control =
+        withLifecycle (fun _ self ->
             let ctx, _ = Context.require<HistoryPageContext> self
-            let saveMutation = useMutation disposables props.SaveWorkRecord.Handle
-            let deleteMutation = useMutation disposables props.DeleteWorkRecord.Handle
 
             let saveButtonEnabled =
-                R3.combineLatest2 saveMutation.IsPending ctx.FormCtx.IsFormDirty
+                R3.combineLatest2 ctx.SaveMutation.IsPending ctx.FormCtx.IsFormDirty
                 |> R3.map (fun (isSaving, dirty) -> not isSaving && dirty)
 
             let deleteButtonEnabled =
-                R3.combineLatest2 ctx.FormCtx.Form deleteMutation.IsPending
+                R3.combineLatest2 ctx.FormCtx.Form ctx.DeleteMutation.IsPending
                 |> R3.map (fun (f, isDeleting) -> f.Id.IsSome && not isDeleting)
 
             Grid()
@@ -129,8 +58,7 @@ module WorkRecordEditView =
                                           Label = "削除" |> R3.ret
                                           Spacing = None |> R3.ret }
                                 )
-                                .OnClickHandler(fun _ _ ->
-                                    handleClickDelete deleteMutation.MutateTask ctx disposables)
+                                .OnClickHandler(fun _ _ -> ctx.DeleteMutation.Mutate())
                                 .Width(100.0)
                                 .Height(35.0)
                                 .IsEnabled(deleteButtonEnabled |> asBinding)
@@ -156,8 +84,7 @@ module WorkRecordEditView =
                                           Label = "保存" |> R3.ret
                                           Spacing = None |> R3.ret }
                                 )
-                                .OnClickHandler(fun _ _ ->
-                                    handleClickSave saveMutation.MutateTask ctx disposables)
+                                .OnClickHandler(fun _ _ -> ctx.SaveMutation.Mutate())
                                 .Width(100.0)
                                 .Height(35.0)
                                 .IsEnabled(saveButtonEnabled |> asBinding)

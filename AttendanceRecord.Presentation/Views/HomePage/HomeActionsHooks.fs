@@ -55,7 +55,7 @@ module HomeActionsHooks =
                                 (Some ct)
 
                     if shouldProceed then
-                        match! toggleWorkMutation.MutateTask () ct with
+                        match! toggleWorkMutation.MutateTask() with
                         | Ok status ->
                             let message = if status.IsActive then "勤務を開始しました。" else "勤務を終了しました。"
 
@@ -75,7 +75,7 @@ module HomeActionsHooks =
         let handleClickToggleRest () : unit =
             invokeTask disposables (fun ct ->
                 task {
-                    match! toggleRestMutation.MutateTask () ct with
+                    match! toggleRestMutation.MutateTask() with
                     | Ok status ->
                         let message = if status.IsResting then "休憩を開始しました。" else "休憩を終了しました。"
 

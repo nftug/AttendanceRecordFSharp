@@ -6,7 +6,7 @@ open R3
 open AttendanceRecord.Shared
 
 type UseMutationResult<'arg, 'ret> =
-    { MutateTask: 'arg -> CancellationToken -> Task<Result<'ret, string>>
+    { MutateTask: 'arg -> Task<Result<'ret, string>>
       Mutate: 'arg -> unit
       IsPending: Observable<bool>
       Error: Observable<string option> }
@@ -20,22 +20,23 @@ module UseMutation =
         let isPending = R3.property false |> R3.disposeWith disposables
         let error = R3.property None |> R3.disposeWith disposables
 
-        let mutate (arg: 'arg) (ct: CancellationToken) : Task<Result<'ret, string>> =
-            task {
-                isPending.Value <- true
-                error.Value <- None
+        let mutate (arg: 'arg) : Task<Result<'ret, string>> =
+            invokeTask disposables (fun ct ->
+                task {
+                    isPending.Value <- true
+                    error.Value <- None
 
-                let! result = mutateFunc arg ct
+                    let! result = mutateFunc arg ct
 
-                isPending.Value <- false
+                    isPending.Value <- false
 
-                match result with
-                | Ok v -> return Ok v
-                | Error e ->
-                    eprintfn $"Mutation error: {e}"
-                    error.Value <- Some e
-                    return Error e
-            }
+                    match result with
+                    | Ok v -> return Ok v
+                    | Error e ->
+                        eprintfn $"Mutation error: {e}"
+                        error.Value <- Some e
+                        return Error e
+                })
 
         { MutateTask = mutate
           Mutate = mutate >> ignore

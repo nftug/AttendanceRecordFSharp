@@ -36,9 +36,7 @@ module HistoryPageView =
                                 .Width(1.0)
                                 .Background(Avalonia.Media.Brushes.DimGray)
                                 .ResizeDirectionColumns(),
-                            WorkRecordEditView.create
-                                { SaveWorkRecord = props.SaveWorkRecord
-                                  DeleteWorkRecord = props.DeleteWorkRecord }
+                            WorkRecordEditView.create ()
                             |> _.Column(2).IsVisible(showEditView |> asBinding),
                             TextBlock()
                                 .Text("日付を選択してください。")

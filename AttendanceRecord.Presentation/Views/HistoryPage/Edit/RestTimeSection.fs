@@ -90,17 +90,15 @@ module RestTimeSection =
                     |> restItems.Add)
 
             let buildContent () =
-                ctx.FormCtx.Form
-                |> R3.map _.RestRecords.IsEmpty
-                |> R3.distinctUntilChanged
-                |> toView (fun disposables _ hasNoItems ->
-                    if hasNoItems then
+                let isEmpty = ctx.FormCtx.Form |> R3.map _.RestRecords.IsEmpty
+
+                Panel()
+                    .Children(
                         TextBlock()
                             .Text("休憩記録がありません。")
                             .FontSize(14.0)
                             .Foreground(Brushes.Gray)
-                            .Row(1)
-                    else
+                            .IsVisible(isEmpty |> asBinding),
                         ItemsControl()
                             .ItemsSourceObservable(restItems)
                             .ItemsPanelFunc(fun () -> VirtualizingStackPanel())
@@ -112,6 +110,7 @@ module RestTimeSection =
                                         .Content(ItemsPresenter())
 
                                 ctx.CurrentDate
+                                |> R3.distinctUntilChanged
                                 |> R3.subscribe (fun _ -> sv.ScrollToHome())
                                 |> disposables.Add
 
@@ -120,7 +119,9 @@ module RestTimeSection =
                                 |> disposables.Add
 
                                 sv)
-                            .ItemTemplateFunc(createRestItemView ctx handleDelete restItems))
+                            .ItemTemplateFunc(createRestItemView ctx handleDelete restItems)
+                            .IsVisible(isEmpty |> R3.map not |> asBinding)
+                    )
 
             Border()
                 .BorderThickness(1.0)

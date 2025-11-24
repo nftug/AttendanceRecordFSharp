@@ -59,7 +59,7 @@ module MainView =
                 Icon = MaterialIconKind.Info
                 Title = "このアプリについて" } ]
 
-        Grid()
+        Panel()
             .Children(
                 NavigationView.create menuItems,
                 AlarmHost.create services.AlarmService,

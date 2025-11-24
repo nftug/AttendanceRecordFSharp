@@ -117,6 +117,7 @@ module HistoryPageContext =
 
         // Transfer current record to form when it changes
         R3.combineLatest2 selectedDate currentRecord
+        |> R3.distinctUntilChanged
         |> R3.subscribe (fun (date, rOpt) ->
             let request =
                 match date, rOpt with

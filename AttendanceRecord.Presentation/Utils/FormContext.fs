@@ -38,7 +38,7 @@ module FormContext =
             | Some v -> resetCommand.Execute v
             | None -> resetCommand.Execute defaultForm.CurrentValue
 
-        let onReset = R3.merge [ defaultForm; resetCommand ]
+        let onReset = R3.merge [ resetCommand; defaultForm |> R3.distinctUntilChanged ]
 
         { Form = form
           IsFormDirty = isFormDirty

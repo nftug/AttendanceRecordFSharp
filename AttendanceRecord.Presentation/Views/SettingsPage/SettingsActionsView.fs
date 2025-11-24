@@ -20,7 +20,7 @@ module private SettingsActionsViewHelpers =
         : unit =
         invokeTask disposables (fun ct ->
             task {
-                let request = ctx.Form.CurrentValue
+                let request = ctx.FormCtx.Form.CurrentValue
                 let! result = handle request ct
 
                 match result with
@@ -48,7 +48,7 @@ module SettingsActionsView =
             let saveMutation = useMutation disposables props.SaveAppConfig.Handle
 
             let saveButtonEnabled =
-                R3.combineLatest2 ctx.IsFormDirty saveMutation.IsPending
+                R3.combineLatest2 ctx.FormCtx.IsFormDirty saveMutation.IsPending
                 |> R3.map (fun (dirty, isSaving) -> dirty && not isSaving)
 
             StackPanel()
@@ -65,9 +65,8 @@ module SettingsActionsView =
                         )
                         .Width(100.0)
                         .Height(35.0)
-                        .OnClickHandler(fun _ _ ->
-                            ctx.ResetCommand.Execute ctx.DefaultForm.CurrentValue)
-                        .IsEnabled(ctx.IsFormDirty |> asBinding),
+                        .OnClickHandler(fun _ _ -> ctx.FormCtx.ResetForm None)
+                        .IsEnabled(ctx.FormCtx.IsFormDirty |> asBinding),
                     Button()
                         .Content(
                             MaterialIconLabel.create

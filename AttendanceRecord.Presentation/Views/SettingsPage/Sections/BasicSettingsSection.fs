@@ -10,14 +10,12 @@ open AttendanceRecord.Shared
 open AttendanceRecord.Application.Dtos.Requests
 
 module BasicSettingsSection =
-
     let create () =
         withLifecycle (fun disposables self ->
             let ctx, _ = Context.require<SettingsPageContext> self
             let standardWorkMinutes = R3.property 0m |> R3.disposeWith disposables
 
-            ctx.ResetCommand
-            |> R3.prepend ctx.DefaultForm.CurrentValue
+            ctx.FormCtx.OnReset
             |> R3.subscribe (fun form ->
                 standardWorkMinutes.Value <- decimal form.StandardWorkTimeMinutes)
             |> disposables.Add
@@ -25,8 +23,8 @@ module BasicSettingsSection =
             standardWorkMinutes
             |> R3.distinctUntilChanged
             |> R3.subscribe (fun minutes ->
-                ctx.Form.Value <-
-                    { ctx.Form.Value with
+                ctx.FormCtx.Form.Value <-
+                    { ctx.FormCtx.Form.Value with
                         StandardWorkTimeMinutes = float minutes })
             |> disposables.Add
 

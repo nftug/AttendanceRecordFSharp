@@ -17,7 +17,7 @@ module WorkTimeSection =
             let ctx, _ = Context.require<HistoryPageContext> self
 
             let update (updater: WorkRecordSaveRequestDto -> WorkRecordSaveRequestDto) =
-                ctx.Form.Value <- updater ctx.Form.Value
+                ctx.FormCtx.Form.Value <- updater ctx.FormCtx.Form.Value
 
             Border()
                 .BorderThickness(1.0)
@@ -35,7 +35,7 @@ module WorkTimeSection =
                                     TimePickerField.create
                                         { Label = "出勤時間" |> R3.ret
                                           BaseDate = ctx.CurrentDate
-                                          Value = ctx.Form |> R3.map (Some << _.StartedAt)
+                                          Value = ctx.FormCtx.Form |> R3.map (Some << _.StartedAt)
                                           OnSetValue =
                                             fun v ->
                                                 update (fun wr ->
@@ -45,7 +45,7 @@ module WorkTimeSection =
                                     TimePickerField.create
                                         { Label = "退勤時間" |> R3.ret
                                           BaseDate = ctx.CurrentDate
-                                          Value = ctx.Form |> R3.map _.EndedAt
+                                          Value = ctx.FormCtx.Form |> R3.map _.EndedAt
                                           OnSetValue =
                                             fun v -> update (fun wr -> { wr with EndedAt = v })
                                           IsClearable = true |> R3.ret }

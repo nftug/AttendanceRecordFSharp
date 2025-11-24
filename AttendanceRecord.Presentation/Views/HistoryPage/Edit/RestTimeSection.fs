@@ -63,8 +63,7 @@ module RestTimeSection =
 
             let restItems = ObservableList<RestRecordSaveRequestDto>()
 
-            ctx.ResetCommand
-            |> R3.prepend ctx.DefaultForm.CurrentValue
+            ctx.FormCtx.OnReset
             |> R3.subscribe (fun form ->
                 restItems.Clear()
                 restItems.AddRange form.RestRecords)
@@ -74,8 +73,8 @@ module RestTimeSection =
             restItems
             |> R3.collectionChanged
             |> R3.subscribe (fun _ ->
-                ctx.Form.Value <-
-                    { ctx.Form.Value with
+                ctx.FormCtx.Form.Value <-
+                    { ctx.FormCtx.Form.Value with
                         RestRecords = restItems |> Seq.toList })
             |> disposables.Add
 
@@ -87,10 +86,11 @@ module RestTimeSection =
             let addCommand =
                 R3.command ()
                 |> R3.withSubscribe disposables (fun () ->
-                    RestRecordSaveRequestDto.empty ctx.Form.Value.StartedAt.Date |> restItems.Add)
+                    RestRecordSaveRequestDto.empty ctx.FormCtx.Form.Value.StartedAt
+                    |> restItems.Add)
 
             let buildContent () =
-                ctx.Form
+                ctx.FormCtx.Form
                 |> R3.map _.RestRecords.IsEmpty
                 |> R3.distinctUntilChanged
                 |> toView (fun disposables _ hasNoItems ->
@@ -111,7 +111,7 @@ module RestTimeSection =
                                         .HorizontalScrollBarVisibilityDisabled()
                                         .Content(ItemsPresenter())
 
-                                ctx.ResetCommand
+                                ctx.CurrentDate
                                 |> R3.subscribe (fun _ -> sv.ScrollToHome())
                                 |> disposables.Add
 

@@ -22,7 +22,7 @@ module private WorkRecordEditViewHelpers =
         : unit =
         invokeTask disposables (fun ct ->
             task {
-                match! handle ctx.Form.Value ct with
+                match! handle ctx.FormCtx.Form.Value ct with
                 | Ok id ->
                     Notification.show
                         { Title = "保存完了"
@@ -45,7 +45,7 @@ module private WorkRecordEditViewHelpers =
         : unit =
         invokeTask disposables (fun ct ->
             task {
-                match ctx.Form.Value.Id with
+                match ctx.FormCtx.Form.Value.Id with
                 | Some id ->
                     let! shouldDelete =
                         MessageBox.show
@@ -88,11 +88,11 @@ module WorkRecordEditView =
             let deleteMutation = useMutation disposables props.DeleteWorkRecord.Handle
 
             let saveButtonEnabled =
-                R3.combineLatest2 saveMutation.IsPending ctx.IsFormDirty
+                R3.combineLatest2 saveMutation.IsPending ctx.FormCtx.IsFormDirty
                 |> R3.map (fun (isSaving, dirty) -> not isSaving && dirty)
 
             let deleteButtonEnabled =
-                R3.combineLatest2 ctx.Form deleteMutation.IsPending
+                R3.combineLatest2 ctx.FormCtx.Form deleteMutation.IsPending
                 |> R3.map (fun (f, isDeleting) -> f.Id.IsSome && not isDeleting)
 
             Grid()
@@ -106,9 +106,8 @@ module WorkRecordEditView =
                         .Children(
                             TextBlock()
                                 .Text(
-                                    ctx.Form
-                                    |> R3.map _.StartedAt
-                                    |> R3.map _.ToString("yyyy/MM/dd (ddd)")
+                                    ctx.FormCtx.Form
+                                    |> R3.map _.StartedAt.ToString("yyyy/MM/dd (ddd)")
                                     |> asBinding
                                 )
                                 .FontSize(28.0)
@@ -145,11 +144,10 @@ module WorkRecordEditView =
                                           Label = "リセット" |> R3.ret
                                           Spacing = None |> R3.ret }
                                 )
-                                .OnClickHandler(fun _ _ ->
-                                    ctx.ResetCommand.Execute ctx.DefaultForm.CurrentValue)
+                                .OnClickHandler(fun _ _ -> ctx.FormCtx.ResetForm None)
                                 .Width(100.0)
                                 .Height(35.0)
-                                .IsEnabled(ctx.IsFormDirty |> asBinding)
+                                .IsEnabled(ctx.FormCtx.IsFormDirty |> asBinding)
                                 .Column(2),
                             Button()
                                 .Content(

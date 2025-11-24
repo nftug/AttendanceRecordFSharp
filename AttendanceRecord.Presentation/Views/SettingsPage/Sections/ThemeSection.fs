@@ -22,11 +22,13 @@ module ThemeSection =
                 RadioButton()
                     .Content(text)
                     .GroupName("ThemeGroup")
-                    .IsChecked(ctx.Form |> R3.map (fun f -> f.ThemeMode = theme) |> asBinding)
+                    .IsChecked(
+                        ctx.FormCtx.Form |> R3.map (fun f -> f.ThemeMode = theme) |> asBinding
+                    )
                     .OnIsCheckedChangedHandler(fun ctl _ ->
                         if ctl.IsChecked.HasValue && ctl.IsChecked.Value then
-                            ctx.Form.Value <-
-                                { ctx.Form.Value with
+                            ctx.FormCtx.Form.Value <-
+                                { ctx.FormCtx.Form.Value with
                                     ThemeMode = theme }
 
                             themeCtx.ThemeMode.Value <- theme)

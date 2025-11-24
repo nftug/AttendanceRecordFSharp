@@ -14,10 +14,11 @@ module WorkEndAlarmSection =
             let alarmEnabled = R3.property false |> R3.disposeWith disposables
             let beforeEndMinutes = R3.property 0m |> R3.disposeWith disposables
             let snoozeMinutes = R3.property 0m |> R3.disposeWith disposables
-            let maxMinutes = ctx.Form |> R3.map _.StandardWorkTimeMinutes |> R3.map decimal
 
-            ctx.ResetCommand
-            |> R3.prepend ctx.DefaultForm.CurrentValue
+            let maxMinutes =
+                ctx.FormCtx.Form |> R3.map _.StandardWorkTimeMinutes |> R3.map decimal
+
+            ctx.FormCtx.OnReset
             |> R3.map _.WorkEndAlarmConfig
             |> R3.subscribe (fun config ->
                 alarmEnabled.Value <- config.IsEnabled
@@ -28,8 +29,8 @@ module WorkEndAlarmSection =
             R3.combineLatest3 alarmEnabled beforeEndMinutes snoozeMinutes
             |> R3.distinctUntilChanged
             |> R3.subscribe (fun (isEnabled, beforeMinutes, snoozeMinutes) ->
-                ctx.Form.Value <-
-                    { ctx.Form.Value with
+                ctx.FormCtx.Form.Value <-
+                    { ctx.FormCtx.Form.Value with
                         WorkEndAlarmConfig.IsEnabled = isEnabled
                         WorkEndAlarmConfig.BeforeEndDurationMinutes = float beforeMinutes
                         WorkEndAlarmConfig.SnoozeDurationMinutes = float snoozeMinutes })

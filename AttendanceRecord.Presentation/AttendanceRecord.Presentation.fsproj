@@ -36,6 +36,7 @@
     <Compile Include="Utils/PlatformColors.fs" />
     <Compile Include="Utils/EmbeddedResourceProvider.fs" />
     <Compile Include="Utils/ContextProvider.fs" />
+    <Compile Include="Utils/FormContext.fs" />
     <Compile Include="Utils/UseMutation.fs" />
     <Compile Include="Utils/GridExtensions.fs" />
     <Compile Include="Utils/ItemsControlExtensions.fs" />

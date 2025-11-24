@@ -10,10 +10,7 @@ open AttendanceRecord.Application.UseCases.AppConfig
 open AttendanceRecord.Presentation.Utils
 
 type SettingsPageContext =
-    { Form: ReactiveProperty<AppConfigSaveRequestDto>
-      DefaultForm: ReadOnlyReactiveProperty<AppConfigSaveRequestDto>
-      IsFormDirty: ReadOnlyReactiveProperty<bool>
-      ResetCommand: ReactiveCommand<AppConfigSaveRequestDto>
+    { FormCtx: FormContext<AppConfigSaveRequestDto>
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool> }
 
 type SettingsPageContextProps =
@@ -27,35 +24,18 @@ module SettingsPageContext =
         : SettingsPageContext =
         let appConfig = props.AppConfig |> R3.readonly None |> R3.disposeWith disposables
 
-        let form = R3.property AppConfigSaveRequestDto.empty |> R3.disposeWith disposables
-
-        let defaultForm = R3.property form.CurrentValue |> R3.disposeWith disposables
-
-        let isFormDirty =
-            R3.combineLatest2 form defaultForm
-            |> R3.map (fun (f, df) -> f <> df)
-            |> R3.readonly None
-            |> R3.disposeWith disposables
-
-        let resetCommand =
-            isFormDirty
-            |> R3.toCommand<AppConfigSaveRequestDto>
-            |> R3.withSubscribe disposables (fun next ->
-                form.Value <- next
-
-                if next <> defaultForm.CurrentValue then
-                    defaultForm.Value <- next)
+        let formCtx = FormContext.create AppConfigSaveRequestDto.empty disposables
 
         appConfig
         |> R3.subscribe (fun config ->
             let request = AppConfigSaveRequestDto.fromResponse config
-            resetCommand.Execute request)
+            formCtx.ResetForm(Some request))
         |> disposables.Add
 
-        let confirmDiscard (ct: CancellationToken) : Tasks.Task<bool> =
-            invokeTask disposables (fun _ ->
+        let confirmDiscard _ : Tasks.Task<bool> =
+            invokeTask disposables (fun ct ->
                 task {
-                    if isFormDirty.CurrentValue then
+                    if formCtx.IsFormDirty.CurrentValue then
                         return!
                             MessageBox.show
                                 { Title = "変更の確認"
@@ -68,8 +48,5 @@ module SettingsPageContext =
                         return true
                 })
 
-        { Form = form
-          DefaultForm = defaultForm :> ReadOnlyReactiveProperty<_>
-          IsFormDirty = isFormDirty
-          ResetCommand = resetCommand
+        { FormCtx = formCtx
           ConfirmDiscard = confirmDiscard }

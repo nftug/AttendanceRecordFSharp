@@ -29,9 +29,9 @@ module private WorkRecordListViewHelpers =
 module WorkRecordListView =
     open NXUI.Extensions
     open type NXUI.Builders
-    open Material.Icons
     open Avalonia.Media
     open AttendanceRecord.Application.Dtos.Responses
+    open FluentAvalonia.UI.Controls
 
     let create () : Avalonia.Controls.Control =
         withLifecycle (fun disposables self ->
@@ -51,8 +51,7 @@ module WorkRecordListView =
                             .OrientationHorizontal()
                             .Spacing(10.0)
                             .Children(
-                                MaterialIcon
-                                    .create(MaterialIconKind.CalendarToday |> R3.ret)
+                                (SymbolIcon.create (Symbol.CalendarDay |> R3.ret))
                                     .Foreground(Brushes.DarkGray),
                                 TextBlock()
                                     .Text(item.Date.ToString "yyyy/MM/dd (ddd)")

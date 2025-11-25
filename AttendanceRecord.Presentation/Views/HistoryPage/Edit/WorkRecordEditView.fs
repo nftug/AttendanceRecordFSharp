@@ -9,8 +9,7 @@ open AttendanceRecord.Shared
 module WorkRecordEditView =
     open NXUI.Extensions
     open type NXUI.Builders
-    open Avalonia.Media
-    open Material.Icons
+    open FluentAvalonia.UI.Controls
 
     let create () : Avalonia.Controls.Control =
         withLifecycle (fun _ self ->
@@ -39,8 +38,8 @@ module WorkRecordEditView =
                                     |> R3.map _.ToString("yyyy/MM/dd (ddd)")
                                     |> asBinding
                                 )
-                                .FontSize(28.0)
-                                .FontWeightBold()
+                                .FontSize(26.0)
+                                .Margin(0.0, -5.0)
                                 .Row(0),
                             WorkStatusSummarySection.create () |> _.Row(1),
                             WorkTimeSection.create () |> _.Row(2),
@@ -53,8 +52,8 @@ module WorkRecordEditView =
                         .Children(
                             Button()
                                 .Content(
-                                    MaterialIconLabel.create
-                                        { Kind = MaterialIconKind.Delete |> R3.ret
+                                    SymbolIconLabel.create
+                                        { Symbol = Symbol.Delete |> R3.ret
                                           Label = "削除" |> R3.ret
                                           Spacing = None |> R3.ret }
                                 )
@@ -62,13 +61,11 @@ module WorkRecordEditView =
                                 .Width(100.0)
                                 .Height(35.0)
                                 .IsEnabled(deleteButtonEnabled |> asBinding)
-                                .Background(Brushes.DarkRed)
-                                .Foreground(Brushes.White)
                                 .Column(0),
                             Button()
                                 .Content(
-                                    MaterialIconLabel.create
-                                        { Kind = MaterialIconKind.Refresh |> R3.ret
+                                    SymbolIconLabel.create
+                                        { Symbol = Symbol.Refresh |> R3.ret
                                           Label = "リセット" |> R3.ret
                                           Spacing = None |> R3.ret }
                                 )
@@ -79,8 +76,8 @@ module WorkRecordEditView =
                                 .Column(2),
                             Button()
                                 .Content(
-                                    MaterialIconLabel.create
-                                        { Kind = MaterialIconKind.ContentSave |> R3.ret
+                                    SymbolIconLabel.create
+                                        { Symbol = Symbol.Save |> R3.ret
                                           Label = "保存" |> R3.ret
                                           Spacing = None |> R3.ret }
                                 )
@@ -89,7 +86,7 @@ module WorkRecordEditView =
                                 .Height(35.0)
                                 .IsEnabled(saveButtonEnabled |> asBinding)
                                 .Column(3)
-                            |> Colors.setAccentColorBackground
+                                .Classes("accent")
                         )
                         .Row(1)
                 ))

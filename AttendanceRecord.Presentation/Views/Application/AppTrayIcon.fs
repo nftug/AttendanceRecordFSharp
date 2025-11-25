@@ -14,18 +14,14 @@ module AppTrayIcon =
 
         let confirmAndExitApp () =
             task {
-                showAndActivateWindow ()
-
                 let! result =
                     MessageBox.show
                         { Title = "アプリケーションの終了確認"
                           Message = "本当にアプリケーションを終了しますか？"
-                          OkContent = Some "終了"
-                          CancelContent = None
-                          Buttons = MessageBoxButtons.OkCancel }
+                          Buttons = YesNoButton(Some "終了", Some "キャンセル") }
                         None
 
-                if result then
+                if result = YesResult then
                     getApplicationLifetime().Shutdown()
             }
             |> ignore

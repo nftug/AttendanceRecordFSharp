@@ -1,6 +1,7 @@
 namespace AttendanceRecord.Presentation.Views.HomePage
 
 open R3
+open FsToolkit.ErrorHandling
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
@@ -49,10 +50,9 @@ module HomeActionsHooks =
                             MessageBox.show
                                 { Title = "勤務終了の確認"
                                   Message = "勤務を終了しますか？"
-                                  OkContent = None
-                                  CancelContent = None
-                                  Buttons = MessageBoxButtons.OkCancel }
+                                  Buttons = YesNoButton(Some "終了", Some "キャンセル") }
                                 (Some ct)
+                            |> Task.map (fun r -> r = YesResult)
 
                     if shouldProceed then
                         match! toggleWorkMutation.MutateTask() with

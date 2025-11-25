@@ -1,80 +1,55 @@
 namespace AttendanceRecord.Presentation.Views.Common
 
-open AttendanceRecord.Presentation.Utils
-
 type MessageBoxButtons =
-    | Ok = 0
-    | OkCancel = 1
+    | OkButton of string option
+    | YesNoButton of string option * string option
+    | YesNoCancelButton of string option * string option * string option
+
+type MessageBoxResult =
+    | OkResult
+    | YesResult
+    | NoResult
+    | CancelResult
 
 type MessageBoxProps =
     { Title: string
       Message: string
-      OkContent: obj option
-      CancelContent: obj option
       Buttons: MessageBoxButtons }
 
-module private MessageBoxView =
-    open NXUI.Extensions
-    open type NXUI.Builders
-    open System.Windows.Input
-
-    let create (props: MessageBoxProps) (closeCommand: ICommand) =
-        let createButton ret content =
-            Button()
-                .Content(content)
-                .OnClickHandler(fun _ _ -> closeCommand.Execute ret)
-                .MinWidth(80.0)
-                .MaxWidth(120.0)
-                .Height(35.0)
-
-        let okButton = defaultArg props.OkContent "OK" |> createButton true
-        let cancelButton = defaultArg props.CancelContent "キャンセル" |> createButton false
-
-        StackPanel()
-            .Margin(20.0)
-            .Spacing(20.0)
-            .MinWidth(300.0)
-            .MaxWidth(450.0)
-            .Children(
-                TextBlock()
-                    .Text(props.Title)
-                    .FontSize(20.0)
-                    .FontWeightBold()
-                    .TextWrappingWrap()
-                    .Margin(0, 0, 0, 10.0),
-                TextBlock()
-                    .Text(props.Message)
-                    .FontSize(16.0)
-                    .TextWrappingWrap()
-                    .Margin(0, 0, 0, 20.0),
-                StackPanel()
-                    .OrientationHorizontal()
-                    .HorizontalAlignmentRight()
-                    .Margin(0, 10.0, 0, 0)
-                    .Spacing(10.0)
-                    .Children(
-                        match props.Buttons with
-                        | MessageBoxButtons.OkCancel -> [ cancelButton; okButton ]
-                        | _ -> [ okButton ]
-                        |> toChildren
-                    )
-            )
-
 module MessageBox =
-    open DialogHostAvalonia
     open System.Threading
     open System.Threading.Tasks
+    open FluentAvalonia.UI.Controls
+    open AttendanceRecord.Presentation.Utils
 
-    let show (props: MessageBoxProps) (ct: CancellationToken option) : Task<bool> =
+    let show (props: MessageBoxProps) (ct: CancellationToken option) : Task<MessageBoxResult> =
         task {
-            let dialogHost = getControlFromMainWindow<DialogHost> ()
+            let window = getMainWindow ()
+            window.Show()
+            window.Activate()
 
-            let! result =
-                MessageBoxView.create props dialogHost.CloseDialogCommand |> DialogHost.Show
+            let dialog = ContentDialog(Title = props.Title, Content = props.Message)
+
+            match props.Buttons with
+            | OkButton ok -> dialog.CloseButtonText <- defaultArg ok "OK"
+            | YesNoButton(yes, no) ->
+                dialog.PrimaryButtonText <- defaultArg yes "はい"
+                dialog.CloseButtonText <- defaultArg no "いいえ"
+            | YesNoCancelButton(yes, no, cancel) ->
+                dialog.PrimaryButtonText <- defaultArg yes "はい"
+                dialog.SecondaryButtonText <- defaultArg no "いいえ"
+                dialog.CloseButtonText <- defaultArg cancel "キャンセル"
+
+            let! result = dialog.ShowAsync()
 
             match ct with
             | Some cancellationToken -> cancellationToken.ThrowIfCancellationRequested()
             | None -> ()
 
-            return result :?> bool
+            return
+                match props.Buttons, result with
+                | OkButton _, _ -> OkResult
+                | _, ContentDialogResult.Primary -> YesResult
+                | _, ContentDialogResult.Secondary -> NoResult
+                | _ -> CancelResult
         }

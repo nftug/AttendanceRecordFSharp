@@ -8,7 +8,7 @@ open AttendanceRecord.Shared
 module SettingsActionsView =
     open type NXUI.Builders
     open NXUI.Extensions
-    open Material.Icons
+    open FluentAvalonia.UI.Controls
 
     let create () =
         withLifecycle (fun disposables self ->
@@ -25,8 +25,8 @@ module SettingsActionsView =
                 .Children(
                     Button()
                         .Content(
-                            MaterialIconLabel.create
-                                { Kind = MaterialIconKind.Refresh |> R3.ret
+                            SymbolIconLabel.create
+                                { Symbol = Symbol.Refresh |> R3.ret
                                   Label = "リセット" |> R3.ret
                                   Spacing = None |> R3.ret }
                         )
@@ -36,8 +36,8 @@ module SettingsActionsView =
                         .IsEnabled(ctx.FormCtx.IsFormDirty |> asBinding),
                     Button()
                         .Content(
-                            MaterialIconLabel.create
-                                { Kind = MaterialIconKind.ContentSave |> R3.ret
+                            SymbolIconLabel.create
+                                { Symbol = Symbol.Save |> R3.ret
                                   Label = "保存" |> R3.ret
                                   Spacing = None |> R3.ret }
                         )
@@ -45,5 +45,5 @@ module SettingsActionsView =
                         .Height(35.0)
                         .OnClickHandler(fun _ _ -> ctx.SaveMutation.Mutate())
                         .IsEnabled(saveButtonEnabled |> asBinding)
-                    |> Colors.setAccentColorBackground
+                        .Classes("accent")
                 ))

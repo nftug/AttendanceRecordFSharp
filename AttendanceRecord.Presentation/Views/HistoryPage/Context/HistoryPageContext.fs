@@ -3,6 +3,7 @@ namespace AttendanceRecord.Presentation.Views.HistoryPage.Context
 open System
 open System.Threading
 open R3
+open FsToolkit.ErrorHandling
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
@@ -103,10 +104,9 @@ module HistoryPageContext =
                             MessageBox.show
                                 { Title = "確認"
                                   Message = "保存されていない変更があります。\n変更を破棄してもよろしいですか？"
-                                  OkContent = None
-                                  CancelContent = None
-                                  Buttons = MessageBoxButtons.OkCancel }
+                                  Buttons = YesNoButton(Some "破棄", Some "キャンセル") }
                                 (Some ct)
+                            |> Task.map (fun result -> result = YesResult)
                     else
                         return true
                 })
@@ -153,16 +153,14 @@ module HistoryPageContext =
                 task {
                     match formCtx.Form.Value.Id with
                     | Some id ->
-                        let! shouldDelete =
+                        let! shouldProceed =
                             MessageBox.show
                                 { Title = "削除の確認"
-                                  Message = "この記録を削除してもよろしいですか?"
-                                  OkContent = Some "削除"
-                                  CancelContent = None
-                                  Buttons = MessageBoxButtons.OkCancel }
+                                  Message = "この記録を削除してもよろしいですか？"
+                                  Buttons = YesNoButton(Some "削除", Some "キャンセル") }
                                 (Some ct)
 
-                        if shouldDelete then
+                        if shouldProceed = YesResult then
                             match! props.DeleteWorkRecord.Handle id ct with
                             | Ok _ ->
                                 Notification.show

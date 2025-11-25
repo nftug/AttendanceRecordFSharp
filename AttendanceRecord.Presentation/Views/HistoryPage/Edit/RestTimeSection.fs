@@ -4,7 +4,6 @@ open R3
 open ObservableCollections
 open System
 open Avalonia.Media
-open Material.Icons
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
@@ -14,6 +13,7 @@ open AttendanceRecord.Shared
 module RestTimeSection =
     open NXUI.Extensions
     open type NXUI.Builders
+    open FluentAvalonia.UI.Controls
 
     let private createRestItemView
         (ctx: HistoryPageContext)
@@ -50,8 +50,8 @@ module RestTimeSection =
                       Value = item.EndedAt |> R3.ret
                       OnSetValue = fun v -> update (fun rp -> { rp with EndedAt = v })
                       IsClearable = true |> R3.ret },
-                MaterialIconButton.create
-                    { Kind = MaterialIconKind.Delete |> R3.ret
+                SymbolIconButton.create
+                    { Symbol = Symbol.Delete |> R3.ret
                       OnClick = fun _ -> handleDelete item.Id
                       FontSize = Some 18.0 |> R3.ret
                       Tooltip = Some "休憩時間を削除" |> R3.ret }
@@ -135,8 +135,8 @@ module RestTimeSection =
                                         .FontSize(18.0)
                                         .FontWeightBold()
                                         .Column(0),
-                                    MaterialIconButton.create
-                                        { Kind = MaterialIconKind.AddCircleOutline |> R3.ret
+                                    SymbolIconButton.create
+                                        { Symbol = Symbol.Add |> R3.ret
                                           OnClick = fun _ -> addCommand.Execute()
                                           FontSize = Some 20.0 |> R3.ret
                                           Tooltip = Some "休憩時間を追加" |> R3.ret }

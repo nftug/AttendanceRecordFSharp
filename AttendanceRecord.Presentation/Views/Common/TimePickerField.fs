@@ -2,9 +2,9 @@ namespace AttendanceRecord.Presentation.Views.Common
 
 open System
 open R3
-open Material.Icons
 open NXUI.Extensions
 open type NXUI.Builders
+open FluentAvalonia.UI.Controls
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Shared
 
@@ -51,8 +51,8 @@ module TimePickerField =
                                     e.Subscribe(fun _ ->
                                         handleTimeChange (Option.ofNullable ctl.SelectedTime))
                                     |> disposables.Add),
-                            MaterialIconButton.create
-                                { Kind = MaterialIconKind.Close |> R3.ret
+                            SymbolIconButton.create
+                                { Symbol = Symbol.Clear |> R3.ret
                                   OnClick = fun _ -> handleTimeChange None
                                   FontSize = Some 12.0 |> R3.ret
                                   Tooltip = Some "時間をクリア" |> R3.ret }

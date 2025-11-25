@@ -2,7 +2,6 @@ namespace AttendanceRecord.Presentation.Views.SettingsPage
 
 open type NXUI.Builders
 open NXUI.Extensions
-open Material.Icons
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
 open AttendanceRecord.Presentation.Views.SettingsPage.Sections

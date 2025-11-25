@@ -2,8 +2,7 @@ namespace AttendanceRecord.Presentation.Views.Application
 
 open type NXUI.Builders
 open NXUI.Extensions
-open Material.Icons
-open DialogHostAvalonia
+open FluentAvalonia.UI.Controls
 
 open AttendanceRecord.Presentation
 open AttendanceRecord.Presentation.Views.Common
@@ -46,26 +45,33 @@ module private NavigationContext =
 
 module MainView =
     let create (services: ServiceContainer) =
-        let menuItems =
-            [ { Path = "/"
-                Icon = MaterialIconKind.Home
-                Title = "ホーム" }
-              { Path = "/history"
-                Icon = MaterialIconKind.History
-                Title = "履歴" }
-              { Path = "/settings"
-                Icon = MaterialIconKind.Settings
-                Title = "設定" }
-              { Path = "/about"
-                Icon = MaterialIconKind.Info
-                Title = "このアプリについて" } ]
-
         Panel()
             .Children(
-                NavigationView.create menuItems,
+                NavigationView.create
+                    { MenuItems =
+                        [ NavigationViewItem(
+                              Content = "ホーム",
+                              IconSource = SymbolIconSource(Symbol = Symbol.Home),
+                              Tag = "/"
+                          )
+                          NavigationViewItem(
+                              Content = "履歴",
+                              IconSource = SymbolIconSource(Symbol = Symbol.CalendarMonth),
+                              Tag = "/history"
+                          ) ]
+                      FooterMenuItems =
+                        [ NavigationViewItem(
+                              Content = "設定",
+                              IconSource = SymbolIconSource(Symbol = Symbol.Settings),
+                              Tag = "/settings"
+                          )
+                          NavigationViewItem(
+                              Content = "このアプリについて",
+                              IconSource = SymbolIconSource(Symbol = Symbol.Help),
+                              Tag = "/about"
+                          ) ] },
                 AlarmHost.create services.AlarmService,
-                WindowNotificationManager().PositionBottomCenter().MaxItems(1),
-                DialogHost()
+                WindowNotificationManager().PositionBottomCenter().MaxItems(1)
             )
         |> NavigationContext.provide services
         |> Context.provideWithBuilder (ThemeContext.create services.AppConfig)

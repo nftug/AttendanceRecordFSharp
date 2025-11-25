@@ -3,7 +3,7 @@ namespace AttendanceRecord.Presentation.Views.HomePage
 open type NXUI.Builders
 open NXUI.Extensions
 open R3
-open Material.Icons
+open FluentAvalonia.UI.Controls
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
@@ -14,16 +14,20 @@ module HomeActionsView =
         withLifecycle (fun _ self ->
             let ctx, ctxDisposables = Context.require<HomePageContext> self
             let hooks = useHomeActionsHooks ctx ctxDisposables
+            let isWorking = hooks.Status |> R3.map _.IsWorking
 
             Grid()
                 .RowDefinitions("Auto")
                 .ColumnDefinitions("*,*")
                 .Children(
-                    AccentToggleButton.create (hooks.Status |> R3.map _.IsWorking)
+                    AccentToggleButton.create isWorking
                     |> _.Column(0)
                         .Content(
-                            MaterialIconLabel.create
-                                { Kind = MaterialIconKind.WorkOutline |> R3.ret
+                            SymbolIconLabel.create
+                                { Symbol =
+                                    isWorking
+                                    |> R3.map (fun working ->
+                                        if working then Symbol.Stop else Symbol.Play)
                                   Label = hooks.WorkButtonLabel
                                   Spacing = None |> R3.ret }
                         )
@@ -36,8 +40,8 @@ module HomeActionsView =
                     AccentToggleButton.create (hooks.Status |> R3.map _.IsResting)
                     |> _.Column(1)
                         .Content(
-                            MaterialIconLabel.create
-                                { Kind = MaterialIconKind.Coffee |> R3.ret
+                            SymbolIconLabel.create
+                                { Symbol = Symbol.Pause |> R3.ret
                                   Label = hooks.RestButtonLabel
                                   Spacing = None |> R3.ret }
                         )

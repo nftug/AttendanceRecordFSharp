@@ -1,96 +1,77 @@
 namespace AttendanceRecord.Presentation.Views.Common.Navigation
 
-open R3
-open Material.Icons
-open Avalonia.Media
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
-open AttendanceRecord.Presentation.Views.Common
+open FluentAvalonia.UI.Controls
+open type NXUI.Builders
+open NXUI.Extensions
 
-type DrawerMenuItem =
-    { Path: string
-      Icon: MaterialIconKind
-      Title: string }
+type NavigationViewProps =
+    { MenuItems: NavigationViewItem list
+      FooterMenuItems: NavigationViewItem list }
 
 module NavigationView =
-    open NXUI.Extensions
-    open type NXUI.Builders
+    type private NavigationFactory() =
+        interface INavigationPageFactory with
+            member _.GetPage _ = null
 
-    let private createDrawer
-        (ctx: NavigationContext)
-        (pages: DrawerMenuItem list)
-        (closeDrawer: unit -> unit)
-        =
-        ItemsControl()
-            .HorizontalAlignmentStretch()
-            .ItemsSource(pages |> List.toArray)
-            .TemplateFunc(fun _ -> ScrollViewer().Margin(15.0).Content(ItemsPresenter()))
-            .ItemTemplateFunc(fun (item: DrawerMenuItem) ->
-                let isSelected = ctx.CurrentRoute |> R3.map (fun r -> r.Path = item.Path)
+            member _.GetPageFromObject(target: obj) : Avalonia.Controls.Control =
+                target :?> Avalonia.Controls.Control
 
-                (AccentToggleButton.create isSelected)
-                    .Content(
-                        MaterialIconLabel.create
-                            { Kind = item.Icon |> R3.ret
-                              Label = item.Title |> R3.ret
-                              Spacing = Some 12.0 |> R3.ret }
-                    )
-                    .OnClickHandler(fun _ _ ->
-                        ctx.NavigateTo item.Path |> ignore
-                        closeDrawer ())
-                    .HorizontalAlignmentStretch()
-                    .HorizontalContentAlignmentLeft()
-                    .Background(Brushes.Transparent)
-                    .BorderBrush(Brushes.Transparent)
-                    .CornerRadius(0.0)
-                    .Height(50.0)
-                    .FontSize(16.0))
-
-    let create (menuItems: DrawerMenuItem list) : Avalonia.Controls.Control =
-        withLifecycle (fun disposables self ->
-            let ctx, _ = Context.require<NavigationContext> self
-
-            let isDrawerOpen = R3.property false |> R3.disposeWith disposables
-
+    let private createContent (ctx: NavigationContext) (props: NavigationViewProps) =
+        withLifecycle (fun disposables _ ->
             let pageTitle =
                 ctx.CurrentRoute
                 |> R3.map (fun r ->
-                    match menuItems |> List.tryFind (fun page -> page.Path = r.Path) with
-                    | Some item -> item.Title
-                    | None -> "Unknown")
+                    props.MenuItems @ props.FooterMenuItems
+                    |> List.tryFind (fun item -> (item.Tag :?> string) = r.Path)
+                    |> Option.map _.Content
+                    |> Option.defaultValue "Unknown")
 
-            let buildHeader () =
-                StackPanel()
-                    .DockTop()
-                    .OrientationHorizontal()
-                    .Height(50.0)
-                    .Margin(5.0)
-                    .Children(
-                        MaterialIconButton.create
-                            { Kind = MaterialIconKind.Menu |> R3.ret
-                              OnClick = fun _ -> isDrawerOpen.Value <- true
-                              FontSize = Some 18.0 |> R3.ret
-                              Tooltip = None |> R3.ret }
-                        |> _.Width(50.0).Height(50.0),
-                        TextBlock()
-                            .Text(pageTitle |> asBinding)
-                            .FontSize(21.0)
-                            .VerticalAlignmentCenter()
-                            .Margin(20.0, 0.0, 0.0, 0.0)
-                    )
+            let frame = Frame(NavigationPageFactory = NavigationFactory())
 
-            SplitView()
-                .DisplayModeOverlay()
-                .UseLightDismissOverlayMode(true)
-                .OpenPaneLength(250.0)
-                .IsPaneOpen(isDrawerOpen |> asBinding)
-                .OnPaneClosedHandler(fun _ _ -> isDrawerOpen.Value <- false)
-                .Pane(createDrawer ctx menuItems (fun () -> isDrawerOpen.Value <- false))
-                .Content(
-                    DockPanel()
-                        .LastChildFill(true)
-                        .Children(
-                            buildHeader (),
-                            ctx.CurrentRoute |> toView (fun _ _ r -> r.ViewFn())
-                        )
+            ctx.CurrentRoute
+            |> R3.subscribe (fun r -> frame.NavigateFromObject(r.ViewFn()) |> ignore)
+            |> disposables.Add
+
+            DockPanel()
+                .LastChildFill(true)
+                .Children(
+                    TextBlock()
+                        .Text(pageTitle |> asBinding)
+                        .FontSize(22.0)
+                        .FontWeightBold()
+                        .Margin(20.0, 20.0, 0.0, 10.0)
+                        .DockTop(),
+                    frame
                 ))
+
+    let create (props: NavigationViewProps) =
+        withLifecycle (fun disposables self ->
+            let ctx, _ = Context.require<NavigationContext> self
+
+            let navigation =
+                NavigationView(
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact,
+                    IsSettingsVisible = false,
+                    MenuItemsSource = (props.MenuItems |> List.toArray),
+                    FooterMenuItemsSource = (props.FooterMenuItems |> List.toArray),
+                    Content = createContent ctx props
+                )
+
+            ctx.CurrentRoute
+            |> R3.subscribe (fun r ->
+                props.MenuItems @ props.FooterMenuItems
+                |> List.tryFind (fun item -> (item.Tag :?> string) = r.Path)
+                |> Option.iter (fun item -> navigation.SelectedItem <- item))
+            |> disposables.Add
+
+            navigation.SelectionChanged.Add(fun args ->
+                args.SelectedItem
+                |> Option.ofObj
+                |> Option.iter (fun item ->
+                    let navItem = item :?> NavigationViewItem
+                    let path = navItem.Tag :?> string
+                    ctx.NavigateTo path |> ignore))
+
+            navigation)

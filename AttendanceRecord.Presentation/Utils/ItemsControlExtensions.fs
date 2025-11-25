@@ -36,8 +36,8 @@ type __ItemsControlExtensions =
         control
 
     [<Extension>]
-    static member ItemsSourceObservable
-        (control: ItemsControl, source: ObservableList<'T>)
-        : ItemsControl =
+    static member ItemsSourceObservable<'items, 'T when 'items :> ItemsControl>
+        (control: 'items, source: ObservableList<'T>)
+        : 'items =
         control.ItemsSource <- source.ToNotifyCollectionChangedSlim()
         control

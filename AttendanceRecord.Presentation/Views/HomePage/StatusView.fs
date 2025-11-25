@@ -4,7 +4,6 @@ open type NXUI.Builders
 open NXUI.Extensions
 open R3
 open System
-open Material.Icons
 open Avalonia.Media
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils

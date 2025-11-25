@@ -46,8 +46,6 @@ module private MainWindowHelpers =
 module MainWindow =
     open NXUI.Extensions
     open type NXUI.Builders
-    open DialogHostAvalonia
-    open Material.Icons.Avalonia
     open AttendanceRecord.Presentation
 
     let create (services: ServiceContainer) : Window =
@@ -56,6 +54,5 @@ module MainWindow =
             .Width(1200)
             .Height(820)
             .WindowStartupLocationCenterScreen()
-            .Styles(AppStyles(), DialogHostStyles(), MaterialIconStyles null)
             .Content(MainView.create services)
         |> initialize services

@@ -13,10 +13,6 @@ module AlarmHost =
         withLifecycle (fun disposables _ ->
             alarmService.AlarmTriggered
             |> R3.subscribe (fun alarmType ->
-                let window = getMainWindow ()
-                window.Show()
-                window.WindowState <- WindowState.Normal
-
                 let title =
                     match alarmType with
                     | AlarmType.WorkEnd -> "勤務終了アラーム"
@@ -35,16 +31,14 @@ module AlarmHost =
                       NotificationType = NotificationType.Warning }
 
                 task {
-                    let! shouldSnooze =
+                    let! result =
                         MessageBox.show
                             { Title = title
                               Message = message + "\nアラームをスヌーズしますか？"
-                              Buttons = MessageBoxButtons.OkCancel
-                              OkContent = Some "スヌーズ"
-                              CancelContent = Some "閉じる" }
+                              Buttons = YesNoButton(Some "スヌーズ", Some "閉じる") }
                             None
 
-                    if shouldSnooze then
+                    if result = YesResult then
                         alarmService.SnoozeAlarm alarmType
 
                         Notification.show

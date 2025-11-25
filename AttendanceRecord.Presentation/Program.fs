@@ -1,6 +1,7 @@
 ﻿open Avalonia
 open NXUI.Extensions
 open AttendanceRecord.Presentation
+open FluentAvalonia.Styling
 
 [<EntryPoint>]
 let main argv =
@@ -11,7 +12,10 @@ let main argv =
     AppBuilder
         .Configure<Application>()
         .UsePlatformDetect()
-        .UseFluentTheme()
         .UseR3()
         .WithApplicationName("Attendance Record")
+        .AfterSetup(fun builder ->
+            builder.Instance.Styles.Add(
+                FluentAvaloniaTheme(PreferSystemTheme = true, PreferUserAccentColor = true)
+            ))
         .StartWithClassicDesktopLifetime(buildWindow, argv)

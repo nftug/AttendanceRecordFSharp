@@ -2,6 +2,7 @@ namespace AttendanceRecord.Presentation.Views.SettingsPage.Context
 
 open System.Threading
 open R3
+open FsToolkit.ErrorHandling
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Application.Dtos.Requests
@@ -41,10 +42,9 @@ module SettingsPageContext =
                             MessageBox.show
                                 { Title = "変更の確認"
                                   Message = "保存されていない変更があります。\n変更を破棄してもよろしいですか？"
-                                  Buttons = MessageBoxButtons.OkCancel
-                                  OkContent = Some "破棄"
-                                  CancelContent = Some "キャンセル" }
+                                  Buttons = YesNoButton(Some "破棄", Some "キャンセル") }
                                 (Some ct)
+                            |> Task.map (fun result -> result = YesResult)
                     else
                         return true
                 })

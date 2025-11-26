@@ -14,20 +14,21 @@ module HomeActionsView =
         withLifecycle (fun _ self ->
             let ctx, ctxDisposables = Context.require<HomePageContext> self
             let hooks = useHomeActionsHooks ctx ctxDisposables
-            let isWorking = hooks.Status |> R3.map _.IsWorking
 
             Grid()
                 .RowDefinitions("Auto")
                 .ColumnDefinitions("*,*")
                 .Children(
-                    AccentToggleButton.create isWorking
+                    AccentToggleButton.create (hooks.Status |> R3.map _.IsWorking)
                     |> _.Column(0)
                         .Content(
                             SymbolIconLabel.create
                                 { Symbol =
-                                    isWorking
-                                    |> R3.map (fun working ->
-                                        if working then Symbol.Stop else Symbol.Play)
+                                    hooks.Status
+                                    |> R3.map _.IsActive
+                                    |> R3.map (function
+                                        | true -> Symbol.Stop
+                                        | false -> Symbol.Play)
                                   Label = hooks.WorkButtonLabel
                                   Spacing = None |> R3.ret }
                         )

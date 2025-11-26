@@ -2,6 +2,7 @@
 open NXUI.Extensions
 open AttendanceRecord.Presentation
 open FluentAvalonia.Styling
+open AttendanceRecord.Presentation.Utils
 
 [<EntryPoint>]
 let main argv =
@@ -13,7 +14,7 @@ let main argv =
         .Configure<Application>()
         .UsePlatformDetect()
         .UseR3()
-        .WithApplicationName("Attendance Record")
+        .WithApplicationName(getApplicationTitle ())
         .AfterSetup(fun builder ->
             builder.Instance.Styles.Add(
                 FluentAvaloniaTheme(PreferSystemTheme = true, PreferUserAccentColor = true)

@@ -32,7 +32,7 @@ module AlarmHost =
 
                 task {
                     let! result =
-                        MessageBox.show
+                        MessageBox.showAsWindow
                             { Title = title
                               Message = message + "\nアラームをスヌーズしますか？"
                               Buttons = YesNoButton(Some "スヌーズ", Some "閉じる") }

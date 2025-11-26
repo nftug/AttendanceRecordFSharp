@@ -50,7 +50,7 @@ module MainWindow =
 
     let create (services: ServiceContainer) : Window =
         Window()
-            .Title("Attendance Record")
+            .Title(getApplicationTitle ())
             .Width(1200)
             .Height(820)
             .WindowStartupLocationCenterScreen()

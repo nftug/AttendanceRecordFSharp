@@ -8,6 +8,7 @@ open Avalonia.Threading
 open System
 open System.Threading
 open System.Threading.Tasks
+open System.Reflection
 open R3
 open AttendanceRecord.Shared
 
@@ -35,6 +36,9 @@ module ApplicationUtils =
 
     let getPlatformColors () : Platform.PlatformColorValues =
         Application.Current.PlatformSettings.GetColorValues()
+
+    let getApplicationTitle () : string =
+        Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title
 
     let nextTick (work: unit -> unit) : unit =
         Dispatcher.UIThread.Post(work, DispatcherPriority.Loaded)

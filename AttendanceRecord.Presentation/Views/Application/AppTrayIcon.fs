@@ -15,7 +15,7 @@ module AppTrayIcon =
         let confirmAndExitApp () =
             task {
                 let! result =
-                    MessageBox.show
+                    MessageBox.showAsWindow
                         { Title = "アプリケーションの終了確認"
                           Message = "本当にアプリケーションを終了しますか？"
                           Buttons = YesNoButton(Some "終了", Some "キャンセル") }

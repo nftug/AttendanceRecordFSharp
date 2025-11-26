@@ -41,6 +41,7 @@
     <Compile Include="Utils/GridExtensions.fs" />
     <Compile Include="Utils/ItemsControlExtensions.fs" />
     <Compile Include="Utils/Notification.fs" />
+    <Compile Include="Utils/TransparentWindow.fs" />
 
     <Compile Include="Views/Common/SymbolIcon.fs" />
     <Compile Include="Views/Common/MessageBox.fs" />

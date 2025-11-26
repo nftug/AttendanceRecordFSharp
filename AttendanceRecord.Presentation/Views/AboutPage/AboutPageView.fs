@@ -3,6 +3,7 @@ namespace AttendanceRecord.Presentation.Views.AboutPage
 open type NXUI.Builders
 open NXUI.Extensions
 open System.Reflection
+open AttendanceRecord.Presentation.Utils
 
 module AboutPageView =
     let create () : Avalonia.Controls.Control =
@@ -13,7 +14,7 @@ module AboutPageView =
             .VerticalAlignmentCenter()
             .Children(
                 TextBlock()
-                    .Text("Attendance Record")
+                    .Text(getApplicationTitle ())
                     .FontSize(32.0)
                     .FontWeightBold()
                     .HorizontalAlignmentCenter()

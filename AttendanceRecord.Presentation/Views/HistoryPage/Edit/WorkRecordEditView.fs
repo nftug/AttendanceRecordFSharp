@@ -16,8 +16,11 @@ module WorkRecordEditView =
             let ctx, _ = Context.require<HistoryPageContext> self
 
             let saveButtonEnabled =
-                R3.combineLatest2 ctx.SaveMutation.IsPending ctx.FormCtx.IsFormDirty
-                |> R3.map (fun (isSaving, dirty) -> not isSaving && dirty)
+                R3.combineLatest3
+                    ctx.SaveMutation.IsPending
+                    ctx.FormCtx.IsFormDirty
+                    ctx.FormCtx.Error
+                |> R3.map (fun (isSaving, dirty, error) -> not isSaving && dirty && error.IsNone)
 
             let deleteButtonEnabled =
                 R3.combineLatest2 ctx.FormCtx.Form ctx.DeleteMutation.IsPending

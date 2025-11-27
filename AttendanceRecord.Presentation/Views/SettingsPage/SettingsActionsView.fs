@@ -11,12 +11,15 @@ module SettingsActionsView =
     open FluentAvalonia.UI.Controls
 
     let create () =
-        withLifecycle (fun disposables self ->
+        withLifecycle (fun _ self ->
             let ctx, _ = Context.require<SettingsPageContext> self
 
             let saveButtonEnabled =
-                R3.combineLatest2 ctx.FormCtx.IsFormDirty ctx.SaveMutation.IsPending
-                |> R3.map (fun (dirty, isSaving) -> dirty && not isSaving)
+                R3.combineLatest3
+                    ctx.FormCtx.IsFormDirty
+                    ctx.SaveMutation.IsPending
+                    ctx.FormCtx.Error
+                |> R3.map (fun (dirty, isSaving, error) -> dirty && not isSaving && error.IsNone)
 
             StackPanel()
                 .OrientationHorizontal()

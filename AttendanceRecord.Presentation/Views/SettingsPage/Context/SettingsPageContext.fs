@@ -68,6 +68,7 @@ module SettingsPageContext =
                               Message = $"アプリ設定の保存に失敗しました: {e}"
                               NotificationType = NotificationType.Error }
 
+                        formCtx.Error.Value <- Some e
                         return Error e
                 })
 

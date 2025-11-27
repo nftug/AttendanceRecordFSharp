@@ -49,12 +49,12 @@ module private MainWindowHelpers =
         window
 
 module MainWindow =
+    open FluentAvalonia.UI.Windowing
     open NXUI.Extensions
-    open type NXUI.Builders
     open AttendanceRecord.Presentation
 
     let create (services: ServiceContainer) : Window =
-        Window()
+        AppWindow()
             .Title(getApplicationTitle ())
             .Width(1200)
             .Height(820)

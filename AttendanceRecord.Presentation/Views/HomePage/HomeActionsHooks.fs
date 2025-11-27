@@ -47,7 +47,7 @@ module HomeActionsHooks =
                         if not status.CurrentValue.IsActive then
                             task { return true }
                         else
-                            MessageBox.show
+                            Dialog.show
                                 { Title = "勤務終了の確認"
                                   Message = "勤務を終了しますか？"
                                   Buttons = YesNoButton(Some "終了", Some "キャンセル") }

@@ -44,7 +44,7 @@
     <Compile Include="Utils/TransparentWindow.fs" />
 
     <Compile Include="Views/Common/SymbolIcon.fs" />
-    <Compile Include="Views/Common/MessageBox.fs" />
+    <Compile Include="Views/Common/Dialog.fs" />
     <Compile Include="Views/Common/DatePickerDialog.fs" />
     <Compile Include="Views/Common/AccentToggleButton.fs" />
     <Compile Include="Views/Common/TimePickerField.fs" />

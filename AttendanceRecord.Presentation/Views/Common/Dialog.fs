@@ -1,28 +1,28 @@
 namespace AttendanceRecord.Presentation.Views.Common
 
-type MessageBoxButtons =
+type DialogButtons =
     | OkButton of string option
     | YesNoButton of string option * string option
     | YesNoCancelButton of string option * string option * string option
 
-type MessageBoxResult =
+type DialogResult =
     | OkResult
     | YesResult
     | NoResult
     | CancelResult
 
-type MessageBoxProps =
+type DialogProps =
     { Title: string
       Message: string
-      Buttons: MessageBoxButtons }
+      Buttons: DialogButtons }
 
-module MessageBox =
+module Dialog =
     open System.Threading
     open System.Threading.Tasks
     open FluentAvalonia.UI.Controls
     open AttendanceRecord.Presentation.Utils
 
-    let show (props: MessageBoxProps) (ct: CancellationToken option) : Task<MessageBoxResult> =
+    let show (props: DialogProps) (ct: CancellationToken option) : Task<DialogResult> =
         task {
             let window = getMainWindow ()
             window.Show()
@@ -54,10 +54,7 @@ module MessageBox =
                 | _ -> CancelResult
         }
 
-    let showAsWindow
-        (props: MessageBoxProps)
-        (ct: CancellationToken option)
-        : Task<MessageBoxResult> =
+    let showAsWindow (props: DialogProps) (ct: CancellationToken option) : Task<DialogResult> =
         TransparentWindow.useWindow (fun window ->
             task {
                 let dialog =
@@ -95,5 +92,5 @@ module MessageBox =
                 | Some cancellationToken -> cancellationToken.ThrowIfCancellationRequested()
                 | None -> ()
 
-                return result :?> MessageBoxResult
+                return result :?> DialogResult
             })

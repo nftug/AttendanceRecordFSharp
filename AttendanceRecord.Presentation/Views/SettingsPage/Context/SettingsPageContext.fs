@@ -39,7 +39,7 @@ module SettingsPageContext =
                 task {
                     if formCtx.IsFormDirty.CurrentValue then
                         return!
-                            MessageBox.show
+                            Dialog.show
                                 { Title = "変更の確認"
                                   Message = "保存されていない変更があります。\n変更を破棄してもよろしいですか？"
                                   Buttons = YesNoButton(Some "破棄", Some "キャンセル") }

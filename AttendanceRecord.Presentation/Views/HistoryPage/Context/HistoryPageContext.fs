@@ -101,7 +101,7 @@ module HistoryPageContext =
                 task {
                     if formCtx.IsFormDirty.CurrentValue then
                         return!
-                            MessageBox.show
+                            Dialog.show
                                 { Title = "確認"
                                   Message = "保存されていない変更があります。\n変更を破棄してもよろしいですか？"
                                   Buttons = YesNoButton(Some "破棄", Some "キャンセル") }
@@ -154,7 +154,7 @@ module HistoryPageContext =
                     match formCtx.Form.Value.Id with
                     | Some id ->
                         let! shouldProceed =
-                            MessageBox.show
+                            Dialog.show
                                 { Title = "削除の確認"
                                   Message = "この記録を削除してもよろしいですか？"
                                   Buttons = YesNoButton(Some "削除", Some "キャンセル") }

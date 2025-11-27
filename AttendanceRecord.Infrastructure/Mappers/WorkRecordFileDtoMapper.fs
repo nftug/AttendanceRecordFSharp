@@ -25,7 +25,13 @@ module WorkRecordFileDtoMapper =
                 TimeDurationFileDtoMapper.fromDomain r.Duration,
                 r.RestRecords
                 |> Seq.map (fun r ->
-                    RestRecordFileDto(r.Id, TimeDurationFileDtoMapper.fromDomain r.Duration))
+                    RestRecordFileDto(
+                        r.Id,
+                        TimeDurationFileDtoMapper.fromDomain r.Duration,
+                        match r.Variant with
+                        | RegularRest -> RestVariantEnum.RegularRest
+                        | PaidRest -> RestVariantEnum.PaidRest
+                    ))
             ))
 
     let toDomain (dtos: IEnumerable<WorkRecordFileDto>) : WorkRecord list =
@@ -36,7 +42,13 @@ module WorkRecordFileDtoMapper =
                 (TimeDurationFileDtoMapper.toDomain dto.Duration)
                 (dto.RestRecords
                  |> Seq.map (fun r ->
-                     RestRecord.hydrate r.Id (TimeDurationFileDtoMapper.toDomain r.Duration))
+                     RestRecord.hydrate
+                         r.Id
+                         (match r.Variant with
+                          | RestVariantEnum.RegularRest -> RegularRest
+                          | RestVariantEnum.PaidRest -> PaidRest
+                          | _ -> RegularRest)
+                         (TimeDurationFileDtoMapper.toDomain r.Duration))
                  |> Seq.toList))
         |> Seq.toList
         |> WorkRecord.getSortedList

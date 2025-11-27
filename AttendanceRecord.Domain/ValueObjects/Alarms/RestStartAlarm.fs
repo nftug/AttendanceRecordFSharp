@@ -12,8 +12,8 @@ module RestStartAlarm =
             fun wr cfg now ->
                 cfg.RestStartAlarm.IsEnabled
                 && wr |> WorkRecord.isActive now
-                && wr |> WorkRecord.getRestDuration now = TimeSpan.Zero
-                && wr |> WorkRecord.getDuration now >= cfg.RestStartAlarm.BeforeStartDuration
+                && wr |> WorkRecord.getRestDuration now RegularRest = TimeSpan.Zero
+                && wr |> WorkRecord.getWorkDuration now >= cfg.RestStartAlarm.BeforeStartDuration
           GetSnoozeDuration = _.RestStartAlarm.SnoozeDuration }
 
     let createInitialAlarm () : RestStartAlarm = Alarm.initial rule

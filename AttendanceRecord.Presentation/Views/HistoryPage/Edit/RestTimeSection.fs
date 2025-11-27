@@ -5,6 +5,7 @@ open ObservableCollections
 open System
 open Avalonia.Media
 open AttendanceRecord.Application.Dtos.Requests
+open AttendanceRecord.Application.Dtos.Enums
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
@@ -50,11 +51,28 @@ module RestTimeSection =
                       Value = item.EndedAt |> R3.ret
                       OnSetValue = fun v -> update (fun rp -> { rp with EndedAt = v })
                       IsClearable = true |> R3.ret },
+                ComboBox()
+                    .Width(100.0)
+                    .ItemsSource([ RestVariantEnum.RegularRest; RestVariantEnum.PaidRest ])
+                    .SelectedItem(item.Variant)
+                    .OnSelectionChangedHandler(fun ctl _ ->
+                        match ctl.SelectedItem with
+                        | :? RestVariantEnum as v -> update (fun rp -> { rp with Variant = v })
+                        | _ -> ())
+                    .ItemTemplateFunc(fun (variant: RestVariantEnum) ->
+                        TextBlock()
+                            .Text(
+                                match variant with
+                                | RestVariantEnum.RegularRest -> "休憩"
+                                | RestVariantEnum.PaidRest -> "有給休暇"
+                                | _ -> "不明"
+                            ))
+                    .VerticalAlignmentBottom(),
                 SymbolIconButton.create
                     { Symbol = Symbol.Delete |> R3.ret
                       OnClick = fun _ -> handleDelete item.Id
                       FontSize = Some 18.0 |> R3.ret
-                      Tooltip = Some "休憩時間を削除" |> R3.ret }
+                      Tooltip = Some "この記録を削除する" |> R3.ret }
                 |> _.VerticalAlignmentBottom()
             )
 
@@ -90,7 +108,7 @@ module RestTimeSection =
                 Panel()
                     .Children(
                         TextBlock()
-                            .Text("休憩記録がありません。")
+                            .Text("休憩・有給休暇の記録がありません。")
                             .FontSize(14.0)
                             .Foreground(Brushes.Gray)
                             .IsVisible(isEmpty |> asBinding),
@@ -131,7 +149,7 @@ module RestTimeSection =
                                 .ColumnDefinitions("Auto,*,Auto")
                                 .Children(
                                     TextBlock()
-                                        .Text("休憩")
+                                        .Text("休憩・有給休暇")
                                         .FontSize(18.0)
                                         .FontWeightBold()
                                         .Column(0),
@@ -139,7 +157,7 @@ module RestTimeSection =
                                         { Symbol = Symbol.Add |> R3.ret
                                           OnClick = fun _ -> addCommand.Execute()
                                           FontSize = Some 20.0 |> R3.ret
-                                          Tooltip = Some "休憩時間を追加" |> R3.ret }
+                                          Tooltip = Some "休憩・有給休暇を追加" |> R3.ret }
                                     |> _.Column(2)
                                 )
                                 .Row(0),

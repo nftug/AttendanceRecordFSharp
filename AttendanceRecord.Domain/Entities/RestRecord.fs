@@ -4,16 +4,29 @@ open System
 open FsToolkit.ErrorHandling
 open AttendanceRecord.Domain.ValueObjects
 
-type RestRecord = { Id: Guid; Duration: TimeDuration }
+type RestVariant =
+    | RegularRest
+    | PaidRest
+
+type RestRecord =
+    { Id: Guid
+      Duration: TimeDuration
+      Variant: RestVariant }
 
 module RestRecord =
     // Factory methods
-    let hydrate (id: Guid) (duration: TimeDuration) : RestRecord = { Id = id; Duration = duration }
+    let hydrate (id: Guid) (variant: RestVariant) (duration: TimeDuration) : RestRecord =
+        { Id = id
+          Duration = duration
+          Variant = variant }
 
-    let create (id: Guid) (duration: TimeDuration) : RestRecord = { Id = id; Duration = duration }
+    let create (id: Guid) (variant: RestVariant) (duration: TimeDuration) : RestRecord =
+        { Id = id
+          Duration = duration
+          Variant = variant }
 
     let createStart () : RestRecord =
-        create (Guid.NewGuid()) (TimeDuration.createStart ())
+        create (Guid.NewGuid()) RegularRest (TimeDuration.createStart ())
 
     let tryCreateEnd (now: DateTime) (record: RestRecord) : Result<RestRecord, string> =
         match record.Duration |> TimeDuration.isActive now with

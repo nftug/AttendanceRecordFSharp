@@ -24,20 +24,31 @@ module WorkRecord =
 
     let getDate (record: WorkRecord) : DateTime = getStartedAt record |> _.Date
 
-    let getRestDuration (now: DateTime) (record: WorkRecord) : TimeSpan =
-        record.RestRecords |> RestRecord.getDurationOfList now
+    let getRestDuration (now: DateTime) (variant: RestVariant) (record: WorkRecord) : TimeSpan =
+        record.RestRecords
+        |> List.filter (fun r -> r.Variant = variant)
+        |> RestRecord.getDurationOfList now
 
-    let getDuration (now: DateTime) (record: WorkRecord) : TimeSpan =
+    let getWorkDuration (now: DateTime) (record: WorkRecord) : TimeSpan =
         let baseDur = TimeDuration.getDuration now record.Duration
-        let restDur = RestRecord.getDurationOfList now record.RestRecords
+
+        let restDur = record |> getRestDuration now RegularRest
+
         baseDur - restDur
+
+    let getWorkDurationWithPaidRest (now: DateTime) (record: WorkRecord) : TimeSpan =
+        let baseDur = TimeDuration.getDuration now record.Duration
+        let regularRestDur = record |> getRestDuration now RegularRest
+        let paidRestDur = record |> getRestDuration now PaidRest
+
+        baseDur - regularRestDur + paidRestDur
 
     let getOvertimeDuration
         (now: DateTime)
         (standardWorkTime: TimeSpan)
         (record: WorkRecord)
         : TimeSpan =
-        getDuration now record - standardWorkTime
+        getWorkDurationWithPaidRest now record - standardWorkTime
 
     let hasDate (date: DateTime) (record: WorkRecord) : bool = getDate record = date.Date
 
@@ -45,7 +56,9 @@ module WorkRecord =
         record.Duration |> TimeDuration.isActive now
 
     let isResting (now: DateTime) (record: WorkRecord) : bool =
-        record.RestRecords |> RestRecord.isRestingOfList now
+        record.RestRecords
+        |> List.filter (fun r -> r.Variant = RegularRest)
+        |> RestRecord.isRestingOfList now
 
     let isWorking (now: DateTime) (record: WorkRecord) : bool =
         isActive now record && not (isResting now record)
@@ -57,10 +70,40 @@ module WorkRecord =
         : Result<unit, string> =
         let date = duration |> TimeDuration.getDate
 
-        if restTimes |> List.exists (RestRecord.getDate >> (<>) date) then
-            Error "All rest records must be on the same date as the work record"
-        else
-            Ok()
+        result {
+            for rest in restTimes do
+                let workStartedAt = duration |> TimeDuration.getStartedAt
+
+                let workEndedAt =
+                    duration
+                    |> TimeDuration.getEndedAt
+                    |> Option.defaultValue (date.AddDays(1).AddSeconds(-1))
+
+                let restStartedAt = rest |> RestRecord.getStartedAt
+
+                let restEndedAt =
+                    rest
+                    |> RestRecord.getEndedAt
+                    |> Option.defaultValue (date.AddDays(1).AddSeconds(-1))
+
+                match rest.Variant with
+                | RegularRest when restStartedAt < workStartedAt || restStartedAt.Date <> date ->
+                    return!
+                        Error $"Regular rest start time {restStartedAt} is outside of work duration"
+                | RegularRest when restEndedAt.Date <> date ->
+                    return! Error $"Regular rest end time {restEndedAt} is outside of work date"
+                | RegularRest when restEndedAt > workEndedAt ->
+                    return! Error $"Regular rest end time {restEndedAt} is outside of work duration"
+                | PaidRest when (RestRecord.getEndedAt rest).IsNone ->
+                    return! Error $"Paid rest must have an end time"
+                | PaidRest when restStartedAt.Date <> date ->
+                    return! Error $"Paid rest start time {restStartedAt} is outside of work date"
+                | PaidRest when restEndedAt > workStartedAt && restStartedAt < workEndedAt ->
+                    return!
+                        Error
+                            $"Paid rest time {restStartedAt} - {restEndedAt} overlaps with work duration"
+                | _ -> ()
+        }
 
     let tryCreate
         (duration: TimeDuration)
@@ -109,7 +152,11 @@ module WorkRecord =
                 | true, _ ->
                     // End work
                     let! endedDuration = TimeDuration.tryCreateEnd record.Duration
-                    let! restRecords = record.RestRecords |> RestRecord.finishOfList now
+
+                    let! restRecords =
+                        record.RestRecords
+                        |> List.filter (fun r -> r.Variant = RegularRest)
+                        |> RestRecord.finishOfList now
 
                     return
                         { record with
@@ -121,7 +168,7 @@ module WorkRecord =
 
                     let! restRecords =
                         TimeDuration.tryCreate endedAt (Some now)
-                        |> Result.map (RestRecord.create (Guid.NewGuid()))
+                        |> Result.map (RestRecord.create (Guid.NewGuid()) RegularRest)
                         |> Result.map (fun rr -> record.RestRecords |> RestRecord.addToList rr)
 
                     return

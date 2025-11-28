@@ -10,18 +10,6 @@ open AttendanceRecord.Shared
 [<AutoOpen>]
 module private MainWindowHelpers =
     let initialize (services: ServiceContainer) (window: Window) : Window =
-        let mutable isShuttingDown = false
-
-        getApplicationLifetime()
-            .ShutdownRequested.Add(fun _ ->
-                isShuttingDown <- true
-                services.SingleInstanceGuard.ReleaseLock())
-
-        window.Closing.AddHandler(fun _ e ->
-            if not isShuttingDown then
-                e.Cancel <- true
-                window.Hide())
-
         window.Loaded.Add(fun _ ->
             if not (services.SingleInstanceGuard.TryAcquireLock()) then
                 task {

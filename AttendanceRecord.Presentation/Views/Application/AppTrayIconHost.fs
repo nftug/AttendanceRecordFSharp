@@ -1,8 +1,8 @@
 namespace AttendanceRecord.Presentation.Views.Application
 
-open Avalonia
+open System
+open System.Reflection
 open Avalonia.Controls
-open Avalonia.Media.Imaging
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common.Context
 
@@ -27,19 +27,20 @@ module AppTrayIconHost =
             exitMenuItem.Click.Add(fun _ -> appCtx.ShutdownWithGuard())
             nativeMenu.Items.Add exitMenuItem
 
-            use iconStream = EmbeddedResourceProvider.getFileStream "Assets/tray_icon.ico"
-
-            let trayIcon =
-                new TrayIcon(
-                    ToolTipText = "AttendanceRecord",
-                    Icon = WindowIcon(new Bitmap(iconStream)),
-                    Menu = nativeMenu
-                )
-
+            let trayIcon = new TrayIcon(ToolTipText = getApplicationTitle (), Menu = nativeMenu)
             trayIcon.Clicked.Add(fun _ -> showAndActivateWindow ())
 
             let trayIcons = new TrayIcons()
             trayIcons.Add trayIcon
-            TrayIcon.SetIcons(Application.Current, trayIcons)
+            TrayIcon.SetIcons(Avalonia.Application.Current, trayIcons)
+
+            window.Loaded.Add(fun _ ->
+                // AssetLoader can only be used after Avalonia is initialized
+                let assemblyName = Assembly.GetExecutingAssembly().GetName().Name
+
+                use iconStream =
+                    NXUI.AssetLoader.Open(new Uri $"avares://{assemblyName}/Assets/tray_icon.ico")
+
+                trayIcon.Icon <- WindowIcon(new Avalonia.Media.Imaging.Bitmap(iconStream)))
 
             Control())

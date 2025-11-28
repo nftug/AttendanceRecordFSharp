@@ -34,7 +34,6 @@
 
     <Compile Include="Utils/ApplicationUtils.fs" />
     <Compile Include="Utils/PlatformColors.fs" />
-    <Compile Include="Utils/EmbeddedResourceProvider.fs" />
     <Compile Include="Utils/ContextProvider.fs" />
     <Compile Include="Utils/FormContext.fs" />
     <Compile Include="Utils/UseMutation.fs" />
@@ -90,7 +89,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Assets/**/*" />
+    <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
   <ItemGroup>

@@ -78,6 +78,7 @@ module MainView =
                                   IconSource = SymbolIconSource(Symbol = Symbol.Help),
                                   Tag = "/about"
                               ) ] },
+                    AppTrayIconHost.create (),
                     AlarmHost.create services.AlarmService,
                     WindowNotificationManager().PositionBottomCenter().MaxItems(1)
                 ))

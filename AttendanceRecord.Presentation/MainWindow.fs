@@ -1,6 +1,5 @@
 namespace AttendanceRecord.Presentation
 
-open Avalonia
 open Avalonia.Controls
 open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Presentation.Utils
@@ -21,10 +20,6 @@ module private MainWindowHelpers =
                 }
                 |> ignore
             else
-                let trayIcons = new TrayIcons()
-                trayIcons.Add(AppTrayIcon.create window)
-                TrayIcon.SetIcons(Application.Current, trayIcons)
-
                 services.NamedPipe.Receiver
                 |> R3.subscribe (fun msg ->
                     match msg.Content with

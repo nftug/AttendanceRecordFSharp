@@ -10,16 +10,16 @@ type ApplicationContextProps = { HideOnClose: bool }
 
 type ApplicationContext =
     { MainWindow: Window
-      RegisterOnClosingGuard: (unit -> Tasks.Task<bool>) -> IDisposable }
+      RegisterOnClosingGuard: (unit -> Tasks.Task<bool>) -> IDisposable
+      ShutdownWithGuard: unit -> unit }
 
 module ApplicationContext =
-    let create
-        (props: ApplicationContextProps)
-        (disposables: CompositeDisposable)
-        : ApplicationContext =
-        let mutable isShuttingDown = false
+    let create (props: ApplicationContextProps) (_: CompositeDisposable) : ApplicationContext =
+
         let applicationLifetime = getApplicationLifetime ()
         let mainWindow = getMainWindow ()
+
+        let mutable isShuttingDown = false
 
         let closingGuards = ResizeArray<unit -> Tasks.Task<bool>>()
 
@@ -29,29 +29,44 @@ module ApplicationContext =
 
         applicationLifetime.ShutdownRequested.Add(fun _ -> isShuttingDown <- true)
 
+        let processClosingGuard () =
+            task {
+                let mutable canProceed = true
+
+                for guard in closingGuards do
+                    if canProceed then
+                        let! canClose = guard ()
+
+                        if not canClose then
+                            canProceed <- false
+
+                return canProceed
+            }
+
         mainWindow.Closing.AddHandler(fun _ e ->
             if not isShuttingDown then
                 e.Cancel <- true
 
-                invokeTask disposables (fun ct ->
-                    task {
-                        let mutable canProceed = true
+                task {
+                    let! canProceed = processClosingGuard ()
 
-                        for guard in closingGuards do
-                            if canProceed then
-                                let! canClose = guard ()
-
-                                if not canClose then
-                                    canProceed <- false
-
-                        if canProceed then
-                            if props.HideOnClose then
-                                mainWindow.Hide()
-                            else
-                                mainWindow.Close()
-
-                    })
+                    if canProceed then
+                        if props.HideOnClose then
+                            mainWindow.Hide()
+                        else
+                            mainWindow.Close()
+                }
                 |> ignore)
 
+        let shutdownWithGuard () =
+            task {
+                let! canProceed = processClosingGuard ()
+
+                if canProceed then
+                    applicationLifetime.Shutdown()
+            }
+            |> ignore
+
         { MainWindow = mainWindow
-          RegisterOnClosingGuard = registerOnClosingGuard }
+          RegisterOnClosingGuard = registerOnClosingGuard
+          ShutdownWithGuard = shutdownWithGuard }

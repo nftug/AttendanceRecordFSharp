@@ -18,13 +18,19 @@ module NavigationView =
             member _.GetPageFromObject(target: obj) : Avalonia.Controls.Control =
                 target :?> Avalonia.Controls.Control
 
+    let private findNavigationItemByRoute
+        (props: NavigationViewProps)
+        (route: Route)
+        : NavigationViewItem option =
+        props.MenuItems @ props.FooterMenuItems
+        |> List.tryFind (fun item -> (item.Tag :?> string) = route.Path)
+
     let private createContent (ctx: NavigationContext) (props: NavigationViewProps) =
         withLifecycle (fun disposables _ ->
             let pageTitle =
                 ctx.CurrentRoute
-                |> R3.map (fun r ->
-                    props.MenuItems @ props.FooterMenuItems
-                    |> List.tryFind (fun item -> (item.Tag :?> string) = r.Path)
+                |> R3.map (fun route ->
+                    findNavigationItemByRoute props route
                     |> Option.map _.Content
                     |> Option.defaultValue "Unknown")
 
@@ -60,17 +66,23 @@ module NavigationView =
                 )
 
             ctx.CurrentRoute
-            |> R3.subscribe (fun r ->
-                props.MenuItems @ props.FooterMenuItems
-                |> List.tryFind (fun item -> (item.Tag :?> string) = r.Path)
+            |> R3.subscribe (fun route ->
+                findNavigationItemByRoute props route
                 |> Option.iter (fun item -> navigation.SelectedItem <- item))
             |> disposables.Add
 
             navigation.SelectionChanged.Add(fun args ->
                 args.SelectedItem
                 |> Option.ofObj
-                |> Option.iter (fun item ->
-                    let navItem = item :?> NavigationViewItem
+                |> Option.iter (fun v ->
+                    let navItem = v :?> NavigationViewItem
+
+                    // Sync selected item with current route
+                    navigation.SelectedItem <-
+                        ctx.CurrentRoute.CurrentValue
+                        |> findNavigationItemByRoute props
+                        |> Option.defaultValue navItem
+
                     let path = navItem.Tag :?> string
                     ctx.NavigateTo path |> ignore))
 

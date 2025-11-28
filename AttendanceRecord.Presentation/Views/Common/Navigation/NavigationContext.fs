@@ -11,7 +11,7 @@ type Route =
       ViewFn: unit -> Avalonia.Controls.Control }
 
 type NavigationContext =
-    { CurrentRoute: Observable<Route>
+    { CurrentRoute: ReadOnlyReactiveProperty<Route>
       RegisterGuard: (CancellationToken -> Tasks.Task<bool>) -> IDisposable
       NavigateTo: string -> Tasks.Task<bool> }
 
@@ -31,6 +31,8 @@ module NavigationContext =
                 |> Option.defaultValue
                     { Path = ""
                       ViewFn = fun () -> Avalonia.Controls.Panel() })
+            |> R3.readonly None
+            |> R3.disposeWith disposables
 
         let guards = ResizeArray<CancellationToken -> Tasks.Task<bool>>()
 

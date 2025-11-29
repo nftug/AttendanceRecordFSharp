@@ -6,7 +6,7 @@ open NXUI.Extensions
 open type NXUI.Builders
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Domain.Entities
-open AttendanceRecord.Presentation.Views.Common
+open AttendanceRecord.Presentation.Views.Common.Context
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
 open AttendanceRecord.Shared
 

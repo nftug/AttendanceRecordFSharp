@@ -6,6 +6,7 @@ open Avalonia.Media
 open NXUI.Extensions
 open type NXUI.Builders
 open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
 open AttendanceRecord.Shared
 open AttendanceRecord.Application.Dtos.Requests
@@ -54,12 +55,12 @@ module BasicSettingsSection =
                                         .Maximum(1440m)
                                         .Increment(15m)
                                         .Width(120.0)
-                                        .Errors(
-                                            ctx.FormCtx.Errors
-                                            |> R3.map AppConfigErrors.chooseStandardWorkTime
-                                            |> asBinding
-                                        )
                                 ),
+                            ValidationErrorsText.create
+                                { Errors =
+                                    ctx.FormCtx.Errors
+                                    |> R3.map AppConfigErrors.chooseStandardWorkTime
+                                  FontSize = None },
                             TextBlock()
                                 .Text("1日の標準勤務時間を分単位で指定します。")
                                 .FontSize(12.0)

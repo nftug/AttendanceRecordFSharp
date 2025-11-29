@@ -1,14 +1,16 @@
-namespace AttendanceRecord.Presentation.Views.Common
+namespace AttendanceRecord.Presentation.Views.Common.Context
 
 open R3
 open Avalonia.Styling
+open Avalonia.Media
 open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Shared
 open AttendanceRecord.Application.Dtos.Responses
 
 type ThemeContext =
     { ThemeMode: ReactiveProperty<ThemeMode>
-      LoadFromConfig: unit -> unit }
+      LoadFromConfig: unit -> unit
+      GetBrushResourceObservable: string -> Observable<IBrush> }
 
 module ThemeContext =
     let create
@@ -39,5 +41,22 @@ module ThemeContext =
             let config = appConfig.CurrentValue
             themeMode.Value <- config.ThemeMode
 
+        let actualThemeVariant =
+            Avalonia.Application.Current
+            |> R3.everyValueChanged _.ActualThemeVariant
+            |> R3.readonly None
+            |> R3.disposeWith disposables
+
+        let getBrushResourceObservable (resourceKey: string) : Observable<IBrush> =
+            actualThemeVariant
+            |> R3.map (fun variant ->
+                let _, resource =
+                    Avalonia.Application.Current.Styles.TryGetResource(resourceKey, variant)
+
+                match resource with
+                | :? IBrush as brush -> brush
+                | _ -> Brushes.Black)
+
         { ThemeMode = themeMode
-          LoadFromConfig = loadFromConfig }
+          LoadFromConfig = loadFromConfig
+          GetBrushResourceObservable = getBrushResourceObservable }

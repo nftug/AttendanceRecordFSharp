@@ -63,14 +63,18 @@ module SettingsPageContext =
                               NotificationType = NotificationType.Success }
 
                         return Ok()
-                    | Error e ->
-                        Notification.show
-                            { Title = "保存エラー"
-                              Message = $"アプリ設定の保存に失敗しました: {e}"
-                              NotificationType = NotificationType.Error }
+                    | Error errors ->
+                        formCtx.Errors.Value <- errors
 
-                        formCtx.Errors.Value <- e
-                        return Error e
+                        match errors |> AppConfigErrors.chooseVariants with
+                        | msgs when not (List.isEmpty msgs) ->
+                            Notification.show
+                                { Title = "エラーが発生しました"
+                                  Message = System.String.Join("\n", msgs)
+                                  NotificationType = NotificationType.Error }
+                        | _ -> ()
+
+                        return Error errors
                 })
 
         { FormCtx = formCtx

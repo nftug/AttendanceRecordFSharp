@@ -142,6 +142,15 @@ module HistoryPageContext =
                         return Ok()
                     | Error errors ->
                         formCtx.Errors.Value <- errors
+
+                        match errors |> WorkRecordErrors.chooseVariants with
+                        | msgs when not (List.isEmpty msgs) ->
+                            Notification.show
+                                { Title = "エラーが発生しました"
+                                  Message = System.String.Join("\n", msgs)
+                                  NotificationType = NotificationType.Error }
+                        | _ -> ()
+
                         return Error errors
                 })
 

@@ -42,3 +42,9 @@ module AppConfigErrors =
         |> List.collect (function
             | RestStartAlarmError(SnoozeDurationError msg) -> [ msg ]
             | _ -> [])
+
+    let chooseVariants (errors: AppConfigError list) : string list =
+        errors
+        |> List.collect (function
+            | VariantError msg -> [ msg ]
+            | _ -> [])

@@ -15,13 +15,10 @@ module WorkRecordEditView =
         withLifecycle (fun _ self ->
             let ctx, _ = Context.require<HistoryPageContext> self
 
+            // NOTE: エラー状態でも保存ボタンを押せるようにする
             let saveButtonEnabled =
-                R3.combineLatest3
-                    ctx.SaveMutation.IsPending
-                    ctx.FormCtx.IsFormDirty
-                    ctx.FormCtx.Errors
-                |> R3.map (fun (isSaving, dirty, errors) ->
-                    not isSaving && dirty && errors.IsEmpty)
+                R3.combineLatest2 ctx.SaveMutation.IsPending ctx.FormCtx.IsFormDirty
+                |> R3.map (fun (isSaving, dirty) -> not isSaving && dirty)
 
             let deleteButtonEnabled =
                 R3.combineLatest2 ctx.FormCtx.Form ctx.DeleteMutation.IsPending

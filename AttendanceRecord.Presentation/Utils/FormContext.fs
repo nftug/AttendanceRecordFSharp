@@ -37,9 +37,7 @@ module FormContext =
                     defaultForm.Value <- next)
 
         let resetForm (value: 'TDto option) =
-            match value with
-            | Some v -> resetCommand.Execute v
-            | None -> resetCommand.Execute defaultForm.CurrentValue
+            value |> Option.defaultValue defaultForm.CurrentValue |> resetCommand.Execute
 
         let onReset = R3.merge [ resetCommand; defaultForm |> R3.distinctUntilChanged ]
 

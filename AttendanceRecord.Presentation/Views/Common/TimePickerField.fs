@@ -27,11 +27,7 @@ module TimePickerField =
                 |> R3.disposeWith disposables
 
             let handleTimeChange (timeOpt: TimeSpan option) =
-                props.OnSetValue(
-                    match timeOpt with
-                    | Some time -> Some(baseDate.CurrentValue + time)
-                    | _ -> None
-                )
+                props.OnSetValue(timeOpt |> Option.map ((+) baseDate.CurrentValue))
 
             StackPanel()
                 .Spacing(5.0)

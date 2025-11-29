@@ -33,15 +33,14 @@ module AlarmService =
 
         R3.combineLatest2 deps.StatusStore.WorkRecord deps.AppConfig
         |> R3.subscribe (fun (workRecordOption, appConfig) ->
-            match workRecordOption with
-            | Some record ->
+            workRecordOption
+            |> Option.iter (fun record ->
                 let now = DateTime.Now
 
                 workEndAlarm.Value <- workEndAlarm.Value |> Alarm.tryTrigger now record appConfig
 
                 restStartAlarm.Value <-
-                    restStartAlarm.Value |> Alarm.tryTrigger now record appConfig
-            | None -> ())
+                    restStartAlarm.Value |> Alarm.tryTrigger now record appConfig))
         |> deps.Disposables.Add
 
         [ workEndAlarm; restStartAlarm ]

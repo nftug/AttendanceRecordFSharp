@@ -12,9 +12,9 @@ module SettingsPageView =
         withLifecycle (fun disposables self ->
             let ctx = SettingsPageContext.create props disposables
 
-            match Context.resolve<NavigationContext> self with
-            | Some(navCtx, _) -> navCtx.RegisterGuard ctx.ConfirmDiscard |> disposables.Add
-            | None -> ()
+            Context.resolve<NavigationContext> self
+            |> Option.iter (fun (navCtx, _) ->
+                navCtx.RegisterGuard ctx.ConfirmDiscard |> disposables.Add)
 
             Grid()
                 .RowDefinitions("*,Auto")

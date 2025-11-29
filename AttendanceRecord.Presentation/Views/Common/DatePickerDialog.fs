@@ -54,9 +54,7 @@ module DatePickerDialog =
 
             let! dialogResult = dialog.ShowAsync()
 
-            match ct with
-            | Some cancellationToken -> cancellationToken.ThrowIfCancellationRequested()
-            | None -> ()
+            ct |> Option.iter _.ThrowIfCancellationRequested()
 
             try
                 return

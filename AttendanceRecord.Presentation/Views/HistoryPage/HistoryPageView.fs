@@ -17,9 +17,9 @@ module HistoryPageView =
             let ctx = createHistoryPageContext props disposables
 
             // Register navigation guard
-            match Context.resolve<NavigationContext> self with
-            | Some(navCtx, _) -> navCtx.RegisterGuard ctx.ConfirmDiscard |> disposables.Add
-            | None -> ()
+            Context.resolve<NavigationContext> self
+            |> Option.iter (fun (navCtx, _) ->
+                navCtx.RegisterGuard ctx.ConfirmDiscard |> disposables.Add)
 
             let toShowEditView = ctx.SelectedDate |> R3.map Option.isSome
 

@@ -74,11 +74,10 @@ module ApplicationUtils =
             container.Content <- control)
 
         container.DetachedFromVisualTree.Add(fun _ ->
-            match disposables with
-            | Some d ->
+            disposables
+            |> Option.iter (fun d ->
                 d.Dispose()
-                disposables <- None
-            | None -> ())
+                disposables <- None))
 
         container
 

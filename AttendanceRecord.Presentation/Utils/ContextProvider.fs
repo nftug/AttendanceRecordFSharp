@@ -88,28 +88,26 @@ module Context =
             | None -> true)
 
     let resolve<'T when 'T: not struct> (control: Control) : ('T * CompositeDisposable) option =
-        match findContextFromAncestors control None with
-        | None -> None
-        | Some ctx -> Some(ctx.ValueInternal, ctx.DisposablesInternal)
+        findContextFromAncestors control None
+        |> Option.map (fun ctx -> ctx.ValueInternal, ctx.DisposablesInternal)
 
     let require<'T when 'T: not struct> (control: Control) : ('T * CompositeDisposable) =
         match findContextFromAncestors control None with
-        | None -> invalidOp $"Context<{typeof<'T>.Name}> not found in visual tree."
         | Some ctx -> ctx.ValueInternal, ctx.DisposablesInternal
+        | None -> invalidOp $"Context<{typeof<'T>.Name}> not found in visual tree."
 
     let resolveWithName<'T when 'T: not struct>
         (control: Control)
         (name: string)
-        : ('T option * CompositeDisposable option) =
-        match findContextFromAncestors<'T> control (Some name) with
-        | None -> None, None
-        | Some ctx -> Some ctx.ValueInternal, Some ctx.DisposablesInternal
+        : ('T * CompositeDisposable) option =
+        findContextFromAncestors<'T> control (Some name)
+        |> Option.map (fun ctx -> ctx.ValueInternal, ctx.DisposablesInternal)
 
     let requireWithName<'T when 'T: not struct>
         (control: Control)
         (name: string)
         : ('T * CompositeDisposable) =
         match findContextFromAncestors<'T> control (Some name) with
+        | Some ctx -> ctx.ValueInternal, ctx.DisposablesInternal
         | None ->
             invalidOp $"Context<{typeof<'T>.Name}> with name '{name}' not found in visual tree."
-        | Some ctx -> ctx.ValueInternal, ctx.DisposablesInternal

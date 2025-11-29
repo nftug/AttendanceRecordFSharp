@@ -97,7 +97,7 @@ module HistoryToolbar =
                                 .Height(50.0)
                                 .IsEnabled(
                                     ctx.SelectedDate
-                                    |> R3.map (fun d -> d <> Some DateTime.Today)
+                                    |> R3.map ((<>) (Some DateTime.Today))
                                     |> asBinding
                                 ),
                             SymbolIconButton.create

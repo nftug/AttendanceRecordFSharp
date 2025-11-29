@@ -36,9 +36,9 @@ module RestTimeSection =
                     | _ -> true)
 
         let handleDelete (id: Guid) =
-            match items |> Seq.tryFind (fun rp -> rp.Id = id) with
-            | Some rp -> items.Remove rp |> ignore
-            | None -> ()
+            items
+            |> Seq.tryFind (fun rp -> rp.Id = id)
+            |> Option.iter (items.Remove >> ignore)
 
         let errors =
             ctx.FormCtx.Errors
@@ -129,11 +129,7 @@ module RestTimeSection =
                             .ItemsSourceObservable(restItems)
                             .ItemsPanelFunc(fun () -> VirtualizingStackPanel())
                             .TemplateFunc(fun () ->
-                                let sv =
-                                    ScrollViewer()
-                                        .VerticalScrollBarVisibilityAuto()
-                                        .HorizontalScrollBarVisibilityDisabled()
-                                        .Content(ItemsPresenter())
+                                let sv = ScrollViewer().Content(ItemsPresenter())
 
                                 ctx.CurrentDate
                                 |> R3.distinctUntilChanged
@@ -141,7 +137,7 @@ module RestTimeSection =
                                 |> disposables.Add
 
                                 addCommand
-                                |> R3.subscribe (fun _ -> nextTick (fun () -> sv.ScrollToEnd()))
+                                |> R3.subscribe (fun () -> nextTick sv.ScrollToEnd)
                                 |> disposables.Add
 
                                 sv)

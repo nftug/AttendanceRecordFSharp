@@ -100,7 +100,7 @@ module AppConfig =
         validation {
             let! standardWorkTimeVo =
                 StandardWorkTime.tryCreate standardWorkTime
-                |> Result.mapError (fun e -> StandardWorkTimeError e)
+                |> Result.mapError StandardWorkTimeError
 
             let standardWorkTime = StandardWorkTime.value standardWorkTimeVo
 

@@ -42,9 +42,7 @@ module Dialog =
 
             let! result = dialog.ShowAsync()
 
-            match ct with
-            | Some cancellationToken -> cancellationToken.ThrowIfCancellationRequested()
-            | None -> ()
+            ct |> Option.iter _.ThrowIfCancellationRequested()
 
             return
                 match props.Buttons, result with
@@ -82,15 +80,11 @@ module Dialog =
                     |> fun appLifetime ->
                         appLifetime.Windows
                         |> Seq.tryFind (fun w -> w.Owner = window)
-                        |> function
-                            | Some dialogWindow -> dialogWindow.Topmost <- true
-                            | None -> ())
+                        |> Option.iter (fun dialogWindow -> dialogWindow.Topmost <- true))
 
                 let! result = dialog.ShowAsync()
 
-                match ct with
-                | Some cancellationToken -> cancellationToken.ThrowIfCancellationRequested()
-                | None -> ()
+                ct |> Option.iter _.ThrowIfCancellationRequested()
 
                 return result :?> DialogResult
             })

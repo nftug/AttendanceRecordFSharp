@@ -176,13 +176,13 @@ module WorkRecord =
                     // Restart work
                     let! restarted =
                         TimeDuration.tryCreateRestart record.Duration
-                        |> Result.mapError (fun e -> WorkDurationError e)
+                        |> Result.mapError WorkDurationError
 
                     let! restRecords =
                         TimeDuration.tryCreate endedAt (Some now)
                         |> Result.map (RestRecord.create (Guid.NewGuid()) RegularRest)
                         |> Result.map (fun rr -> record.RestRecords |> RestRecord.addToList rr)
-                        |> Result.mapError (fun e -> WorkDurationError e)
+                        |> Result.mapError WorkDurationError
 
                     return
                         { record with

@@ -107,7 +107,7 @@ module HistoryPageContext =
                                   Message = "保存されていない変更があります。\n変更を破棄してもよろしいですか？"
                                   Buttons = YesNoButton(Some "破棄", Some "キャンセル") }
                                 (Some ct)
-                            |> Task.map (fun result -> result = YesResult)
+                            |> Task.map ((=) YesResult)
                     else
                         return true
                 })

@@ -25,14 +25,13 @@ module SingleInstanceGuardImpl =
                 false
 
         let releaseLock () : unit =
-            match fileStream with
-            | Some stream ->
+            fileStream
+            |> Option.iter (fun stream ->
                 stream.Close()
                 fileStream <- None
 
-                if File.Exists(lockFilePath) then
-                    File.Delete(lockFilePath)
-            | None -> ()
+                if File.Exists lockFilePath then
+                    File.Delete lockFilePath)
 
         { TryAcquireLock = tryAcquireLock
           ReleaseLock = releaseLock }

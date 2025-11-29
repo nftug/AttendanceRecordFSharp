@@ -16,6 +16,7 @@ module RestTimeSection =
     open NXUI.Extensions
     open type NXUI.Builders
     open FluentAvalonia.UI.Controls
+    open Avalonia.Layout
 
     let private createRestItemView
         (ctx: HistoryPageContext)
@@ -64,29 +65,40 @@ module RestTimeSection =
                       OnEndedAtChanged = fun v -> update (fun rp -> { rp with EndedAt = v })
                       Errors = errors
                       Spacing = Some 10.0 },
-                ComboBox()
-                    .Width(100.0)
-                    .ItemsSource([ RestVariantEnum.RegularRest; RestVariantEnum.PaidRest ])
-                    .SelectedItem(item.Variant)
-                    .OnSelectionChangedHandler(fun ctl _ ->
-                        match ctl.SelectedItem with
-                        | :? RestVariantEnum as v -> update (fun rp -> { rp with Variant = v })
-                        | _ -> ())
-                    .ItemTemplateFunc(fun (variant: RestVariantEnum) ->
-                        TextBlock()
-                            .Text(
-                                match variant with
-                                | RestVariantEnum.RegularRest -> "休憩"
-                                | RestVariantEnum.PaidRest -> "有給休暇"
-                                | _ -> "不明"
-                            ))
-                    .VerticalAlignmentBottom(),
-                SymbolIconButton.create
-                    { Symbol = Symbol.Delete |> R3.ret
-                      OnClick = fun _ -> handleDelete item.Id
-                      FontSize = Some 18.0 |> R3.ret
-                      Tooltip = Some "この記録を削除する" |> R3.ret }
-                |> _.VerticalAlignmentBottom()
+                StackPanel()
+                    .OrientationHorizontal()
+                    .VerticalAlignment(
+                        errors
+                        |> R3.map (function
+                            | [] -> VerticalAlignment.Bottom
+                            | _ -> VerticalAlignment.Center)
+                        |> asBinding
+                    )
+                    .Spacing(10.0)
+                    .Children(
+                        ComboBox()
+                            .Width(100.0)
+                            .ItemsSource([ RestVariantEnum.RegularRest; RestVariantEnum.PaidRest ])
+                            .SelectedItem(item.Variant)
+                            .OnSelectionChangedHandler(fun ctl _ ->
+                                match ctl.SelectedItem with
+                                | :? RestVariantEnum as v ->
+                                    update (fun rp -> { rp with Variant = v })
+                                | _ -> ())
+                            .ItemTemplateFunc(fun (variant: RestVariantEnum) ->
+                                TextBlock()
+                                    .Text(
+                                        match variant with
+                                        | RestVariantEnum.RegularRest -> "休憩"
+                                        | RestVariantEnum.PaidRest -> "有給休暇"
+                                        | _ -> "不明"
+                                    )),
+                        SymbolIconButton.create
+                            { Symbol = Symbol.Delete |> R3.ret
+                              OnClick = fun _ -> handleDelete item.Id
+                              FontSize = Some 18.0 |> R3.ret
+                              Tooltip = Some "この記録を削除する" |> R3.ret }
+                    )
             )
 
     let create () : Avalonia.Controls.Control =

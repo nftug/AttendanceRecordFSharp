@@ -11,7 +11,7 @@ module AppConfigFileDtoMapper =
             | SystemTheme -> "System"
             | LightTheme -> "Light"
             | DarkTheme -> "Dark"
-            , float config.StandardWorkTime.TotalMinutes
+            , float (config.StandardWorkTime |> StandardWorkTime.value |> _.TotalMinutes)
             , WorkEndAlarmConfigFileDto(
                 config.WorkEndAlarm.IsEnabled,
                 float config.WorkEndAlarm.BeforeEndDuration.TotalMinutes,
@@ -31,7 +31,8 @@ module AppConfigFileDtoMapper =
             | "Light" -> LightTheme
             | "Dark" -> DarkTheme
             | _ -> SystemTheme // Default to System if unrecognized
-          StandardWorkTime = TimeSpan.FromMinutes(float dto.StandardWorkMinutes)
+          StandardWorkTime =
+            TimeSpan.FromMinutes(float dto.StandardWorkMinutes) |> StandardWorkTime.hydrate
           WorkEndAlarm =
             { IsEnabled = dto.WorkEndAlarm.IsEnabled
               BeforeEndDuration = TimeSpan.FromMinutes(float dto.WorkEndAlarm.BeforeEndMinutes)

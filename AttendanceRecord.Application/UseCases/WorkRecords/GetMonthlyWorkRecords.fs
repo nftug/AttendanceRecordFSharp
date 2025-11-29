@@ -20,7 +20,7 @@ module GetMonthlyWorkRecords =
         taskResult {
             let! monthlyRecords = repository.GetMonthly monthDate ct
             let now = DateTime.Now
-            let standardWorkTime = getAppConfig().StandardWorkTime
+            let standardWorkTime = getAppConfig().StandardWorkTime |> StandardWorkTime.value
 
             return monthlyRecords |> WorkRecordListDto.fromDomain monthDate now standardWorkTime
         }

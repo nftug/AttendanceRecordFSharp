@@ -13,6 +13,7 @@
     <Compile Include="Errors/TimeDurationError.fs" />
     <Compile Include="Errors/RestRecordError.fs" />
     <Compile Include="Errors/WorkRecordError.fs" />
+    <Compile Include="Errors/AppConfigError.fs" />
 
     <Compile Include="Entities/AppConfig.fs" />
 

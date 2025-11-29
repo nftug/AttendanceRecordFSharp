@@ -11,7 +11,10 @@ module WorkEndAlarm =
             fun wr cfg now ->
                 cfg.WorkEndAlarm.IsEnabled
                 && wr |> WorkRecord.isActive now
-                && wr |> WorkRecord.getOvertimeDuration now cfg.StandardWorkTime
+                && wr
+                   |> WorkRecord.getOvertimeDuration
+                       now
+                       (cfg.StandardWorkTime |> StandardWorkTime.value)
                    >= -cfg.WorkEndAlarm.BeforeEndDuration
           GetSnoozeDuration = _.WorkEndAlarm.SnoozeDuration }
 

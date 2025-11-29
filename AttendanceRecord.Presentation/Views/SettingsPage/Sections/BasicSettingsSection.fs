@@ -8,6 +8,7 @@ open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
 open AttendanceRecord.Shared
 open AttendanceRecord.Application.Dtos.Requests
+open AttendanceRecord.Domain.Errors
 
 module BasicSettingsSection =
     let create () =
@@ -54,6 +55,11 @@ module BasicSettingsSection =
                                         .Maximum(1440m)
                                         .Increment(15m)
                                         .Width(120.0)
+                                        .Errors(
+                                            ctx.FormCtx.Errors
+                                            |> R3.map AppConfigErrors.chooseStandardWorkTime
+                                            |> asBinding
+                                        )
                                 ),
                             TextBlock()
                                 .Text("1日の標準勤務時間を分単位で指定します。")

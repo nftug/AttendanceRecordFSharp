@@ -21,7 +21,8 @@ type AppConfigDto =
 module AppConfigDto =
     let fromDomain (config: AppConfig) : AppConfigDto =
         { ThemeMode = config.ThemeMode
-          StandardWorkTimeMinutes = config.StandardWorkTime.TotalMinutes
+          StandardWorkTimeMinutes =
+            config.StandardWorkTime |> StandardWorkTime.value |> _.TotalMinutes
           WorkEndAlarm =
             { IsEnabled = config.WorkEndAlarm.IsEnabled
               BeforeEndMinutes = config.WorkEndAlarm.BeforeEndDuration.TotalMinutes

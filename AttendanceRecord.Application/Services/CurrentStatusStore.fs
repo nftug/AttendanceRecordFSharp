@@ -23,7 +23,7 @@ type CurrentStatusStore
         R3.combineLatest3 workRecord monthlyRecords appConfig
         |> R3.map (fun (workRecord, monthlyRecords, appConfig) ->
             let now = DateTime.Now
-            let standardWorkTime = appConfig.StandardWorkTime
+            let standardWorkTime = appConfig.StandardWorkTime |> StandardWorkTime.value
 
             monthlyRecords
             |> WorkRecordTally.getOvertimeTotal now standardWorkTime

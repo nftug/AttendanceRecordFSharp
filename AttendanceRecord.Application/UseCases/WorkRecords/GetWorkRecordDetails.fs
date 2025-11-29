@@ -19,7 +19,7 @@ module GetWorkRecordDetails =
         =
         taskResult {
             let! workRecordOption = repository.GetById workRecordId ct
-            let standardWorkTime = getAppConfig().StandardWorkTime
+            let standardWorkTime = getAppConfig().StandardWorkTime |> StandardWorkTime.value
             let now = DateTime.Now
 
             return

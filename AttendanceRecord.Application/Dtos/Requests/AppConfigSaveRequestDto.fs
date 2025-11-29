@@ -3,6 +3,7 @@ namespace AttendanceRecord.Application.Dtos.Requests
 open System
 open FsToolkit.ErrorHandling
 open AttendanceRecord.Domain.Entities
+open AttendanceRecord.Domain.Errors
 open AttendanceRecord.Application.Dtos.Responses
 
 type WorkEndAlarmConfigSaveRequestDto =
@@ -27,7 +28,9 @@ module WorkEndAlarmConfigSaveRequestDto =
           BeforeEndMinutes = 15.0
           SnoozeMinutes = 5.0 }
 
-    let tryToDomain (dto: WorkEndAlarmConfigSaveRequestDto) : Result<WorkEndAlarmConfig, string> =
+    let tryToDomain
+        (dto: WorkEndAlarmConfigSaveRequestDto)
+        : Validation<WorkEndAlarmConfig, AlarmConfigError> =
         WorkEndAlarmConfig.tryCreate
             dto.IsEnabled
             (TimeSpan.FromMinutes dto.BeforeEndMinutes)
@@ -41,7 +44,7 @@ module RestStartAlarmConfigSaveRequestDto =
 
     let tryToDomain
         (dto: RestStartAlarmConfigSaveRequestDto)
-        : Result<RestStartAlarmConfig, string> =
+        : Validation<RestStartAlarmConfig, AlarmConfigError> =
         RestStartAlarmConfig.tryCreate
             dto.IsEnabled
             (TimeSpan.FromMinutes dto.BeforeStartMinutes)
@@ -54,18 +57,22 @@ module AppConfigSaveRequestDto =
           WorkEndAlarm = WorkEndAlarmConfigSaveRequestDto.empty
           RestStartAlarm = RestStartAlarmConfigSaveRequestDto.empty }
 
-    let tryToDomain (dto: AppConfigSaveRequestDto) : Result<AppConfig, string> =
-        result {
-            let! workEndAlarmConfig = WorkEndAlarmConfigSaveRequestDto.tryToDomain dto.WorkEndAlarm
+    let tryToDomain (dto: AppConfigSaveRequestDto) : Validation<AppConfig, AppConfigError> =
+        validation {
+            let! workEndAlarmConfig =
+                WorkEndAlarmConfigSaveRequestDto.tryToDomain dto.WorkEndAlarm
+                |> Result.mapError (List.map WorkEndAlarmError)
 
             let! restStartAlarmConfig =
                 RestStartAlarmConfigSaveRequestDto.tryToDomain dto.RestStartAlarm
+                |> Result.mapError (List.map RestStartAlarmError)
 
-            return
-                { ThemeMode = dto.ThemeMode
-                  StandardWorkTime = TimeSpan.FromMinutes dto.StandardWorkTimeMinutes
-                  WorkEndAlarm = workEndAlarmConfig
-                  RestStartAlarm = restStartAlarmConfig }
+            return!
+                AppConfig.tryCreate
+                    dto.ThemeMode
+                    (TimeSpan.FromMinutes dto.StandardWorkTimeMinutes)
+                    workEndAlarmConfig
+                    restStartAlarmConfig
         }
 
     let fromResponse (dto: AppConfigDto) : AppConfigSaveRequestDto =

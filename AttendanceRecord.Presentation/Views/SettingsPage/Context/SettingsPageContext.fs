@@ -5,15 +5,16 @@ open R3
 open FsToolkit.ErrorHandling
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Views.Common
+open AttendanceRecord.Domain.Errors
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.UseCases.AppConfig
 open AttendanceRecord.Presentation.Utils
 
 type SettingsPageContext =
-    { FormCtx: FormContext<AppConfigSaveRequestDto, string>
+    { FormCtx: FormContext<AppConfigSaveRequestDto, AppConfigError>
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool>
-      SaveMutation: UseMutationResult<unit, unit, string> }
+      SaveMutation: UseMutationResult<unit, unit, AppConfigError list> }
 
 type SettingsPageContextProps =
     { AppConfig: Observable<AppConfigDto>
@@ -68,7 +69,7 @@ module SettingsPageContext =
                               Message = $"アプリ設定の保存に失敗しました: {e}"
                               NotificationType = NotificationType.Error }
 
-                        formCtx.Errors.Value <- [ e ]
+                        formCtx.Errors.Value <- e
                         return Error e
                 })
 

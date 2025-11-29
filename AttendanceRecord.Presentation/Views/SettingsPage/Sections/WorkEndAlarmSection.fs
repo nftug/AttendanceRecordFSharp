@@ -6,6 +6,7 @@ open type NXUI.Builders
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
 open AttendanceRecord.Shared
+open AttendanceRecord.Domain.Errors
 
 module WorkEndAlarmSection =
     let create () =
@@ -78,6 +79,12 @@ module WorkEndAlarmSection =
                                                 .Maximum(maxMinutes |> asBinding)
                                                 .Width(120.0)
                                                 .IsEnabled(alarmEnabled |> asBinding)
+                                                .Errors(
+                                                    ctx.FormCtx.Errors
+                                                    |> R3.map
+                                                        AppConfigErrors.chooseWorkEndAlarmDuration
+                                                    |> asBinding
+                                                )
                                         ),
                                     StackPanel()
                                         .OrientationHorizontal()
@@ -96,6 +103,12 @@ module WorkEndAlarmSection =
                                                 .Maximum(60m)
                                                 .Width(120.0)
                                                 .IsEnabled(alarmEnabled |> asBinding)
+                                                .Errors(
+                                                    ctx.FormCtx.Errors
+                                                    |> R3.map
+                                                        AppConfigErrors.chooseWorkEndAlarmSnoozeDuration
+                                                    |> asBinding
+                                                )
                                         )
                                 )
                         )

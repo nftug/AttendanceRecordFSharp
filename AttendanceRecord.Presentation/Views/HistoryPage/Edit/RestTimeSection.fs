@@ -40,31 +40,30 @@ module RestTimeSection =
             | Some rp -> items.Remove rp |> ignore
             | None -> ()
 
+        let errors =
+            ctx.FormCtx.Errors
+            |> R3.map (
+                WorkRecordErrors.chooseRestsAll
+                >> List.filter (fun (errId, _) -> errId = item.Id)
+                >> List.map snd
+            )
+
         StackPanel()
             .OrientationHorizontal()
             .Spacing(15.0)
             .Margin(0.0, 0.0, 0.0, 10.0)
             .Children(
-                TimePickerField.create
-                    { Label = "開始時間" |> R3.ret
-                      BaseDate = Some ctx.CurrentDate
-                      Value = Some item.StartedAt |> R3.ret
-                      OnSetValue =
+                TimeDurationPicker.create
+                    { StartedAt = item.StartedAt |> R3.ret
+                      EndedAt = item.EndedAt |> R3.ret
+                      OnStartedAtChanged =
                         fun v ->
                             update (fun rp ->
                                 { rp with
                                     StartedAt = defaultArg v rp.StartedAt })
-                      IsClearable = false |> R3.ret
-                      Errors =
-                        ctx.FormCtx.Errors |> R3.map (WorkRecordErrors.chooseRestStartedAt item.Id) },
-                TimePickerField.create
-                    { Label = "終了時間" |> R3.ret
-                      BaseDate = Some ctx.CurrentDate
-                      Value = item.EndedAt |> R3.ret
-                      OnSetValue = fun v -> update (fun rp -> { rp with EndedAt = v })
-                      IsClearable = true |> R3.ret
-                      Errors =
-                        ctx.FormCtx.Errors |> R3.map (WorkRecordErrors.chooseRestEndedAt item.Id) },
+                      OnEndedAtChanged = fun v -> update (fun rp -> { rp with EndedAt = v })
+                      Errors = errors
+                      Spacing = Some 10.0 },
                 ComboBox()
                     .Width(100.0)
                     .ItemsSource([ RestVariantEnum.RegularRest; RestVariantEnum.PaidRest ])

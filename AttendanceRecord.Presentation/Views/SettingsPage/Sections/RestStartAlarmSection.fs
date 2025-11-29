@@ -4,6 +4,7 @@ open Avalonia.Media
 open NXUI.Extensions
 open type NXUI.Builders
 open AttendanceRecord.Presentation.Utils
+open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
 open AttendanceRecord.Shared
 open AttendanceRecord.Domain.Errors
@@ -28,6 +29,63 @@ module RestStartAlarmSection =
                 ctx.FormCtx.Errors.Value <-
                     ctx.FormCtx.Errors.Value |> List.filter (_.IsRestStartAlarmError >> not)
 
+            let buildDurationPart () =
+                StackPanel()
+                    .Spacing(15.0)
+                    .Children(
+                        StackPanel()
+                            .OrientationHorizontal()
+                            .Spacing(10.0)
+                            .Children(
+                                TextBlock().Text("経過時間 (分)").VerticalAlignmentCenter().Width(120.0),
+                                NumericUpDown()
+                                    .Value(beforeStartMinutes |> asBinding)
+                                    .OnValueChangedHandler(fun _ e ->
+                                        update (fun f ->
+                                            { f with
+                                                BeforeStartMinutes =
+                                                    e.NewValue |> decimal |> float }))
+                                    .FormatString("0")
+                                    .Minimum(0m)
+                                    .Maximum(1440.0m)
+                                    .Width(120.0)
+                                    .IsEnabled(alarmEnabled |> asBinding)
+                            ),
+                        ValidationErrorsText.create
+                            { Errors =
+                                ctx.FormCtx.Errors
+                                |> R3.map AppConfigErrors.chooseRestStartAlarmDuration
+                              FontSize = None }
+                    )
+
+            let buildSnoozePart () =
+                StackPanel()
+                    .Spacing(15.0)
+                    .Children(
+                        StackPanel()
+                            .OrientationHorizontal()
+                            .Spacing(10.0)
+                            .Children(
+                                TextBlock().Text("スヌーズ (分)").VerticalAlignmentCenter().Width(120.0),
+                                NumericUpDown()
+                                    .Value(snoozeMinutes |> asBinding)
+                                    .OnValueChangedHandler(fun _ e ->
+                                        update (fun f ->
+                                            { f with
+                                                SnoozeMinutes = e.NewValue |> decimal |> float }))
+                                    .FormatString("0")
+                                    .Minimum(1m)
+                                    .Maximum(60m)
+                                    .Width(120.0)
+                                    .IsEnabled(alarmEnabled |> asBinding)
+                            ),
+                        ValidationErrorsText.create
+                            { Errors =
+                                ctx.FormCtx.Errors
+                                |> R3.map AppConfigErrors.chooseRestStartAlarmSnoozeDuration
+                              FontSize = None }
+                    )
+
             Border()
                 .BorderThickness(1.0)
                 .BorderBrush(Brushes.Gray)
@@ -47,61 +105,6 @@ module RestStartAlarmSection =
                             StackPanel()
                                 .OrientationHorizontal()
                                 .Spacing(30.0)
-                                .Children(
-                                    StackPanel()
-                                        .OrientationHorizontal()
-                                        .Spacing(10.0)
-                                        .Children(
-                                            TextBlock()
-                                                .Text("経過時間 (分)")
-                                                .VerticalAlignmentCenter()
-                                                .Width(120.0),
-                                            NumericUpDown()
-                                                .Value(beforeStartMinutes |> asBinding)
-                                                .OnValueChangedHandler(fun _ e ->
-                                                    update (fun f ->
-                                                        { f with
-                                                            BeforeStartMinutes =
-                                                                e.NewValue |> decimal |> float }))
-                                                .FormatString("0")
-                                                .Minimum(0m)
-                                                .Maximum(1440.0m)
-                                                .Width(120.0)
-                                                .IsEnabled(alarmEnabled |> asBinding)
-                                                .Errors(
-                                                    ctx.FormCtx.Errors
-                                                    |> R3.map
-                                                        AppConfigErrors.chooseRestStartAlarmDuration
-                                                    |> asBinding
-                                                )
-                                        ),
-                                    StackPanel()
-                                        .OrientationHorizontal()
-                                        .Spacing(10.0)
-                                        .Children(
-                                            TextBlock()
-                                                .Text("スヌーズ (分)")
-                                                .VerticalAlignmentCenter()
-                                                .Width(120.0),
-                                            NumericUpDown()
-                                                .Value(snoozeMinutes |> asBinding)
-                                                .OnValueChangedHandler(fun _ e ->
-                                                    update (fun f ->
-                                                        { f with
-                                                            SnoozeMinutes =
-                                                                e.NewValue |> decimal |> float }))
-                                                .FormatString("0")
-                                                .Minimum(1m)
-                                                .Maximum(60m)
-                                                .Width(120.0)
-                                                .IsEnabled(alarmEnabled |> asBinding)
-                                                .Errors(
-                                                    ctx.FormCtx.Errors
-                                                    |> R3.map
-                                                        AppConfigErrors.chooseRestStartAlarmSnoozeDuration
-                                                    |> asBinding
-                                                )
-                                        )
-                                )
+                                .Children(buildDurationPart (), buildSnoozePart ())
                         )
                 ))

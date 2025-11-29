@@ -16,44 +16,39 @@ module WorkRecordErrors =
 
     let variant (error: string) : WorkRecordError list = [ WorkVariantError error ]
 
-    let chooseDuration (errors: WorkRecordError list) : TimeDurationError list =
+    let chooseDuration (errors: WorkRecordError list) : string list =
         errors
         |> List.collect (function
-            | WorkDurationError durationError -> [ durationError ]
+            | WorkDurationError(TimeDurationError msg) -> [ msg ]
             | _ -> [])
 
-    let chooseStartedAt (errors: WorkRecordError list) : string list =
+    let chooseRestsDuration (restId: Guid) (errors: WorkRecordError list) : (Guid * string) list =
         errors
         |> List.collect (function
-            | WorkDurationError(StartedAtError msg) -> [ msg ]
+            | WorkRestsError restErrors -> RestRecordErrors.chooseDuration restErrors
             | _ -> [])
 
-    let chooseEndedAt (errors: WorkRecordError list) : string list =
+    let chooseRestsVariants (errors: WorkRecordError list) : (Guid * string) list =
         errors
         |> List.collect (function
-            | WorkDurationError(EndedAtError msg) -> [ msg ]
+            | WorkRestsError restErrors -> RestRecordErrors.chooseVariants restErrors
             | _ -> [])
 
-    let chooseRestStartedAt (id: Guid) (errors: WorkRecordError list) : string list =
+    let chooseRestsAll (errors: WorkRecordError list) : (Guid * string) list =
         errors
         |> List.collect (function
-            | WorkRestsError restErrors ->
-                RestRecordErrors.chooseStartedAt restErrors
-                |> List.filter (fun (errId, _) -> errId = id)
-                |> List.map snd
-            | _ -> [])
-
-    let chooseRestEndedAt (id: Guid) (errors: WorkRecordError list) : string list =
-        errors
-        |> List.collect (function
-            | WorkRestsError restErrors ->
-                RestRecordErrors.chooseEndedAt restErrors
-                |> List.filter (fun (errId, _) -> errId = id)
-                |> List.map snd
+            | WorkRestsError restErrors -> RestRecordErrors.chooseAll restErrors
             | _ -> [])
 
     let chooseVariants (errors: WorkRecordError list) : string list =
         errors
         |> List.collect (function
+            | WorkVariantError msg -> [ msg ]
+            | _ -> [])
+
+    let chooseDurationOrVariants (errors: WorkRecordError list) : string list =
+        errors
+        |> List.collect (function
+            | WorkDurationError(TimeDurationError msg) -> [ msg ]
             | WorkVariantError msg -> [ msg ]
             | _ -> [])

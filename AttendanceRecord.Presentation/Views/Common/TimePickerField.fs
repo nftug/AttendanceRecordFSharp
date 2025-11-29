@@ -14,7 +14,7 @@ type TimePickerFieldProps =
       Value: Observable<DateTime option>
       OnSetValue: (DateTime option -> unit)
       IsClearable: Observable<bool>
-      Errors: Observable<string list> }
+      HasErrors: Observable<bool> }
 
 module TimePickerField =
     let create (props: TimePickerFieldProps) =
@@ -52,7 +52,7 @@ module TimePickerField =
                                     e.Subscribe(fun _ ->
                                         handleTimeChange (Option.ofNullable ctl.SelectedTime))
                                     |> disposables.Add)
-                                .Errors(props.Errors |> asBinding),
+                                .HasErrors(props.HasErrors |> asBinding),
                             SymbolIconButton.create
                                 { Symbol = Symbol.Clear |> R3.ret
                                   OnClick = fun _ -> handleTimeChange None

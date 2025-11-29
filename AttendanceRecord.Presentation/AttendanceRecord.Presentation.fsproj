@@ -61,6 +61,7 @@
     <Compile Include="Views/HomePage/HomePageView.fs" />
 
     <Compile Include="Views/HistoryPage/Context/HistoryPageContext.fs" />
+    <Compile Include="Views/HistoryPage/Edit/TimeDurationPicker.fs" />
     <Compile Include="Views/HistoryPage/Edit/WorkTimeSection.fs" />
     <Compile Include="Views/HistoryPage/Edit/RestTimeSection.fs" />
     <Compile Include="Views/HistoryPage/Edit/WorkStatusSummarySection.fs" />

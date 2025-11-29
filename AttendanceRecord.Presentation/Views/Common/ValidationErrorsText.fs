@@ -23,6 +23,6 @@ module ValidationErrorsText =
                     TextBlock()
                         .Text(error)
                         .Foreground(textColor |> asBinding)
-                        .FontSize(props.FontSize |> Option.defaultValue 14.0)
-                        .Margin(0.0, 2.0)))
+                        .TextWrappingWrap()
+                        .FontSize(props.FontSize |> Option.defaultValue 12.0)))
         |> _.IsVisible(props.Errors |> R3.map (List.isEmpty >> not) |> asBinding)

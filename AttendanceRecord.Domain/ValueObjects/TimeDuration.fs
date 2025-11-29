@@ -38,19 +38,19 @@ module TimeDuration =
         : Result<TimeDuration, TimeDurationError> =
         match endedAt with
         | Some endDt when endDt < startedAt ->
-            Error(EndedAtError "EndedAt is earlier than StartedAt")
+            Error(TimeDurationError "EndedAt is earlier than StartedAt")
         | Some endDt when endDt.Date <> startedAt.Date ->
-            Error(EndedAtError "EndedAt must be on the same date as StartedAt")
+            Error(TimeDurationError "EndedAt must be on the same date as StartedAt")
         | _ -> Ok(hydrate startedAt endedAt)
 
     let createStart () : TimeDuration = hydrate DateTime.Now None
 
     let tryCreateEnd (TimeDuration td) : Result<TimeDuration, TimeDurationError> =
         match td.EndedAt with
-        | Some _ -> Error(EndedAtError "Duration already ended")
+        | Some _ -> Error(TimeDurationError "Duration already ended")
         | None -> tryCreate td.StartedAt (Some DateTime.Now)
 
     let tryCreateRestart (TimeDuration td) : Result<TimeDuration, TimeDurationError> =
         match td.EndedAt with
-        | None -> Error(EndedAtError "Duration is already active")
+        | None -> Error(TimeDurationError "Duration is already active")
         | Some _ -> Ok(hydrate td.StartedAt None)

@@ -84,43 +84,29 @@ module WorkRecord =
                     |> RestRecord.getEndedAt
                     |> Option.defaultValue (date.AddDays(1).AddSeconds(-1))
 
-                let wrapError (error: TimeDurationError) =
-                    Error(RestDurationError(rest.Id, error))
+                let wrapError (error: string) =
+                    Error(RestDurationError(rest.Id, TimeDurationError error))
 
                 match rest.Variant with
                 | RegularRest when restStartedAt < workStartedAt || restStartedAt.Date <> date ->
                     return!
-                        wrapError (
-                            StartedAtError
-                                $"Regular rest start time {restStartedAt} is outside of work duration"
-                        )
+                        wrapError
+                            $"Regular rest start time {restStartedAt} is outside of work duration"
                 | RegularRest when restEndedAt.Date <> date ->
-                    return!
-                        wrapError (
-                            EndedAtError
-                                $"Regular rest end time {restEndedAt} is outside of work date"
-                        )
+                    return! wrapError $"Regular rest end time {restEndedAt} is outside of work date"
                 | RegularRest when restEndedAt > workEndedAt ->
                     return!
-                        wrapError (
-                            EndedAtError
-                                $"Regular rest end time {restEndedAt} is outside of work duration"
-                        )
+                        wrapError $"Regular rest end time {restEndedAt} is outside of work duration"
                 | PaidRest when (RestRecord.getEndedAt rest).IsNone ->
-                    return! wrapError (EndedAtError "Paid rest must have an end time")
+                    return! wrapError "Paid rest must have an end time"
                 | PaidRest when restStartedAt.Date <> date ->
                     return!
-                        wrapError (
-                            StartedAtError
-                                $"Paid rest start time {restStartedAt} is outside of work date"
-                        )
+                        wrapError $"Paid rest start time {restStartedAt} is outside of work date"
 
                 | PaidRest when restEndedAt > workStartedAt && restStartedAt < workEndedAt ->
                     return!
-                        wrapError (
-                            StartedAtError
-                                $"Paid rest time {restStartedAt} - {restEndedAt} overlaps with work duration"
-                        )
+                        wrapError
+                            $"Paid rest time {restStartedAt} - {restEndedAt} overlaps with work duration"
                 | _ -> return restTimes
             }
 

@@ -32,33 +32,19 @@ module WorkTimeSection =
                         .Spacing(15.0)
                         .Children(
                             TextBlock().Text("出退勤").FontSize(18.0).FontWeightBold(),
-                            StackPanel()
-                                .OrientationHorizontal()
-                                .Spacing(15.0)
-                                .Children(
-                                    TimePickerField.create
-                                        { Label = "出勤時間" |> R3.ret
-                                          BaseDate = Some ctx.CurrentDate
-                                          Value = ctx.FormCtx.Form |> R3.map (Some << _.StartedAt)
-                                          OnSetValue =
-                                            fun v ->
-                                                update (fun wr ->
-                                                    { wr with
-                                                        StartedAt = defaultArg v wr.StartedAt })
-                                          IsClearable = false |> R3.ret
-                                          Errors =
-                                            ctx.FormCtx.Errors
-                                            |> R3.map WorkRecordErrors.chooseStartedAt },
-                                    TimePickerField.create
-                                        { Label = "退勤時間" |> R3.ret
-                                          BaseDate = Some ctx.CurrentDate
-                                          Value = ctx.FormCtx.Form |> R3.map _.EndedAt
-                                          OnSetValue =
-                                            fun v -> update (fun wr -> { wr with EndedAt = v })
-                                          IsClearable = true |> R3.ret
-                                          Errors =
-                                            ctx.FormCtx.Errors
-                                            |> R3.map WorkRecordErrors.chooseEndedAt }
-                                )
+                            TimeDurationPicker.create
+                                { StartedAt = ctx.FormCtx.Form |> R3.map _.StartedAt
+                                  EndedAt = ctx.FormCtx.Form |> R3.map _.EndedAt
+                                  OnStartedAtChanged =
+                                    fun v ->
+                                        update (fun wr ->
+                                            { wr with
+                                                StartedAt = defaultArg v wr.StartedAt })
+                                  OnEndedAtChanged =
+                                    fun v -> update (fun wr -> { wr with EndedAt = v })
+                                  Errors =
+                                    ctx.FormCtx.Errors
+                                    |> R3.map WorkRecordErrors.chooseDurationOrVariants
+                                  Spacing = Some 15.0 }
                         )
                 ))

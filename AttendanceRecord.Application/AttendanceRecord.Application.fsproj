@@ -17,7 +17,7 @@
     <Compile Include="Dtos/Responses/RestRecordDetailsDto.fs" />
     <Compile Include="Dtos/Responses/WorkRecordListDto.fs" />
     <Compile Include="Dtos/Responses/WorkRecordDetailsDto.fs" />
-    <Compile Include="Dtos/Responses/CurrentStatusDto.fs" />
+    <Compile Include="Dtos/Responses/WorkStatusDto.fs" />
     <Compile Include="Dtos/Requests/WorkRecordSaveRequestDto.fs" />
 
     <Compile Include="Dtos/Responses/AppConfigDto.fs" />
@@ -30,7 +30,7 @@
 
     <Compile Include="Services/AppConfigStore.fs" />
     <Compile Include="Services/TimerProvider.fs" />
-    <Compile Include="Services/CurrentStatusStore.fs" />
+    <Compile Include="Services/WorkStatusStore.fs" />
     <Compile Include="Services/AlarmService.fs" />
 
     <Compile Include="UseCases/WorkRecords/ToggleWork.fs" />

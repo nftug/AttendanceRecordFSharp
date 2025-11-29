@@ -7,7 +7,7 @@ type RestStartAlarm = Alarm<WorkRecord>
 
 module RestStartAlarm =
     let private rule: AlarmRule<WorkRecord> =
-        { AlarmType = AlarmType.RestStart
+        { AlarmType = RestStartAlarm
           ShouldTrigger =
             fun wr cfg now ->
                 cfg.RestStartAlarm.IsEnabled

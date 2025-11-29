@@ -17,7 +17,7 @@ type SaveWorkRecord =
 module SaveWorkRecord =
     let private handle
         (repository: WorkRecordRepository)
-        (currentStatusStore: CurrentStatusStore)
+        (workStatusStore: WorkStatusStore)
         (request: WorkRecordSaveRequestDto)
         (ct: CancellationToken)
         =
@@ -62,13 +62,13 @@ module SaveWorkRecord =
                 | _ -> TaskResult.ok ()
 
             do! repository.Save workRecord ct |> TaskResult.mapError WorkRecordErrors.variant
-            do! currentStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.variant
+            do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.variant
 
             return workRecord.Id
         }
 
     let create
         (repository: WorkRecordRepository)
-        (currentStatusStore: CurrentStatusStore)
+        (workStatusStore: WorkStatusStore)
         : SaveWorkRecord =
-        { Handle = fun request ct -> handle repository currentStatusStore request ct }
+        { Handle = fun request ct -> handle repository workStatusStore request ct }

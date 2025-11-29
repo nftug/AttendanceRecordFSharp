@@ -10,10 +10,10 @@ open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Services
 
 type ToggleWork =
-    { Handle: unit -> CancellationToken -> TaskResult<CurrentStatusDto, WorkRecordError list> }
+    { Handle: unit -> CancellationToken -> TaskResult<WorkStatusDto, WorkRecordError list> }
 
 module ToggleWork =
-    let private handle repository (currentStatusStore: CurrentStatusStore) (ct: CancellationToken) =
+    let private handle repository (workStatusStore: WorkStatusStore) (ct: CancellationToken) =
         taskResult {
             let now = DateTime.Now
 
@@ -26,13 +26,10 @@ module ToggleWork =
                 | None -> WorkRecord.createStart () |> Ok
 
             do! repository.Save workToday ct |> TaskResult.mapError WorkRecordErrors.variant
-            do! currentStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.variant
+            do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.variant
 
-            return currentStatusStore.CurrentStatus.CurrentValue
+            return workStatusStore.WorkStatus.CurrentValue
         }
 
-    let create
-        (repository: WorkRecordRepository)
-        (currentStatusStore: CurrentStatusStore)
-        : ToggleWork =
-        { Handle = fun () ct -> handle repository currentStatusStore ct }
+    let create (repository: WorkRecordRepository) (workStatusStore: WorkStatusStore) : ToggleWork =
+        { Handle = fun () ct -> handle repository workStatusStore ct }

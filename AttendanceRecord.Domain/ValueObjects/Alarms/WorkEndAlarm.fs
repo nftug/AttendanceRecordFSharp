@@ -6,7 +6,7 @@ type WorkEndAlarm = Alarm<WorkRecord>
 
 module WorkEndAlarm =
     let private rule: AlarmRule<WorkRecord> =
-        { AlarmType = AlarmType.WorkEnd
+        { AlarmType = WorkEndAlarm
           ShouldTrigger =
             fun wr cfg now ->
                 cfg.WorkEndAlarm.IsEnabled

@@ -12,7 +12,7 @@ type DeleteWorkRecord =
 module DeleteWorkRecord =
     let private handle
         (repository: WorkRecordRepository)
-        (currentStatusStore: CurrentStatusStore)
+        (workStatusStore: WorkStatusStore)
         (id: Guid)
         (ct: CancellationToken)
         =
@@ -23,8 +23,11 @@ module DeleteWorkRecord =
                 return! Error $"Work record with ID {id} not found."
 
             do! repository.Delete id ct
-            do! currentStatusStore.Reload()
+            do! workStatusStore.Reload()
         }
 
-    let create (repository: WorkRecordRepository) (currentStatusStore: CurrentStatusStore) : DeleteWorkRecord =
-        { Handle = fun id ct -> handle repository currentStatusStore id ct }
+    let create
+        (repository: WorkRecordRepository)
+        (workStatusStore: WorkStatusStore)
+        : DeleteWorkRecord =
+        { Handle = fun id ct -> handle repository workStatusStore id ct }

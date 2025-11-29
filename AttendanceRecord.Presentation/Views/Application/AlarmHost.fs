@@ -15,15 +15,13 @@ module AlarmHost =
             |> R3.subscribe (fun alarmType ->
                 let title =
                     match alarmType with
-                    | AlarmType.WorkEnd -> "勤務終了アラーム"
-                    | AlarmType.RestStart -> "休憩開始アラーム"
-                    | _ -> ""
+                    | WorkEndAlarm -> "勤務終了アラーム"
+                    | RestStartAlarm -> "休憩開始アラーム"
 
                 let message =
                     match alarmType with
-                    | AlarmType.WorkEnd -> "まもなく勤務終了時刻です。"
-                    | AlarmType.RestStart -> "休憩開始時間になりました。"
-                    | _ -> ""
+                    | WorkEndAlarm -> "まもなく勤務終了時刻です。"
+                    | RestStartAlarm -> "休憩開始時間になりました。"
 
                 Notification.show
                     { Title = title

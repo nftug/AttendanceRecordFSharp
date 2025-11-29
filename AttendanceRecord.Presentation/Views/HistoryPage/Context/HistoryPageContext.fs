@@ -29,7 +29,7 @@ type HistoryPageContextProps =
       GetWorkRecordDetails: GetWorkRecordDetails
       SaveWorkRecord: SaveWorkRecord
       DeleteWorkRecord: DeleteWorkRecord
-      CurrentStatusStore: CurrentStatusStore }
+      WorkStatusStore: WorkStatusStore }
 
 [<AutoOpen>]
 module HistoryPageContext =
@@ -63,7 +63,7 @@ module HistoryPageContext =
             R3.combineLatest3
                 selectedDate
                 (currentRecord |> R3.map (Option.map _.Summary))
-                (props.CurrentStatusStore.CurrentStatus |> R3.map _.Summary)
+                (props.WorkStatusStore.WorkStatus |> R3.map _.Summary)
             |> R3.map (fun (dateOpt, recordSummaryOpt, todaysSummary) ->
                 match dateOpt with
                 | Some date when date = DateTime.Today -> Some todaysSummary

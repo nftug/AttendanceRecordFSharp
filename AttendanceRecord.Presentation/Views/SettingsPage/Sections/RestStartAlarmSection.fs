@@ -1,6 +1,5 @@
 namespace AttendanceRecord.Presentation.Views.SettingsPage.Sections
 
-open System
 open Avalonia.Media
 open NXUI.Extensions
 open type NXUI.Builders
@@ -38,19 +37,13 @@ module RestStartAlarmSection =
                         .Spacing(15.0)
                         .Children(
                             TextBlock().Text("休憩開始アラーム").FontSize(18.0).FontWeightBold(),
-                            StackPanel()
-                                .OrientationHorizontal()
-                                .Spacing(10.0)
-                                .Children(
-                                    ToggleSwitch()
-                                        .Content("アラームを有効にする")
-                                        .IsChecked(alarmEnabled |> asBinding)
-                                        .OnIsCheckedChangedHandler(fun ctl _ ->
-                                            update (fun f ->
-                                                { f with
-                                                    IsEnabled =
-                                                        ctl.IsChecked.GetValueOrDefault false }))
-                                ),
+                            ToggleSwitch()
+                                .Content("アラームを有効にする")
+                                .IsChecked(alarmEnabled |> asBinding)
+                                .OnIsCheckedChangedHandler(fun ctl _ ->
+                                    update (fun f ->
+                                        { f with
+                                            IsEnabled = ctl.IsChecked.GetValueOrDefault false })),
                             StackPanel()
                                 .OrientationHorizontal()
                                 .Spacing(30.0)

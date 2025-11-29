@@ -6,24 +6,32 @@ open AttendanceRecord.Shared
 open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Domain.ValueObjects.Alarms
 
-type private AlarmTriggerState =
-    { AlarmType: AlarmType
-      IsTriggered: bool }
+type AlarmService =
+    { AlarmTriggered: Observable<AlarmType>
+      SnoozeAlarm: AlarmType -> unit }
 
-type AlarmService
-    (currentStatusStore: CurrentStatusStore, appConfig: ReadOnlyReactiveProperty<AppConfig>) =
-    let disposable = new CompositeDisposable()
+type AlarmServiceDependencies =
+    { StatusStore: WorkStatusStore
+      AppConfig: ReadOnlyReactiveProperty<AppConfig>
+      Disposables: CompositeDisposable }
 
-    let workEndAlarm =
-        R3.property (WorkEndAlarm.createInitialAlarm ()) |> R3.disposeWith disposable
+module AlarmService =
+    type private AlarmTriggerState =
+        { AlarmType: AlarmType
+          IsTriggered: bool }
 
-    let restStartAlarm =
-        R3.property (RestStartAlarm.createInitialAlarm ()) |> R3.disposeWith disposable
+    let create (deps: AlarmServiceDependencies) : AlarmService =
+        let workEndAlarm =
+            R3.property (WorkEndAlarm.createInitialAlarm ())
+            |> R3.disposeWith deps.Disposables
 
-    let alarmTriggered = R3.command<AlarmType> () |> R3.disposeWith disposable
+        let restStartAlarm =
+            R3.property (RestStartAlarm.createInitialAlarm ())
+            |> R3.disposeWith deps.Disposables
 
-    do
-        R3.combineLatest2 currentStatusStore.WorkRecord appConfig
+        let alarmTriggered = R3.command<AlarmType> () |> R3.disposeWith deps.Disposables
+
+        R3.combineLatest2 deps.StatusStore.WorkRecord deps.AppConfig
         |> R3.subscribe (fun (workRecordOption, appConfig) ->
             match workRecordOption with
             | Some record ->
@@ -34,7 +42,7 @@ type AlarmService
                 restStartAlarm.Value <-
                     restStartAlarm.Value |> Alarm.tryTrigger now record appConfig
             | None -> ())
-        |> disposable.Add
+        |> deps.Disposables.Add
 
         [ workEndAlarm; restStartAlarm ]
         |> List.iter (fun alarm ->
@@ -45,19 +53,15 @@ type AlarmService
             |> R3.distinctUntilChanged
             |> R3.filter _.IsTriggered
             |> R3.subscribe (fun t -> alarmTriggered.Execute t.AlarmType)
-            |> disposable.Add)
+            |> deps.Disposables.Add)
 
-    member _.AlarmTriggered: Observable<AlarmType> = alarmTriggered
+        let snoozeAlarm (alarmType: AlarmType) =
+            let now = DateTime.Now
+            let cfg = deps.AppConfig.CurrentValue
 
-    member _.SnoozeAlarm(alarmType: AlarmType) : unit =
-        let now = DateTime.Now
-        let cfg = appConfig.CurrentValue
+            match alarmType with
+            | WorkEndAlarm -> workEndAlarm.Value <- workEndAlarm.Value |> Alarm.snooze now cfg
+            | RestStartAlarm -> restStartAlarm.Value <- restStartAlarm.Value |> Alarm.snooze now cfg
 
-        match alarmType with
-        | AlarmType.WorkEnd -> workEndAlarm.Value <- workEndAlarm.Value |> Alarm.snooze now cfg
-        | AlarmType.RestStart ->
-            restStartAlarm.Value <- restStartAlarm.Value |> Alarm.snooze now cfg
-        | _ -> ()
-
-    interface IDisposable with
-        member _.Dispose() = disposable.Dispose()
+        { AlarmTriggered = alarmTriggered
+          SnoozeAlarm = snoozeAlarm }

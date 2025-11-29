@@ -21,7 +21,7 @@ module private NavigationContext =
                 ViewFn =
                   fun () ->
                       HomePageView.create
-                          { Status = services.CurrentStatusStore.CurrentStatus
+                          { Status = services.WorkStatusStore.WorkStatus
                             ToggleWork = services.ToggleWorkUseCase
                             ToggleRest = services.ToggleRestUseCase } }
               { Path = "/history"
@@ -32,7 +32,7 @@ module private NavigationContext =
                             GetWorkRecordDetails = services.GetWorkRecordDetailsUseCase
                             SaveWorkRecord = services.SaveWorkRecordUseCase
                             DeleteWorkRecord = services.DeleteWorkRecordUseCase
-                            CurrentStatusStore = services.CurrentStatusStore } }
+                            WorkStatusStore = services.WorkStatusStore } }
               { Path = "/settings"
                 ViewFn =
                   fun () ->

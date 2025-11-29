@@ -1,5 +1,6 @@
 namespace AttendanceRecord.Presentation
 
+open R3
 open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Application.Services
 open AttendanceRecord.Application.UseCases.WorkRecords
@@ -12,7 +13,7 @@ open AttendanceRecord.Shared
 type ServiceContainer =
     { SingleInstanceGuard: SingleInstanceGuard
       NamedPipe: NamedPipe
-      CurrentStatusStore: CurrentStatusStore
+      WorkStatusStore: WorkStatusStore
       AlarmService: AlarmService
       AppConfig: R3.Observable<AppConfigDto>
       ToggleWorkUseCase: ToggleWork
@@ -25,6 +26,9 @@ type ServiceContainer =
 
 module ServiceContainer =
     let create () : ServiceContainer =
+        // Singleton composite disposable for application lifetime
+        let disposables = new CompositeDisposable()
+
         // Infrastructure Services
         let appDirService = AppDirectoryService.create ()
         let singleInstanceGuard = SingleInstanceGuardImpl.create appDirService
@@ -34,22 +38,30 @@ module ServiceContainer =
 
         // Application Services and Use Cases
         let timerProvider = TimerProvider.create ()
-        let appConfigStore = new AppConfigStore(appConfigRepository)
+        let appConfigStore = AppConfigStore.create appConfigRepository disposables
         let getAppConfig () = appConfigStore.Current.CurrentValue
 
-        let currentStatusStore =
-            new CurrentStatusStore(timerProvider, workRecordRepository, appConfigStore.Current)
+        let workStatusStore =
+            WorkStatusStore.create
+                { TimerProvider = timerProvider
+                  WorkRecordRepository = workRecordRepository
+                  AppConfig = appConfigStore.Current
+                  Disposables = disposables }
 
-        let alarmService = new AlarmService(currentStatusStore, appConfigStore.Current)
+        let alarmService =
+            AlarmService.create
+                { StatusStore = workStatusStore
+                  AppConfig = appConfigStore.Current
+                  Disposables = disposables }
 
-        let toggleWorkUseCase = ToggleWork.create workRecordRepository currentStatusStore
-        let toggleRestUseCase = ToggleRest.create workRecordRepository currentStatusStore
+        let toggleWorkUseCase = ToggleWork.create workRecordRepository workStatusStore
+        let toggleRestUseCase = ToggleRest.create workRecordRepository workStatusStore
 
         let saveWorkRecordUseCase =
-            SaveWorkRecord.create workRecordRepository currentStatusStore
+            SaveWorkRecord.create workRecordRepository workStatusStore
 
         let deleteWorkRecordUseCase =
-            DeleteWorkRecord.create workRecordRepository currentStatusStore
+            DeleteWorkRecord.create workRecordRepository workStatusStore
 
         let getMonthlyWorkRecordsUseCase =
             GetMonthlyWorkRecords.create workRecordRepository getAppConfig
@@ -62,7 +74,7 @@ module ServiceContainer =
 
         { SingleInstanceGuard = singleInstanceGuard
           NamedPipe = namedPipe
-          CurrentStatusStore = currentStatusStore
+          WorkStatusStore = workStatusStore
           AlarmService = alarmService
           AppConfig = appConfig
           ToggleWorkUseCase = toggleWorkUseCase

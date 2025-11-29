@@ -9,7 +9,7 @@ open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Presentation.Views.HomePage.Context
 
 type HomeActionsHooks =
-    { Status: Observable<CurrentStatusDto>
+    { Status: Observable<WorkStatusDto>
       WorkButtonLabel: Observable<string>
       RestButtonLabel: Observable<string>
       WorkToggleEnabled: Observable<bool>

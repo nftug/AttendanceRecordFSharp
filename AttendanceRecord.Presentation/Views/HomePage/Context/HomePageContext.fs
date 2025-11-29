@@ -5,6 +5,6 @@ open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.UseCases.WorkRecords
 
 type HomePageContext =
-    { Status: Observable<CurrentStatusDto>
+    { Status: Observable<WorkStatusDto>
       ToggleWork: ToggleWork
       ToggleRest: ToggleRest }

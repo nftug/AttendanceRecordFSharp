@@ -1,6 +1,5 @@
 namespace AttendanceRecord.Application.Services
 
-open System
 open FsToolkit.ErrorHandling
 open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Domain.Entities
@@ -8,26 +7,31 @@ open System.Threading
 open R3
 open AttendanceRecord.Shared
 
-type AppConfigStore(repository: AppConfigRepository) as this =
-    let disposable = new CompositeDisposable()
+type AppConfigStore =
+    { Current: ReadOnlyReactiveProperty<AppConfig>
+      Load: CancellationToken option -> TaskResult<unit, string>
+      Set: AppConfig -> unit }
 
-    let appConfig = R3.property AppConfig.initial |> R3.disposeWith disposable
+module AppConfigStore =
+    let create
+        (repository: AppConfigRepository)
+        (disposables: CompositeDisposable)
+        : AppConfigStore =
+        let appConfig = R3.property AppConfig.initial |> R3.disposeWith disposables
 
-    do
-        this.Load()
+        let load (ct: CancellationToken option) : TaskResult<unit, string> =
+            taskResult {
+                let ct = defaultArg ct CancellationToken.None
+                let! config = repository.GetConfig ct
+                appConfig.Value <- config
+            }
+
+        let set (config: AppConfig) : unit = appConfig.Value <- config
+
+        load None
         |> TaskResult.mapError (fun err -> eprintfn $"Failed to load AppConfig: {err}")
         |> ignore
 
-    member _.Current = appConfig :> ReadOnlyReactiveProperty<AppConfig>
-
-    member _.Load(?ct: CancellationToken) : TaskResult<unit, string> =
-        taskResult {
-            let ct = defaultArg ct CancellationToken.None
-            let! config = repository.GetConfig ct
-            appConfig.Value <- config
-        }
-
-    member _.Set(config: AppConfig) : unit = appConfig.Value <- config
-
-    interface IDisposable with
-        member _.Dispose() = disposable.Dispose()
+        { Current = appConfig
+          Load = load
+          Set = set }

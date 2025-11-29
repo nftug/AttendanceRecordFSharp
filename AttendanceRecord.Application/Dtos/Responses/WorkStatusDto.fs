@@ -3,7 +3,7 @@ namespace AttendanceRecord.Application.Dtos.Responses
 open System
 open AttendanceRecord.Domain.Entities
 
-type CurrentStatusDto =
+type WorkStatusDto =
     { CurrentTime: DateTime
       Summary: WorkRecordSummaryDto
       OvertimeMonthly: TimeSpan
@@ -11,8 +11,8 @@ type CurrentStatusDto =
       IsWorking: bool
       IsResting: bool }
 
-module CurrentStatusDto =
-    let getEmpty () : CurrentStatusDto =
+module WorkStatusDto =
+    let getEmpty () : WorkStatusDto =
         { CurrentTime = DateTime.Now
           Summary = WorkRecordSummaryDto.empty
           OvertimeMonthly = TimeSpan.Zero
@@ -25,7 +25,7 @@ module CurrentStatusDto =
         (standardWorkTime: TimeSpan)
         (workRecord: WorkRecord option)
         (monthlyOvertime: TimeSpan)
-        : CurrentStatusDto =
+        : WorkStatusDto =
         match workRecord with
         | Some record ->
             { CurrentTime = now

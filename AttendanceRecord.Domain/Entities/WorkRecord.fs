@@ -3,6 +3,7 @@ namespace AttendanceRecord.Domain.Entities
 open System
 open FsToolkit.ErrorHandling
 open AttendanceRecord.Domain.ValueObjects
+open AttendanceRecord.Domain.Errors
 
 type WorkRecord =
     { Id: Guid
@@ -64,21 +65,18 @@ module WorkRecord =
         isActive now record && not (isResting now record)
 
     // Factory methods
-    let private checkDurationAndRests
-        (duration: TimeDuration)
-        (restTimes: RestRecord list)
-        : Result<unit, string> =
+    let private validateDurationAndRests (duration: TimeDuration) (restTimes: RestRecord list) =
         let date = duration |> TimeDuration.getDate
 
-        result {
-            for rest in restTimes do
-                let workStartedAt = duration |> TimeDuration.getStartedAt
+        let workStartedAt = duration |> TimeDuration.getStartedAt
 
-                let workEndedAt =
-                    duration
-                    |> TimeDuration.getEndedAt
-                    |> Option.defaultValue (date.AddDays(1).AddSeconds(-1))
+        let workEndedAt =
+            duration
+            |> TimeDuration.getEndedAt
+            |> Option.defaultValue (date.AddDays(1).AddSeconds(-1))
 
+        let validateRestDate (rest: RestRecord) =
+            validation {
                 let restStartedAt = rest |> RestRecord.getStartedAt
 
                 let restEndedAt =
@@ -86,31 +84,56 @@ module WorkRecord =
                     |> RestRecord.getEndedAt
                     |> Option.defaultValue (date.AddDays(1).AddSeconds(-1))
 
+                let wrapError (error: TimeDurationError) =
+                    Error(RestDurationError(rest.Id, error))
+
                 match rest.Variant with
                 | RegularRest when restStartedAt < workStartedAt || restStartedAt.Date <> date ->
                     return!
-                        Error $"Regular rest start time {restStartedAt} is outside of work duration"
+                        wrapError (
+                            StartedAtError
+                                $"Regular rest start time {restStartedAt} is outside of work duration"
+                        )
                 | RegularRest when restEndedAt.Date <> date ->
-                    return! Error $"Regular rest end time {restEndedAt} is outside of work date"
+                    return!
+                        wrapError (
+                            EndedAtError
+                                $"Regular rest end time {restEndedAt} is outside of work date"
+                        )
                 | RegularRest when restEndedAt > workEndedAt ->
-                    return! Error $"Regular rest end time {restEndedAt} is outside of work duration"
+                    return!
+                        wrapError (
+                            EndedAtError
+                                $"Regular rest end time {restEndedAt} is outside of work duration"
+                        )
                 | PaidRest when (RestRecord.getEndedAt rest).IsNone ->
-                    return! Error $"Paid rest must have an end time"
+                    return! wrapError (EndedAtError "Paid rest must have an end time")
                 | PaidRest when restStartedAt.Date <> date ->
-                    return! Error $"Paid rest start time {restStartedAt} is outside of work date"
+                    return!
+                        wrapError (
+                            StartedAtError
+                                $"Paid rest start time {restStartedAt} is outside of work date"
+                        )
+
                 | PaidRest when restEndedAt > workStartedAt && restStartedAt < workEndedAt ->
                     return!
-                        Error
-                            $"Paid rest time {restStartedAt} - {restEndedAt} overlaps with work duration"
-                | _ -> ()
-        }
+                        wrapError (
+                            StartedAtError
+                                $"Paid rest time {restStartedAt} - {restEndedAt} overlaps with work duration"
+                        )
+                | _ -> return restTimes
+            }
+
+        restTimes
+        |> List.map (validateRestDate >> Result.mapError WorkRestsError)
+        |> List.sequenceResultA
 
     let tryCreate
         (duration: TimeDuration)
         (restTimes: RestRecord list)
-        : Result<WorkRecord, string> =
-        checkDurationAndRests duration restTimes
-        |> Result.map (fun () ->
+        : Validation<WorkRecord, WorkRecordError> =
+        validateDurationAndRests duration restTimes
+        |> Result.map (fun _ ->
             { Id = Guid.NewGuid()
               Duration = duration
               RestRecords = restTimes |> RestRecord.getSortedList })
@@ -119,9 +142,9 @@ module WorkRecord =
         (newDuration: TimeDuration)
         (newRestTimes: RestRecord list)
         (record: WorkRecord)
-        : Result<WorkRecord, string> =
-        checkDurationAndRests newDuration newRestTimes
-        |> Result.map (fun () ->
+        : Validation<WorkRecord, WorkRecordError> =
+        validateDurationAndRests newDuration newRestTimes
+        |> Result.map (fun _ ->
             { record with
                 Duration = newDuration
                 RestRecords = newRestTimes |> RestRecord.getSortedList })
@@ -131,32 +154,44 @@ module WorkRecord =
           Duration = TimeDuration.createStart ()
           RestRecords = [] }
 
-    let tryToggleRest (now: DateTime) (record: WorkRecord) : Result<WorkRecord, string> =
-        result {
+    let tryToggleRest
+        (now: DateTime)
+        (record: WorkRecord)
+        : Validation<WorkRecord, WorkRecordError> =
+        validation {
             if not (record |> isActive now) then
-                return! Error "Can only toggle rest for active work record"
+                return! Error(WorkVariantError "Cannot toggle rest on inactive work record")
             else
-                let! restRecords = record.RestRecords |> RestRecord.toggleOfList now
+                let! restRecords =
+                    record.RestRecords
+                    |> RestRecord.toggleOfList now
+                    |> Result.mapError (fun e -> WorkRestsError [ e ])
 
                 return
                     { record with
                         RestRecords = restRecords }
         }
 
-    let tryToggleWork (now: DateTime) (record: WorkRecord) : Result<WorkRecord, string> =
-        result {
+    let tryToggleWork
+        (now: DateTime)
+        (record: WorkRecord)
+        : Validation<WorkRecord, WorkRecordError> =
+        validation {
             if not (record |> hasDate now) then
-                return! Error "Can only toggle work for today's record"
+                return! Error(WorkVariantError "Can only toggle work for today's record")
             else
                 match isActive now record, getEndedAt record with
                 | true, _ ->
                     // End work
-                    let! endedDuration = TimeDuration.tryCreateEnd record.Duration
+                    let! endedDuration =
+                        TimeDuration.tryCreateEnd record.Duration
+                        |> Result.mapError WorkDurationError
 
                     let! restRecords =
                         record.RestRecords
                         |> List.filter (fun r -> r.Variant = RegularRest)
                         |> RestRecord.finishOfList now
+                        |> Result.mapError (fun e -> WorkRestsError [ e ])
 
                     return
                         { record with
@@ -164,18 +199,21 @@ module WorkRecord =
                             RestRecords = restRecords }
                 | false, Some endedAt ->
                     // Restart work
-                    let! restarted = TimeDuration.tryCreateRestart record.Duration
+                    let! restarted =
+                        TimeDuration.tryCreateRestart record.Duration
+                        |> Result.mapError (fun e -> WorkDurationError e)
 
                     let! restRecords =
                         TimeDuration.tryCreate endedAt (Some now)
                         |> Result.map (RestRecord.create (Guid.NewGuid()) RegularRest)
                         |> Result.map (fun rr -> record.RestRecords |> RestRecord.addToList rr)
+                        |> Result.mapError (fun e -> WorkDurationError e)
 
                     return
                         { record with
                             Duration = restarted
                             RestRecords = restRecords }
-                | false, None -> return! Error "Invalid work record state to toggle work"
+                | false, None -> return! Error(WorkVariantError "Invalid work record state")
         }
 
     // List operations

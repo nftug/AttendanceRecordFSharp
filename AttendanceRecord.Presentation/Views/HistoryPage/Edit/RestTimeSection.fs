@@ -6,6 +6,7 @@ open System
 open Avalonia.Media
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Application.Dtos.Enums
+open AttendanceRecord.Domain.Errors
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
@@ -44,13 +45,17 @@ module RestTimeSection =
                             update (fun rp ->
                                 { rp with
                                     StartedAt = defaultArg v rp.StartedAt })
-                      IsClearable = false |> R3.ret },
+                      IsClearable = false |> R3.ret
+                      Errors =
+                        ctx.FormCtx.Errors |> R3.map (WorkRecordErrors.chooseRestStartedAt item.Id) },
                 TimePickerField.create
                     { Label = "終了時間" |> R3.ret
                       BaseDate = Some ctx.CurrentDate
                       Value = item.EndedAt |> R3.ret
                       OnSetValue = fun v -> update (fun rp -> { rp with EndedAt = v })
-                      IsClearable = true |> R3.ret },
+                      IsClearable = true |> R3.ret
+                      Errors =
+                        ctx.FormCtx.Errors |> R3.map (WorkRecordErrors.chooseRestEndedAt item.Id) },
                 ComboBox()
                     .Width(100.0)
                     .ItemsSource([ RestVariantEnum.RegularRest; RestVariantEnum.PaidRest ])

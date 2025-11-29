@@ -18,8 +18,9 @@ module SettingsActionsView =
                 R3.combineLatest3
                     ctx.FormCtx.IsFormDirty
                     ctx.SaveMutation.IsPending
-                    ctx.FormCtx.Error
-                |> R3.map (fun (dirty, isSaving, error) -> dirty && not isSaving && error.IsNone)
+                    ctx.FormCtx.Errors
+                |> R3.map (fun (dirty, isSaving, errors) ->
+                    dirty && not isSaving && List.isEmpty errors)
 
             StackPanel()
                 .OrientationHorizontal()

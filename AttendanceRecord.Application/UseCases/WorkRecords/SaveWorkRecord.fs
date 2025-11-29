@@ -8,9 +8,11 @@ open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Application.Services
 open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Domain.ValueObjects
+open AttendanceRecord.Domain.Errors
 
 type SaveWorkRecord =
-    { Handle: WorkRecordSaveRequestDto -> CancellationToken -> TaskResult<Guid, string> }
+    { Handle:
+        WorkRecordSaveRequestDto -> CancellationToken -> TaskResult<Guid, WorkRecordError list> }
 
 module SaveWorkRecord =
     let private handle
@@ -20,30 +22,49 @@ module SaveWorkRecord =
         (ct: CancellationToken)
         =
         taskResult {
-            let! restRecords = request.RestRecords |> RestRecordSaveRequestDto.tryToDomainOfList
-            let! duration = TimeDuration.tryCreate request.StartedAt request.EndedAt
+            let! restRecords =
+                request.RestRecords
+                |> RestRecordSaveRequestDto.tryToDomainOfList
+                |> Result.mapError WorkRecordErrors.restList
+
+            let! duration =
+                TimeDuration.tryCreate request.StartedAt request.EndedAt
+                |> Result.mapError WorkRecordErrors.duration
 
             let! workRecord =
                 match request.Id with
                 | Some id ->
                     taskResult {
-                        let! recordOption = repository.GetById id ct
+                        let! recordOption =
+                            repository.GetById id ct |> TaskResult.mapError WorkRecordErrors.variant
 
                         let! record =
                             recordOption
-                            |> Result.requireSome $"Work record with ID {id} not found."
+                            |> Result.requireSome (
+                                WorkRecordErrors.variant "Work record not found."
+                            )
 
                         return! WorkRecord.tryUpdate duration restRecords record
                     }
                 | None -> taskResult { return! WorkRecord.tryCreate duration restRecords }
 
-            match! repository.GetByDate (WorkRecord.getDate workRecord) ct with
-            | Some existingRecord when existingRecord.Id <> workRecord.Id ->
-                return! Error "A work record for the specified date already exists."
-            | _ ->
-                do! repository.Save workRecord ct
-                do! currentStatusStore.Reload()
-                return workRecord.Id
+            let! existingRecordOption =
+                repository.GetByDate (WorkRecord.getDate workRecord) ct
+                |> TaskResult.mapError WorkRecordErrors.variant
+
+            do!
+                match existingRecordOption with
+                | Some existingRecord when existingRecord.Id <> workRecord.Id ->
+                    TaskResult.error (
+                        WorkRecordErrors.variant
+                            "A work record for the specified date already exists."
+                    )
+                | _ -> TaskResult.ok ()
+
+            do! repository.Save workRecord ct |> TaskResult.mapError WorkRecordErrors.variant
+            do! currentStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.variant
+
+            return workRecord.Id
         }
 
     let create

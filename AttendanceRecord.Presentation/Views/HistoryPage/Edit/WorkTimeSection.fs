@@ -5,6 +5,7 @@ open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
+open AttendanceRecord.Domain.Errors
 open AttendanceRecord.Shared
 
 module WorkTimeSection =
@@ -40,14 +41,20 @@ module WorkTimeSection =
                                                 update (fun wr ->
                                                     { wr with
                                                         StartedAt = defaultArg v wr.StartedAt })
-                                          IsClearable = false |> R3.ret },
+                                          IsClearable = false |> R3.ret
+                                          Errors =
+                                            ctx.FormCtx.Errors
+                                            |> R3.map WorkRecordErrors.chooseStartedAt },
                                     TimePickerField.create
                                         { Label = "退勤時間" |> R3.ret
                                           BaseDate = Some ctx.CurrentDate
                                           Value = ctx.FormCtx.Form |> R3.map _.EndedAt
                                           OnSetValue =
                                             fun v -> update (fun wr -> { wr with EndedAt = v })
-                                          IsClearable = true |> R3.ret }
+                                          IsClearable = true |> R3.ret
+                                          Errors =
+                                            ctx.FormCtx.Errors
+                                            |> R3.map WorkRecordErrors.chooseEndedAt }
                                 )
                         )
                 ))

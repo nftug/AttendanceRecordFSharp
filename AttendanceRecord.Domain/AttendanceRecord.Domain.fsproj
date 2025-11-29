@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Errors/TimeDurationError.fs" />
+    <Compile Include="Errors/RestRecordError.fs" />
+    <Compile Include="Errors/WorkRecordError.fs" />
+
     <Compile Include="Entities/AppConfig.fs" />
 
     <Compile Include="ValueObjects/TimeDuration.fs" />

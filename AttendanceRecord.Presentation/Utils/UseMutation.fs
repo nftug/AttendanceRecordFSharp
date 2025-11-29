@@ -5,22 +5,22 @@ open System.Threading
 open R3
 open AttendanceRecord.Shared
 
-type UseMutationResult<'arg, 'ret> =
-    { MutateTask: 'arg -> Task<Result<'ret, string>>
+type UseMutationResult<'arg, 'ret, 'err> =
+    { MutateTask: 'arg -> Task<Result<'ret, 'err>>
       Mutate: 'arg -> unit
       IsPending: Observable<bool>
-      Error: Observable<string option> }
+      Error: Observable<'err option> }
 
 [<AutoOpen>]
 module UseMutation =
     let useMutation
         (disposables: CompositeDisposable)
-        (mutateFunc: 'arg -> CancellationToken -> Task<Result<'ret, string>>)
+        (mutateFunc: 'arg -> CancellationToken -> Task<Result<'ret, 'err>>)
         =
         let isPending = R3.property false |> R3.disposeWith disposables
         let error = R3.property None |> R3.disposeWith disposables
 
-        let mutate (arg: 'arg) : Task<Result<'ret, string>> =
+        let mutate (arg: 'arg) : Task<Result<'ret, 'err>> =
             invokeTask disposables (fun ct ->
                 task {
                     isPending.Value <- true

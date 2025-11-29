@@ -2,6 +2,7 @@ namespace AttendanceRecord.Application.Dtos.Requests
 
 open System
 open AttendanceRecord.Domain.Entities
+open AttendanceRecord.Domain.Errors
 open AttendanceRecord.Domain.ValueObjects
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Dtos.Enums
@@ -26,15 +27,15 @@ module RestRecordSaveRequestDto =
           EndedAt = None
           Variant = RestVariantEnum.RegularRest }
 
-    let tryToDomain (dto: RestRecordSaveRequestDto) : Result<RestRecord, string> =
+    let tryToDomain (dto: RestRecordSaveRequestDto) : Result<RestRecord, RestRecordError> =
         TimeDuration.tryCreate dto.StartedAt dto.EndedAt
+        |> Result.mapError (fun e -> RestDurationError(dto.Id, e))
         |> Result.map (RestRecord.create dto.Id (RestVariantEnum.toDomain dto.Variant))
 
-    let tryToDomainOfList (dtos: RestRecordSaveRequestDto list) : Result<RestRecord list, string> =
-        dtos
-        |> List.map tryToDomain
-        |> List.sequenceResultA
-        |> Result.mapError (String.concat "; ")
+    let tryToDomainOfList
+        (dtos: RestRecordSaveRequestDto list)
+        : Result<RestRecord list, RestRecordError list> =
+        dtos |> List.map tryToDomain |> List.sequenceResultA
 
 module WorkRecordSaveRequestDto =
     let empty (baseDate: DateTime) : WorkRecordSaveRequestDto =

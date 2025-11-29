@@ -3,6 +3,7 @@ namespace AttendanceRecord.Domain.Entities
 open System
 open FsToolkit.ErrorHandling
 open AttendanceRecord.Domain.ValueObjects
+open AttendanceRecord.Domain.Errors
 
 type RestVariant =
     | RegularRest
@@ -28,12 +29,13 @@ module RestRecord =
     let createStart () : RestRecord =
         create (Guid.NewGuid()) RegularRest (TimeDuration.createStart ())
 
-    let tryCreateEnd (now: DateTime) (record: RestRecord) : Result<RestRecord, string> =
+    let tryCreateEnd (now: DateTime) (record: RestRecord) : Result<RestRecord, RestRecordError> =
         match record.Duration |> TimeDuration.isActive now with
         | true ->
             TimeDuration.tryCreateEnd record.Duration
+            |> Result.mapError (fun e -> RestDurationError(record.Id, e))
             |> Result.map (fun duration -> { record with Duration = duration })
-        | false -> Error "Rest time is not active"
+        | false -> Error(RestVariantError(record.Id, "Rest time is not active"))
 
     // Status getters
     let getDuration (now: DateTime) (record: RestRecord) : TimeSpan =
@@ -69,7 +71,10 @@ module RestRecord =
     let startOfList (records: RestRecord list) : RestRecord list =
         records |> addToList (createStart ())
 
-    let finishOfList (now: DateTime) (records: RestRecord list) : Result<RestRecord list, string> =
+    let finishOfList
+        (now: DateTime)
+        (records: RestRecord list)
+        : Result<RestRecord list, RestRecordError> =
         result {
             match records |> List.filter (isActive now) |> List.tryLast with
             | Some lastActive ->
@@ -78,7 +83,10 @@ module RestRecord =
             | None -> return records
         }
 
-    let toggleOfList (now: DateTime) (records: RestRecord list) : Result<RestRecord list, string> =
+    let toggleOfList
+        (now: DateTime)
+        (records: RestRecord list)
+        : Result<RestRecord list, RestRecordError> =
         match records |> isRestingOfList now with
         | true -> records |> finishOfList now
         | false -> Ok(startOfList records)

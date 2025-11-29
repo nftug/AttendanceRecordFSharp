@@ -11,9 +11,9 @@ open AttendanceRecord.Application.UseCases.AppConfig
 open AttendanceRecord.Presentation.Utils
 
 type SettingsPageContext =
-    { FormCtx: FormContext<AppConfigSaveRequestDto>
+    { FormCtx: FormContext<AppConfigSaveRequestDto, string>
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool>
-      SaveMutation: UseMutationResult<unit, unit> }
+      SaveMutation: UseMutationResult<unit, unit, string> }
 
 type SettingsPageContextProps =
     { AppConfig: Observable<AppConfigDto>
@@ -68,7 +68,7 @@ module SettingsPageContext =
                               Message = $"アプリ設定の保存に失敗しました: {e}"
                               NotificationType = NotificationType.Error }
 
-                        formCtx.Error.Value <- Some e
+                        formCtx.Errors.Value <- [ e ]
                         return Error e
                 })
 

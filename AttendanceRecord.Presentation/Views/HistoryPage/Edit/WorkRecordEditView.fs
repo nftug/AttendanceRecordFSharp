@@ -19,8 +19,9 @@ module WorkRecordEditView =
                 R3.combineLatest3
                     ctx.SaveMutation.IsPending
                     ctx.FormCtx.IsFormDirty
-                    ctx.FormCtx.Error
-                |> R3.map (fun (isSaving, dirty, error) -> not isSaving && dirty && error.IsNone)
+                    ctx.FormCtx.Errors
+                |> R3.map (fun (isSaving, dirty, errors) ->
+                    not isSaving && dirty && errors.IsEmpty)
 
             let deleteButtonEnabled =
                 R3.combineLatest2 ctx.FormCtx.Form ctx.DeleteMutation.IsPending

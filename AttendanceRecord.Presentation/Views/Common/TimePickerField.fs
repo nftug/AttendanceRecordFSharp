@@ -13,7 +13,8 @@ type TimePickerFieldProps =
       BaseDate: Observable<DateTime> option
       Value: Observable<DateTime option>
       OnSetValue: (DateTime option -> unit)
-      IsClearable: Observable<bool> }
+      IsClearable: Observable<bool>
+      Errors: Observable<string list> }
 
 module TimePickerField =
     let create (props: TimePickerFieldProps) =
@@ -50,7 +51,8 @@ module TimePickerField =
                                 .OnSelectedTimeChanged(fun ctl e ->
                                     e.Subscribe(fun _ ->
                                         handleTimeChange (Option.ofNullable ctl.SelectedTime))
-                                    |> disposables.Add),
+                                    |> disposables.Add)
+                                .Errors(props.Errors |> asBinding),
                             SymbolIconButton.create
                                 { Symbol = Symbol.Clear |> R3.ret
                                   OnClick = fun _ -> handleTimeChange None

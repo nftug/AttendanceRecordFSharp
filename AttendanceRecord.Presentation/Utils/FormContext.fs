@@ -3,27 +3,27 @@ namespace AttendanceRecord.Presentation.Utils
 open R3
 open AttendanceRecord.Shared
 
-type FormContext<'TDto> =
+type FormContext<'TDto, 'TError> =
     { Form: ReactiveProperty<'TDto>
       IsFormDirty: ReadOnlyReactiveProperty<bool>
-      Error: ReactiveProperty<string option>
+      Errors: ReactiveProperty<'TError list>
       ResetForm: 'TDto option -> unit
       OnReset: Observable<'TDto> }
 
 module FormContext =
-    let create<'TDto when 'TDto: equality>
+    let create<'TDto, 'TError when 'TDto: equality>
         (initialValue: 'TDto)
         (disposables: CompositeDisposable)
-        : FormContext<'TDto> =
+        : FormContext<'TDto, 'TError> =
         let form = R3.property initialValue |> R3.disposeWith disposables
 
         let defaultForm = R3.property form.CurrentValue |> R3.disposeWith disposables
 
-        let error = R3.property (None: string option) |> R3.disposeWith disposables
+        let errors = R3.property List.empty<'TError> |> R3.disposeWith disposables
 
         form
         |> R3.distinctUntilChanged
-        |> R3.subscribe (fun _ -> error.Value <- None)
+        |> R3.subscribe (fun _ -> errors.Value <- List.empty)
         |> disposables.Add
 
         let isFormDirty =
@@ -50,6 +50,6 @@ module FormContext =
 
         { Form = form
           IsFormDirty = isFormDirty
-          Error = error
+          Errors = errors
           ResetForm = resetForm
           OnReset = onReset }

@@ -7,6 +7,7 @@ open FsToolkit.ErrorHandling
 open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
+open AttendanceRecord.Domain.Errors
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Application.UseCases.WorkRecords
@@ -17,10 +18,10 @@ type HistoryPageContext =
       SelectedDate: ReactiveProperty<DateTime option>
       CurrentDate: ReadOnlyReactiveProperty<DateTime>
       MonthlyRecords: Observable<WorkRecordListDto>
-      FormCtx: FormContext<WorkRecordSaveRequestDto>
+      FormCtx: FormContext<WorkRecordSaveRequestDto, WorkRecordError>
       CurrentSummary: Observable<WorkRecordSummaryDto option>
-      SaveMutation: UseMutationResult<unit, unit>
-      DeleteMutation: UseMutationResult<unit, unit>
+      SaveMutation: UseMutationResult<unit, unit, WorkRecordError list>
+      DeleteMutation: UseMutationResult<unit, unit, string>
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool> }
 
 type HistoryPageContextProps =
@@ -139,14 +140,9 @@ module HistoryPageContext =
 
                         reloadAfterSave (Some id)
                         return Ok()
-                    | Error e ->
-                        Notification.show
-                            { Title = "保存エラー"
-                              Message = $"勤務記録の保存に失敗しました: {e}"
-                              NotificationType = NotificationType.Error }
-
-                        formCtx.Error.Value <- Some e
-                        return Error e
+                    | Error errors ->
+                        formCtx.Errors.Value <- errors
+                        return Error errors
                 })
 
         let deleteMutation =

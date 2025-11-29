@@ -1,10 +1,8 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
-open System
 open Avalonia.Media
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
-open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Domain.Errors
 open AttendanceRecord.Shared

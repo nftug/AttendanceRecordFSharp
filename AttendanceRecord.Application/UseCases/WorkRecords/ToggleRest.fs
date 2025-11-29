@@ -23,7 +23,7 @@ module ToggleRest =
             let! workToday =
                 match workTodayOption with
                 | Some record -> record |> WorkRecord.tryToggleRest now
-                | None -> Error(WorkRecordErrors.variant "No work record found for today.")
+                | None -> Error(WorkRecordErrors.variant "今日の勤務記録が見つかりません。")
 
             do! repository.Save workToday ct |> TaskResult.mapError WorkRecordErrors.variant
             do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.variant

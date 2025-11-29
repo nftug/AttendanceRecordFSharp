@@ -6,6 +6,7 @@ open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Application.Dtos.Responses
+open AttendanceRecord.Domain.Errors
 open AttendanceRecord.Presentation.Views.HomePage.Context
 
 type HomeActionsHooks =
@@ -64,10 +65,15 @@ module HomeActionsHooks =
                                   Message = message
                                   NotificationType = NotificationType.Information }
 
-                        | Error e ->
+                        | Error errors ->
+                            let errMsg =
+                                errors
+                                |> WorkRecordErrors.chooseDurationOrVariants
+                                |> String.concat "\n"
+
                             Notification.show
                                 { Title = "勤務状態更新エラー"
-                                  Message = $"勤務状態の更新に失敗しました: {e}"
+                                  Message = $"勤務状態の更新に失敗しました: {errMsg}"
                                   NotificationType = NotificationType.Error }
                 })
             |> ignore
@@ -83,10 +89,15 @@ module HomeActionsHooks =
                             { Title = "休憩状態更新"
                               Message = message
                               NotificationType = NotificationType.Information }
-                    | Error e ->
+                    | Error errors ->
+                        let errMsg =
+                            errors
+                            |> WorkRecordErrors.chooseDurationOrVariants
+                            |> String.concat "\n"
+
                         Notification.show
                             { Title = "休憩状態更新エラー"
-                              Message = $"休憩状態の更新に失敗しました: {e}"
+                              Message = $"休憩状態の更新に失敗しました: {errMsg}"
                               NotificationType = NotificationType.Error }
                 })
             |> ignore

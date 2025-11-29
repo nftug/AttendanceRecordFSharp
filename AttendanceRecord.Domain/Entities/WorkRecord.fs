@@ -88,25 +88,14 @@ module WorkRecord =
                     Error(RestDurationError(rest.Id, TimeDurationError error))
 
                 match rest.Variant with
-                | RegularRest when restStartedAt < workStartedAt || restStartedAt.Date <> date ->
-                    return!
-                        wrapError
-                            $"Regular rest start time {restStartedAt} is outside of work duration"
-                | RegularRest when restEndedAt.Date <> date ->
-                    return! wrapError $"Regular rest end time {restEndedAt} is outside of work date"
-                | RegularRest when restEndedAt > workEndedAt ->
-                    return!
-                        wrapError $"Regular rest end time {restEndedAt} is outside of work duration"
+                | RegularRest when restStartedAt < workStartedAt || restEndedAt > workEndedAt ->
+                    return! wrapError "通常休憩の期間が勤務時間外です。"
                 | PaidRest when (RestRecord.getEndedAt rest).IsNone ->
-                    return! wrapError "Paid rest must have an end time"
+                    return! wrapError "有給休暇には終了時刻が必要です。"
                 | PaidRest when restStartedAt.Date <> date ->
-                    return!
-                        wrapError $"Paid rest start time {restStartedAt} is outside of work date"
-
+                    return! wrapError "有給休暇の開始時刻が勤務日と異なります。"
                 | PaidRest when restEndedAt > workStartedAt && restStartedAt < workEndedAt ->
-                    return!
-                        wrapError
-                            $"Paid rest time {restStartedAt} - {restEndedAt} overlaps with work duration"
+                    return! wrapError "有給休暇の時間帯が勤務時間と重複しています。"
                 | _ -> return restTimes
             }
 
@@ -146,7 +135,7 @@ module WorkRecord =
         : Validation<WorkRecord, WorkRecordError> =
         validation {
             if not (record |> isActive now) then
-                return! Error(WorkVariantError "Cannot toggle rest on inactive work record")
+                return! Error(WorkVariantError "終了済みの勤務記録では休憩の開始/終了を切り替えできません。")
             else
                 let! restRecords =
                     record.RestRecords
@@ -164,7 +153,7 @@ module WorkRecord =
         : Validation<WorkRecord, WorkRecordError> =
         validation {
             if not (record |> hasDate now) then
-                return! Error(WorkVariantError "Can only toggle work for today's record")
+                return! Error(WorkVariantError "開始/終了を切り替えられるのは今日の勤務のみです。")
             else
                 match isActive now record, getEndedAt record with
                 | true, _ ->
@@ -199,7 +188,7 @@ module WorkRecord =
                         { record with
                             Duration = restarted
                             RestRecords = restRecords }
-                | false, None -> return! Error(WorkVariantError "Invalid work record state")
+                | false, None -> return! Error(WorkVariantError "勤務記録の状態が不正です。")
         }
 
     // List operations

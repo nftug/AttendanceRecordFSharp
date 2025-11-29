@@ -29,7 +29,7 @@ module AppConfigStore =
         let set (config: AppConfig) : unit = appConfig.Value <- config
 
         load None
-        |> TaskResult.mapError (fun err -> eprintfn $"Failed to load AppConfig: {err}")
+        |> TaskResult.mapError (fun err -> eprintfn $"アプリ設定の読み込みに失敗しました: {err}")
         |> ignore
 
         { Current = appConfig

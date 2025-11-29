@@ -41,7 +41,7 @@ module AppConfigRepositoryImpl =
                         | None -> return AppConfig.initial
                         | Some dto -> return dto |> AppConfigFileDtoMapper.toDomain
             with ex ->
-                return! Error $"Failed to load AppConfig: {ex.Message}"
+                return! Error $"アプリ設定の読み込みに失敗しました: {ex.Message}"
         }
 
     let private saveConfig
@@ -68,7 +68,7 @@ module AppConfigRepositoryImpl =
 
                 do! stream.FlushAsync()
             with ex ->
-                return! Error $"Failed to save AppConfig: {ex.Message}"
+                return! Error $"アプリ設定の保存に失敗しました: {ex.Message}"
         }
 
     let create (appDirService: AppDirectoryService) : AppConfigRepository =

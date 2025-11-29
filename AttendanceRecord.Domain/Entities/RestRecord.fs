@@ -35,7 +35,7 @@ module RestRecord =
             TimeDuration.tryCreateEnd record.Duration
             |> Result.mapError (fun e -> RestDurationError(record.Id, e))
             |> Result.map (fun duration -> { record with Duration = duration })
-        | false -> Error(RestVariantError(record.Id, "Rest time is not active"))
+        | false -> Error(RestVariantError(record.Id, "開始されていない休憩記録は終了できません。"))
 
     // Status getters
     let getDuration (now: DateTime) (record: RestRecord) : TimeSpan =

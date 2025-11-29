@@ -20,7 +20,7 @@ module DeleteWorkRecord =
             let! existingWorkRecordOption = repository.GetById id ct
 
             if existingWorkRecordOption.IsNone then
-                return! Error $"Work record with ID {id} not found."
+                return! Error $"勤務記録が見つかりません。"
 
             do! repository.Delete id ct
             do! workStatusStore.Reload()

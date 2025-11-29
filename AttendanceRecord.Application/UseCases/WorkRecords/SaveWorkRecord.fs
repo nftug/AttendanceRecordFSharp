@@ -40,9 +40,7 @@ module SaveWorkRecord =
 
                         let! record =
                             recordOption
-                            |> Result.requireSome (
-                                WorkRecordErrors.variant "Work record not found."
-                            )
+                            |> Result.requireSome (WorkRecordErrors.variant "勤務記録が見つかりません。")
 
                         return! WorkRecord.tryUpdate duration restRecords record
                     }
@@ -55,10 +53,7 @@ module SaveWorkRecord =
             do!
                 match existingRecordOption with
                 | Some existingRecord when existingRecord.Id <> workRecord.Id ->
-                    TaskResult.error (
-                        WorkRecordErrors.variant
-                            "A work record for the specified date already exists."
-                    )
+                    TaskResult.error (WorkRecordErrors.variant "指定した日付の勤務は既に登録されています。")
                 | _ -> TaskResult.ok ()
 
             do! repository.Save workRecord ct |> TaskResult.mapError WorkRecordErrors.variant

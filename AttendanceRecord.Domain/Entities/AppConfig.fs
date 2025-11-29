@@ -40,13 +40,9 @@ module WorkEndAlarmConfig =
         : Validation<WorkEndAlarmConfig, AlarmConfigError> =
         validation {
             if isEnabled && beforeEndDuration < TimeSpan.Zero then
-                return!
-                    DurationError "Work end alarm 'before end' duration must be non-negative."
-                    |> Error
-            else if isEnabled && snoozeDuration < TimeSpan.Zero then
-                return!
-                    SnoozeDurationError "Work end alarm snooze duration must be non-negative."
-                    |> Error
+                return! DurationError "アラームの設定は0分以上にしてください。" |> Error
+            else if isEnabled && snoozeDuration <= TimeSpan.Zero then
+                return! SnoozeDurationError "アラームのスヌーズ時間は0分より大きい値にしてください。" |> Error
             else
                 return
                     { IsEnabled = isEnabled
@@ -67,13 +63,9 @@ module RestStartAlarmConfig =
         : Validation<RestStartAlarmConfig, AlarmConfigError> =
         validation {
             if isEnabled && beforeStartDuration < TimeSpan.Zero then
-                return!
-                    DurationError "Rest start alarm 'before start' duration must be non-negative."
-                    |> Error
-            else if isEnabled && snoozeDuration < TimeSpan.Zero then
-                return!
-                    SnoozeDurationError "Rest start alarm snooze duration must be non-negative."
-                    |> Error
+                return! DurationError "アラームの設定は0分以上にしてください。" |> Error
+            else if isEnabled && snoozeDuration <= TimeSpan.Zero then
+                return! SnoozeDurationError "アラームのスヌーズ時間は0分より大きい値にしてください。" |> Error
             else
                 return
                     { IsEnabled = isEnabled
@@ -86,7 +78,7 @@ module StandardWorkTime =
 
     let tryCreate (ts: TimeSpan) : Result<StandardWorkTime, string> =
         if ts <= TimeSpan.Zero then
-            Error "Standard work time must be positive."
+            Error "標準勤務時間は0分より大きい値にしてください。"
         else
             Ok(StandardWorkTime ts)
 
@@ -113,19 +105,9 @@ module AppConfig =
             let standardWorkTime = StandardWorkTime.value standardWorkTimeVo
 
             if workEndAlarmConfig.BeforeEndDuration > standardWorkTime then
-                return!
-                    WorkEndAlarmError(
-                        DurationError
-                            "Work end alarm 'before end' duration cannot exceed standard work time."
-                    )
-                    |> Error
+                return! WorkEndAlarmError(DurationError "アラームの設定は標準勤務時間を超えないようにしてください。") |> Error
             else if restStartAlarmConfig.BeforeStartDuration > standardWorkTime then
-                return!
-                    RestStartAlarmError(
-                        DurationError
-                            "Rest start alarm 'before start' duration cannot exceed standard work time."
-                    )
-                    |> Error
+                return! RestStartAlarmError(DurationError "アラームの設定は標準勤務時間を超えないようにしてください。") |> Error
             else
                 return
                     { ThemeMode = themeMode

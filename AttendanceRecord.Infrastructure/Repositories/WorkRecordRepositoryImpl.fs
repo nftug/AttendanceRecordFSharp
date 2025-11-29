@@ -36,7 +36,7 @@ module WorkRecordRepositoryImpl =
                         | None -> return []
                         | Some dtos -> return dtos |> WorkRecordFileDtoMapper.toDomain
             with ex ->
-                return! Error $"Failed to load work records: {ex.Message}"
+                return! Error $"勤務記録の読み込みに失敗しました: {ex.Message}"
         }
 
     let private saveWorkRecords filePath workRecords ct =
@@ -57,7 +57,7 @@ module WorkRecordRepositoryImpl =
 
                 do! stream.FlushAsync()
             with ex ->
-                return! Error $"Failed to save work records: {ex.Message}"
+                return! Error $"勤務記録の保存に失敗しました: {ex.Message}"
         }
 
     let private getByDate appDir date ct =

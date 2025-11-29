@@ -21,11 +21,6 @@ module FormContext =
 
         let errors = R3.property List.empty<'TError> |> R3.disposeWith disposables
 
-        form
-        |> R3.distinctUntilChanged
-        |> R3.subscribe (fun _ -> errors.Value <- List.empty)
-        |> disposables.Add
-
         let isFormDirty =
             R3.combineLatest2 form defaultForm
             |> R3.map (fun (f, df) -> f <> df)
@@ -47,6 +42,8 @@ module FormContext =
             | None -> resetCommand.Execute defaultForm.CurrentValue
 
         let onReset = R3.merge [ resetCommand; defaultForm |> R3.distinctUntilChanged ]
+
+        onReset |> R3.subscribe (fun v -> errors.Value <- List.empty) |> disposables.Add
 
         { Form = form
           IsFormDirty = isFormDirty

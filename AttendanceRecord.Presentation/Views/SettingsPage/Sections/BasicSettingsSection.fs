@@ -1,5 +1,6 @@
 namespace AttendanceRecord.Presentation.Views.SettingsPage.Sections
 
+open System
 open R3
 open Avalonia.Media
 open NXUI.Extensions
@@ -12,22 +13,16 @@ open AttendanceRecord.Domain.Errors
 
 module BasicSettingsSection =
     let create () =
-        withLifecycle (fun disposables self ->
+        withLifecycle (fun _ self ->
             let ctx, _ = Context.require<SettingsPageContext> self
-            let standardWorkMinutes = R3.property 0m |> R3.disposeWith disposables
 
-            ctx.FormCtx.OnReset
-            |> R3.subscribe (fun form ->
-                standardWorkMinutes.Value <- decimal form.StandardWorkTimeMinutes)
-            |> disposables.Add
-
-            standardWorkMinutes
-            |> R3.distinctUntilChanged
-            |> R3.subscribe (fun minutes ->
+            let updateStandardWorkMinutes (value: Nullable<decimal>) =
                 ctx.FormCtx.Form.Value <-
                     { ctx.FormCtx.Form.Value with
-                        StandardWorkTimeMinutes = float minutes })
-            |> disposables.Add
+                        StandardWorkTimeMinutes = value |> decimal |> float }
+
+                ctx.FormCtx.Errors.Value <-
+                    ctx.FormCtx.Errors.Value |> List.filter (_.IsStandardWorkTimeError >> not)
 
             Border()
                 .BorderThickness(1.0)
@@ -47,9 +42,13 @@ module BasicSettingsSection =
                                         .VerticalAlignmentCenter()
                                         .Width(150.0),
                                     NumericUpDown()
-                                        .Value(standardWorkMinutes |> asBinding)
+                                        .Value(
+                                            ctx.FormCtx.Form
+                                            |> R3.map (_.StandardWorkTimeMinutes >> decimal)
+                                            |> asBinding
+                                        )
                                         .OnValueChangedHandler(fun _ e ->
-                                            standardWorkMinutes.Value <- e.NewValue |> decimal)
+                                            updateStandardWorkMinutes e.NewValue)
                                         .FormatString("0")
                                         .Minimum(0m)
                                         .Maximum(1440m)

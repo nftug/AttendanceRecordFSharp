@@ -1,5 +1,6 @@
 namespace AttendanceRecord.Presentation.Views.SettingsPage.Sections
 
+open System
 open Avalonia.Media
 open NXUI.Extensions
 open type NXUI.Builders
@@ -7,35 +8,26 @@ open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
 open AttendanceRecord.Shared
 open AttendanceRecord.Domain.Errors
+open AttendanceRecord.Application.Dtos.Requests
 
 module WorkEndAlarmSection =
     let create () =
-        withLifecycle (fun disposables self ->
+        withLifecycle (fun _ self ->
             let ctx, _ = Context.require<SettingsPageContext> self
-            let alarmEnabled = R3.property false |> R3.disposeWith disposables
-            let beforeEndMinutes = R3.property 0m |> R3.disposeWith disposables
-            let snoozeMinutes = R3.property 0m |> R3.disposeWith disposables
+            let workEndAlarm = ctx.FormCtx.Form |> R3.map _.WorkEndAlarm
+            let alarmEnabled = workEndAlarm |> R3.map _.IsEnabled
+            let beforeEndMinutes = workEndAlarm |> R3.map (_.BeforeEndMinutes >> decimal)
+            let snoozeMinutes = workEndAlarm |> R3.map (_.SnoozeMinutes >> decimal)
 
-            let maxMinutes =
-                ctx.FormCtx.Form |> R3.map _.StandardWorkTimeMinutes |> R3.map decimal
-
-            ctx.FormCtx.OnReset
-            |> R3.map _.WorkEndAlarm
-            |> R3.subscribe (fun config ->
-                alarmEnabled.Value <- config.IsEnabled
-                beforeEndMinutes.Value <- decimal config.BeforeEndMinutes
-                snoozeMinutes.Value <- decimal config.SnoozeMinutes)
-            |> disposables.Add
-
-            R3.combineLatest3 alarmEnabled beforeEndMinutes snoozeMinutes
-            |> R3.distinctUntilChanged
-            |> R3.subscribe (fun (isEnabled, beforeMinutes, snoozeMinutes) ->
+            let update
+                (updater: WorkEndAlarmConfigSaveRequestDto -> WorkEndAlarmConfigSaveRequestDto)
+                =
                 ctx.FormCtx.Form.Value <-
                     { ctx.FormCtx.Form.Value with
-                        WorkEndAlarm.IsEnabled = isEnabled
-                        WorkEndAlarm.BeforeEndMinutes = float beforeMinutes
-                        WorkEndAlarm.SnoozeMinutes = float snoozeMinutes })
-            |> disposables.Add
+                        WorkEndAlarm = updater ctx.FormCtx.Form.Value.WorkEndAlarm }
+
+                ctx.FormCtx.Errors.Value <-
+                    ctx.FormCtx.Errors.Value |> List.filter (_.IsWorkEndAlarmError >> not)
 
             Border()
                 .BorderThickness(1.0)
@@ -54,8 +46,10 @@ module WorkEndAlarmSection =
                                         .Content("アラームを有効にする")
                                         .IsChecked(alarmEnabled |> asBinding)
                                         .OnIsCheckedChangedHandler(fun ctl _ ->
-                                            alarmEnabled.Value <-
-                                                ctl.IsChecked.GetValueOrDefault false)
+                                            update (fun f ->
+                                                { f with
+                                                    IsEnabled =
+                                                        ctl.IsChecked.GetValueOrDefault false }))
                                 ),
                             StackPanel()
                                 .OrientationHorizontal()
@@ -72,11 +66,13 @@ module WorkEndAlarmSection =
                                             NumericUpDown()
                                                 .Value(beforeEndMinutes |> asBinding)
                                                 .OnValueChangedHandler(fun _ e ->
-                                                    beforeEndMinutes.Value <-
-                                                        e.NewValue |> decimal)
+                                                    update (fun f ->
+                                                        { f with
+                                                            BeforeEndMinutes =
+                                                                e.NewValue |> decimal |> float }))
                                                 .FormatString("0")
                                                 .Minimum(0m)
-                                                .Maximum(maxMinutes |> asBinding)
+                                                .Maximum(1440.0m)
                                                 .Width(120.0)
                                                 .IsEnabled(alarmEnabled |> asBinding)
                                                 .Errors(
@@ -97,7 +93,10 @@ module WorkEndAlarmSection =
                                             NumericUpDown()
                                                 .Value(snoozeMinutes |> asBinding)
                                                 .OnValueChangedHandler(fun _ e ->
-                                                    snoozeMinutes.Value <- e.NewValue |> decimal)
+                                                    update (fun f ->
+                                                        { f with
+                                                            SnoozeMinutes =
+                                                                e.NewValue |> decimal |> float }))
                                                 .FormatString("0")
                                                 .Minimum(1m)
                                                 .Maximum(60m)

@@ -26,6 +26,15 @@ module RestTimeSection =
             let index = items |> Seq.findIndex (fun rp -> rp.Id = item.Id)
             items[index] <- updater items[index]
 
+            ctx.FormCtx.Errors.Value <-
+                ctx.FormCtx.Errors.Value
+                |> List.filter (function
+                    | WorkRestsError restErrors ->
+                        RestRecordErrors.chooseDuration restErrors
+                        |> List.exists (fun (errId, _) -> errId = item.Id)
+                        |> not
+                    | _ -> true)
+
         let handleDelete (id: Guid) =
             match items |> Seq.tryFind (fun rp -> rp.Id = id) with
             | Some rp -> items.Remove rp |> ignore

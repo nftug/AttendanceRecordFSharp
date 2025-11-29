@@ -1,5 +1,6 @@
 namespace AttendanceRecord.Presentation.Views.SettingsPage.Sections
 
+open System
 open Avalonia.Media
 open NXUI.Extensions
 open type NXUI.Builders
@@ -7,35 +8,26 @@ open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
 open AttendanceRecord.Shared
 open AttendanceRecord.Domain.Errors
+open AttendanceRecord.Application.Dtos.Requests
 
 module RestStartAlarmSection =
     let create () =
-        withLifecycle (fun disposables self ->
+        withLifecycle (fun _ self ->
             let ctx, _ = Context.require<SettingsPageContext> self
-            let alarmEnabled = R3.property false |> R3.disposeWith disposables
-            let beforeStartMinutes = R3.property 0m |> R3.disposeWith disposables
-            let snoozeMinutes = R3.property 0m |> R3.disposeWith disposables
+            let restStartAlarm = ctx.FormCtx.Form |> R3.map _.RestStartAlarm
+            let alarmEnabled = restStartAlarm |> R3.map _.IsEnabled
+            let beforeStartMinutes = restStartAlarm |> R3.map (_.BeforeStartMinutes >> decimal)
+            let snoozeMinutes = restStartAlarm |> R3.map (_.SnoozeMinutes >> decimal)
 
-            let maxMinutes =
-                ctx.FormCtx.Form |> R3.map _.StandardWorkTimeMinutes |> R3.map decimal
-
-            ctx.FormCtx.OnReset
-            |> R3.map _.RestStartAlarm
-            |> R3.subscribe (fun config ->
-                alarmEnabled.Value <- config.IsEnabled
-                beforeStartMinutes.Value <- decimal config.BeforeStartMinutes
-                snoozeMinutes.Value <- decimal config.SnoozeMinutes)
-            |> disposables.Add
-
-            R3.combineLatest3 alarmEnabled beforeStartMinutes snoozeMinutes
-            |> R3.distinctUntilChanged
-            |> R3.subscribe (fun (isEnabled, beforeMinutes, snoozeMinutes) ->
+            let update
+                (updater: RestStartAlarmConfigSaveRequestDto -> RestStartAlarmConfigSaveRequestDto)
+                =
                 ctx.FormCtx.Form.Value <-
                     { ctx.FormCtx.Form.Value with
-                        RestStartAlarm.IsEnabled = isEnabled
-                        RestStartAlarm.BeforeStartMinutes = float beforeMinutes
-                        RestStartAlarm.SnoozeMinutes = float snoozeMinutes })
-            |> disposables.Add
+                        RestStartAlarm = updater ctx.FormCtx.Form.Value.RestStartAlarm }
+
+                ctx.FormCtx.Errors.Value <-
+                    ctx.FormCtx.Errors.Value |> List.filter (_.IsRestStartAlarmError >> not)
 
             Border()
                 .BorderThickness(1.0)
@@ -54,8 +46,10 @@ module RestStartAlarmSection =
                                         .Content("アラームを有効にする")
                                         .IsChecked(alarmEnabled |> asBinding)
                                         .OnIsCheckedChangedHandler(fun ctl _ ->
-                                            alarmEnabled.Value <-
-                                                ctl.IsChecked.GetValueOrDefault false)
+                                            update (fun f ->
+                                                { f with
+                                                    IsEnabled =
+                                                        ctl.IsChecked.GetValueOrDefault false }))
                                 ),
                             StackPanel()
                                 .OrientationHorizontal()
@@ -72,11 +66,13 @@ module RestStartAlarmSection =
                                             NumericUpDown()
                                                 .Value(beforeStartMinutes |> asBinding)
                                                 .OnValueChangedHandler(fun _ e ->
-                                                    beforeStartMinutes.Value <-
-                                                        e.NewValue |> decimal)
+                                                    update (fun f ->
+                                                        { f with
+                                                            BeforeStartMinutes =
+                                                                e.NewValue |> decimal |> float }))
                                                 .FormatString("0")
                                                 .Minimum(0m)
-                                                .Maximum(maxMinutes |> asBinding)
+                                                .Maximum(1440.0m)
                                                 .Width(120.0)
                                                 .IsEnabled(alarmEnabled |> asBinding)
                                                 .Errors(
@@ -97,7 +93,10 @@ module RestStartAlarmSection =
                                             NumericUpDown()
                                                 .Value(snoozeMinutes |> asBinding)
                                                 .OnValueChangedHandler(fun _ e ->
-                                                    snoozeMinutes.Value <- e.NewValue |> decimal)
+                                                    update (fun f ->
+                                                        { f with
+                                                            SnoozeMinutes =
+                                                                e.NewValue |> decimal |> float }))
                                                 .FormatString("0")
                                                 .Minimum(1m)
                                                 .Maximum(60m)

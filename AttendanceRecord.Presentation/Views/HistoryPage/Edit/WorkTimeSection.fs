@@ -1,5 +1,6 @@
 namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
+open System
 open Avalonia.Media
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
@@ -18,6 +19,9 @@ module WorkTimeSection =
 
             let update (updater: WorkRecordSaveRequestDto -> WorkRecordSaveRequestDto) =
                 ctx.FormCtx.Form.Value <- updater ctx.FormCtx.Form.Value
+
+                ctx.FormCtx.Errors.Value <-
+                    ctx.FormCtx.Errors.Value |> List.filter (_.IsWorkDurationError >> not)
 
             Border()
                 .BorderThickness(1.0)

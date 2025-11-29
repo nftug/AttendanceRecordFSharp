@@ -39,11 +39,11 @@ module WorkEndAlarmConfig =
         (snoozeDuration: TimeSpan)
         : Validation<WorkEndAlarmConfig, AlarmConfigError> =
         validation {
-            if beforeEndDuration < TimeSpan.Zero then
+            if isEnabled && beforeEndDuration < TimeSpan.Zero then
                 return!
                     DurationError "Work end alarm 'before end' duration must be non-negative."
                     |> Error
-            else if snoozeDuration < TimeSpan.Zero then
+            else if isEnabled && snoozeDuration < TimeSpan.Zero then
                 return!
                     SnoozeDurationError "Work end alarm snooze duration must be non-negative."
                     |> Error
@@ -66,11 +66,11 @@ module RestStartAlarmConfig =
         (snoozeDuration: TimeSpan)
         : Validation<RestStartAlarmConfig, AlarmConfigError> =
         validation {
-            if beforeStartDuration < TimeSpan.Zero then
+            if isEnabled && beforeStartDuration < TimeSpan.Zero then
                 return!
                     DurationError "Rest start alarm 'before start' duration must be non-negative."
                     |> Error
-            else if snoozeDuration < TimeSpan.Zero then
+            else if isEnabled && snoozeDuration < TimeSpan.Zero then
                 return!
                     SnoozeDurationError "Rest start alarm snooze duration must be non-negative."
                     |> Error
@@ -110,9 +110,26 @@ module AppConfig =
                 StandardWorkTime.tryCreate standardWorkTime
                 |> Result.mapError (fun e -> StandardWorkTimeError e)
 
-            return
-                { ThemeMode = themeMode
-                  StandardWorkTime = standardWorkTimeVo
-                  WorkEndAlarm = workEndAlarmConfig
-                  RestStartAlarm = restStartAlarmConfig }
+            let standardWorkTime = StandardWorkTime.value standardWorkTimeVo
+
+            if workEndAlarmConfig.BeforeEndDuration > standardWorkTime then
+                return!
+                    WorkEndAlarmError(
+                        DurationError
+                            "Work end alarm 'before end' duration cannot exceed standard work time."
+                    )
+                    |> Error
+            else if restStartAlarmConfig.BeforeStartDuration > standardWorkTime then
+                return!
+                    RestStartAlarmError(
+                        DurationError
+                            "Rest start alarm 'before start' duration cannot exceed standard work time."
+                    )
+                    |> Error
+            else
+                return
+                    { ThemeMode = themeMode
+                      StandardWorkTime = standardWorkTimeVo
+                      WorkEndAlarm = workEndAlarmConfig
+                      RestStartAlarm = restStartAlarmConfig }
         }

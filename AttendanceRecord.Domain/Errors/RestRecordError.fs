@@ -7,6 +7,12 @@ type RestRecordError =
     | RestVariantError of Guid * string
 
 module RestRecordErrors =
+    let chooseDuration (errors: RestRecordError list) : (Guid * TimeDurationError) list =
+        errors
+        |> List.collect (function
+            | RestDurationError(id, durationError) -> [ (id, durationError) ]
+            | _ -> [])
+
     let chooseStartedAt (errors: RestRecordError list) : (Guid * string) list =
         errors
         |> List.collect (function

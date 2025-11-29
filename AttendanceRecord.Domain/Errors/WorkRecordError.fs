@@ -16,6 +16,12 @@ module WorkRecordErrors =
 
     let variant (error: string) : WorkRecordError list = [ WorkVariantError error ]
 
+    let chooseDuration (errors: WorkRecordError list) : TimeDurationError list =
+        errors
+        |> List.collect (function
+            | WorkDurationError durationError -> [ durationError ]
+            | _ -> [])
+
     let chooseStartedAt (errors: WorkRecordError list) : string list =
         errors
         |> List.collect (function

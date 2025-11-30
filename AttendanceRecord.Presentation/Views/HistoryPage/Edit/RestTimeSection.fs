@@ -31,9 +31,8 @@ module RestTimeSection =
                 ctx.FormCtx.Errors.Value
                 |> List.filter (function
                     | WorkRestsError restErrors ->
-                        RestRecordErrors.chooseDuration restErrors
-                        |> List.exists (fun (errId, _) -> errId = item.Id)
-                        |> not
+                        RestRecordErrors.chooseAll restErrors
+                        |> List.exists (fun (errId, _) -> not (errId = item.Id))
                     | _ -> true)
 
         let handleDelete (id: Guid) =
@@ -43,11 +42,10 @@ module RestTimeSection =
 
         let errors =
             ctx.FormCtx.Errors
-            |> R3.map (
-                WorkRecordErrors.chooseRestsAll
-                >> List.filter (fun (errId, _) -> errId = item.Id)
-                >> List.map snd
-            )
+            |> R3.map (fun errors ->
+                WorkRecordErrors.chooseRestsAll errors
+                |> List.filter (fun (errId, _) -> errId = item.Id)
+                |> List.map snd)
 
         StackPanel()
             .OrientationHorizontal()

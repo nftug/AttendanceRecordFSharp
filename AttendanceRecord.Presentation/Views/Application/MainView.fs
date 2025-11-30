@@ -5,7 +5,6 @@ open NXUI.Extensions
 open FluentAvalonia.UI.Controls
 
 open AttendanceRecord.Presentation
-open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.Common.Context
 open AttendanceRecord.Presentation.Views.Common.Navigation
 open AttendanceRecord.Presentation.Views.HomePage

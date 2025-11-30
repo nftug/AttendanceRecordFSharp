@@ -77,10 +77,9 @@ module Dialog =
                 dialog.Loaded.Add(fun _ ->
                     // Find the dialog window and set Topmost to true
                     getApplicationLifetime ()
-                    |> fun appLifetime ->
-                        appLifetime.Windows
-                        |> Seq.tryFind (fun w -> w.Owner = window)
-                        |> Option.iter (fun dialogWindow -> dialogWindow.Topmost <- true))
+                    |> _.Windows
+                    |> Seq.tryFind (fun w -> w.Owner = window)
+                    |> Option.iter (fun dialogWindow -> dialogWindow.Topmost <- true))
 
                 let! result = dialog.ShowAsync()
 

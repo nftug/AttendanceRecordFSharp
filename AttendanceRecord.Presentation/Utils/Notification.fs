@@ -21,7 +21,6 @@ module Notification =
             | SuccessNotification -> Notifications.NotificationType.Success
             | WarningNotification -> Notifications.NotificationType.Warning
             | ErrorNotification -> Notifications.NotificationType.Error
-            | _ -> Notifications.NotificationType.Information
 
         getControlFromMainWindow<Notifications.WindowNotificationManager> ()
         |> _.Show(Notifications.Notification(props.Title, props.Message, notificationType))

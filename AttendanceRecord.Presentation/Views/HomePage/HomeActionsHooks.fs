@@ -63,7 +63,7 @@ module HomeActionsHooks =
                             Notification.show
                                 { Title = "勤務状態更新"
                                   Message = message
-                                  NotificationType = NotificationType.Information }
+                                  NotificationType = InformationNotification }
 
                         | Error errors ->
                             let errMsg =
@@ -74,7 +74,7 @@ module HomeActionsHooks =
                             Notification.show
                                 { Title = "勤務状態更新エラー"
                                   Message = $"勤務状態の更新に失敗しました: {errMsg}"
-                                  NotificationType = NotificationType.Error }
+                                  NotificationType = ErrorNotification }
                 })
             |> ignore
 
@@ -88,7 +88,7 @@ module HomeActionsHooks =
                         Notification.show
                             { Title = "休憩状態更新"
                               Message = message
-                              NotificationType = NotificationType.Information }
+                              NotificationType = InformationNotification }
                     | Error errors ->
                         let errMsg =
                             errors
@@ -98,7 +98,7 @@ module HomeActionsHooks =
                         Notification.show
                             { Title = "休憩状態更新エラー"
                               Message = $"休憩状態の更新に失敗しました: {errMsg}"
-                              NotificationType = NotificationType.Error }
+                              NotificationType = ErrorNotification }
                 })
             |> ignore
 

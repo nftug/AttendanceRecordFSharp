@@ -22,7 +22,7 @@ module WorkRecordErrors =
             | WorkDurationError(TimeDurationError msg) -> [ msg ]
             | _ -> [])
 
-    let chooseRestsDuration (restId: Guid) (errors: WorkRecordError list) : (Guid * string) list =
+    let chooseRestsDuration (errors: WorkRecordError list) : (Guid * string) list =
         errors
         |> List.collect (function
             | WorkRestsError restErrors -> RestRecordErrors.chooseDuration restErrors

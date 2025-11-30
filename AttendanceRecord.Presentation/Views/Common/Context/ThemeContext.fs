@@ -42,10 +42,7 @@ module ThemeContext =
             themeMode.Value <- config.ThemeMode
 
         let actualThemeVariant =
-            Avalonia.Application.Current
-            |> R3.everyValueChanged _.ActualThemeVariant
-            |> R3.readonly None
-            |> R3.disposeWith disposables
+            Avalonia.Application.Current |> R3.everyValueChanged _.ActualThemeVariant
 
         let getBrushResourceObservable (resourceKey: string) : Observable<IBrush> =
             actualThemeVariant

@@ -60,7 +60,7 @@ module SettingsPageContext =
                         Notification.show
                             { Title = "保存完了"
                               Message = "アプリ設定を保存しました。"
-                              NotificationType = NotificationType.Success }
+                              NotificationType = SuccessNotification }
 
                         return Ok()
                     | Error errors ->
@@ -71,7 +71,7 @@ module SettingsPageContext =
                             Notification.show
                                 { Title = "エラーが発生しました"
                                   Message = System.String.Join("\n", msgs)
-                                  NotificationType = NotificationType.Error }
+                                  NotificationType = ErrorNotification }
                         | _ -> ()
 
                         return Error errors

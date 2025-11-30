@@ -26,7 +26,7 @@ module AlarmHost =
                 Notification.show
                     { Title = title
                       Message = message
-                      NotificationType = NotificationType.Warning }
+                      NotificationType = WarningNotification }
 
                 task {
                     let! result =
@@ -42,7 +42,7 @@ module AlarmHost =
                         Notification.show
                             { Title = title
                               Message = "アラームをスヌーズしました。"
-                              NotificationType = NotificationType.Information }
+                              NotificationType = InformationNotification }
                 }
                 |> ignore)
             |> disposables.Add

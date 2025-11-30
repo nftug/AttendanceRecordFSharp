@@ -136,7 +136,7 @@ module HistoryPageContext =
                         Notification.show
                             { Title = "保存完了"
                               Message = "勤務記録を保存しました。"
-                              NotificationType = NotificationType.Success }
+                              NotificationType = SuccessNotification }
 
                         reloadAfterSave (Some id)
                         return Ok()
@@ -148,7 +148,7 @@ module HistoryPageContext =
                             Notification.show
                                 { Title = "エラーが発生しました"
                                   Message = System.String.Join("\n", msgs)
-                                  NotificationType = NotificationType.Error }
+                                  NotificationType = ErrorNotification }
                         | _ -> ()
 
                         return Error errors
@@ -172,7 +172,7 @@ module HistoryPageContext =
                                 Notification.show
                                     { Title = "削除完了"
                                       Message = "勤務記録を削除しました。"
-                                      NotificationType = NotificationType.Success }
+                                      NotificationType = SuccessNotification }
 
                                 selectedDate.Value <- None
                                 reloadAfterSave None
@@ -181,7 +181,7 @@ module HistoryPageContext =
                                 Notification.show
                                     { Title = "削除エラー"
                                       Message = $"勤務記録の削除に失敗しました: {e}"
-                                      NotificationType = NotificationType.Error }
+                                      NotificationType = ErrorNotification }
 
                                 return Error e
                         else

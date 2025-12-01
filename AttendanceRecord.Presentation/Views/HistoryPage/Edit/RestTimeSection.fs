@@ -32,7 +32,7 @@ module RestTimeSection =
                 |> List.filter (function
                     | WorkRestsErrors restErrors ->
                         RestRecordErrors.chooseAll restErrors
-                        |> List.exists (fun (errId, _) -> not (errId = item.Id))
+                        |> List.exists (fun (errId, _) -> errId <> item.Id)
                     | _ -> true)
 
         let handleDelete (id: Guid) =
@@ -46,6 +46,19 @@ module RestTimeSection =
                 WorkRecordErrors.chooseRestsAll errors
                 |> List.filter (fun (errId, _) -> errId = item.Id)
                 |> List.map snd)
+
+        let handleRestVariantChange (variant: RestVariantEnum) =
+            update (fun rp ->
+                // If added new paid rest without endedAt, set endedAt to current date
+                let endedAt =
+                    match variant with
+                    | RestVariantEnum.PaidRest when rp.EndedAt.IsNone ->
+                        Some ctx.CurrentDate.CurrentValue.Date
+                    | _ -> rp.EndedAt
+
+                { rp with
+                    Variant = variant
+                    EndedAt = endedAt })
 
         StackPanel()
             .OrientationHorizontal()
@@ -62,7 +75,8 @@ module RestTimeSection =
                                     StartedAt = defaultArg v rp.StartedAt })
                       OnEndedAtChanged = fun v -> update (fun rp -> { rp with EndedAt = v })
                       Errors = errors
-                      Spacing = Some 10.0 },
+                      Spacing = Some 15.0
+                      IsEndedAtClearable = item.Variant <> RestVariantEnum.PaidRest |> R3.ret },
                 StackPanel()
                     .OrientationHorizontal()
                     .VerticalAlignment(
@@ -80,8 +94,7 @@ module RestTimeSection =
                             .SelectedItem(item.Variant)
                             .OnSelectionChangedHandler(fun ctl _ ->
                                 match ctl.SelectedItem with
-                                | :? RestVariantEnum as v ->
-                                    update (fun rp -> { rp with Variant = v })
+                                | :? RestVariantEnum as v -> handleRestVariantChange v
                                 | _ -> ())
                             .ItemTemplateFunc(fun (variant: RestVariantEnum) ->
                                 TextBlock().Text(RestVariantEnum.toDisplayString variant)),

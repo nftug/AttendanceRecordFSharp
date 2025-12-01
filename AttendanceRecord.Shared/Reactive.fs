@@ -17,7 +17,7 @@ module R3 =
                 | None -> Unchecked.defaultof<'T>
             )
 
-    let ret (value: 'T) : Observable<'T> = Observable.Return value |> _.Share()
+    let ret (value: 'T) : Observable<'T> = Observable.Return value
 
     let disposeWith<'T when 'T :> IDisposable>
         (disposables: CompositeDisposable)

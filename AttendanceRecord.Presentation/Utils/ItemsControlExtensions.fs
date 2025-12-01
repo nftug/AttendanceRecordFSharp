@@ -3,7 +3,6 @@ namespace AttendanceRecord.Presentation.Utils
 open Avalonia.Controls
 open System.Runtime.CompilerServices
 open Avalonia.Controls.Templates
-open Avalonia.Controls.Primitives
 open ObservableCollections
 
 [<Extension>]

@@ -29,6 +29,10 @@ module TimePickerField =
             let handleTimeChange (timeOpt: TimeSpan option) =
                 props.OnSetValue(timeOpt |> Option.map ((+) baseDate.CurrentValue))
 
+            let isClearable =
+                R3.combineLatest2 props.IsClearable props.Value
+                |> R3.map (fun (isClearable, value) -> isClearable && Option.isSome value)
+
             StackPanel()
                 .Spacing(5.0)
                 .Children(
@@ -53,8 +57,12 @@ module TimePickerField =
                                 { Symbol = Symbol.Clear |> R3.ret
                                   OnClick = fun _ -> handleTimeChange None
                                   FontSize = Some 12.0 |> R3.ret
-                                  Tooltip = Some "時間をクリア" |> R3.ret }
-                            |> _.IsEnabled(props.Value |> R3.map Option.isSome |> asBinding)
-                                .IsVisible(props.IsClearable |> asBinding)
+                                  Tooltip = Some "時刻をクリア" |> R3.ret }
+                            |> _.IsEnabled(isClearable |> asBinding)
+                            |> _.Opacity(
+                                isClearable
+                                |> R3.map (fun isClearable -> if isClearable then 1.0 else 0.0)
+                                |> asBinding
+                            )
                         )
                 ))

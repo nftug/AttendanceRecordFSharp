@@ -13,7 +13,8 @@ type TimeDurationPickerProps =
       OnStartedAtChanged: DateTime option -> unit
       OnEndedAtChanged: DateTime option -> unit
       Errors: Observable<string list>
-      Spacing: float option }
+      Spacing: float option
+      IsEndedAtClearable: Observable<bool> }
 
 module TimeDurationPicker =
     open NXUI.Extensions
@@ -42,7 +43,7 @@ module TimeDurationPicker =
                                   BaseDate = Some ctx.CurrentDate
                                   Value = props.EndedAt
                                   OnSetValue = props.OnEndedAtChanged
-                                  IsClearable = true |> R3.ret
+                                  IsClearable = props.IsEndedAtClearable
                                   HasErrors = props.Errors |> R3.map (not << List.isEmpty) }
                         ),
                     ValidationErrorsText.create

@@ -43,6 +43,7 @@ module WorkTimeSection =
                                   Errors =
                                     ctx.FormCtx.Errors
                                     |> R3.map WorkRecordErrors.chooseDurationOrGeneric
-                                  Spacing = Some 15.0 }
+                                  Spacing = Some 15.0
+                                  IsEndedAtClearable = R3.ret true }
                         )
                 ))

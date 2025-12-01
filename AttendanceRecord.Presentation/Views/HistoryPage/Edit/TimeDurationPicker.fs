@@ -24,7 +24,7 @@ module TimeDurationPicker =
             let ctx = Context.require<HistoryPageContext> self |> fst
 
             StackPanel()
-                .Spacing(5.0)
+                .Spacing(3.0)
                 .Children(
                     StackPanel()
                         .OrientationHorizontal()

@@ -18,15 +18,15 @@ module ToggleWork =
             let now = DateTime.Now
 
             let! workTodayOption =
-                repository.GetByDate now.Date ct |> TaskResult.mapError WorkRecordErrors.variant
+                repository.GetByDate now.Date ct |> TaskResult.mapError WorkRecordErrors.generic
 
             let! workToday =
                 match workTodayOption with
                 | Some record -> record |> WorkRecord.tryToggleWork now
                 | None -> WorkRecord.createStart () |> Ok
 
-            do! repository.Save workToday ct |> TaskResult.mapError WorkRecordErrors.variant
-            do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.variant
+            do! repository.Save workToday ct |> TaskResult.mapError WorkRecordErrors.generic
+            do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.generic
 
             return workStatusStore.WorkStatus.CurrentValue
         }

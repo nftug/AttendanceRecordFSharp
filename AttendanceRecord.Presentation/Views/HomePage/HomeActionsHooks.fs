@@ -68,7 +68,7 @@ module HomeActionsHooks =
                         | Error errors ->
                             let errMsg =
                                 errors
-                                |> WorkRecordErrors.chooseDurationOrVariants
+                                |> WorkRecordErrors.chooseDurationOrGeneric
                                 |> String.concat "\n"
 
                             Notification.show
@@ -92,7 +92,7 @@ module HomeActionsHooks =
                     | Error errors ->
                         let errMsg =
                             errors
-                            |> WorkRecordErrors.chooseDurationOrVariants
+                            |> WorkRecordErrors.chooseDurationOrGeneric
                             |> String.concat "\n"
 
                         Notification.show

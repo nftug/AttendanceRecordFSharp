@@ -8,10 +8,10 @@ type AppConfigError =
     | StandardWorkTimeError of string
     | WorkEndAlarmError of AlarmConfigError
     | RestStartAlarmError of AlarmConfigError
-    | VariantError of string
+    | GenericError of string
 
 module AppConfigErrors =
-    let variant (error: string) : AppConfigError list = [ VariantError error ]
+    let generic (error: string) : AppConfigError list = [ GenericError error ]
 
     let chooseStandardWorkTime (errors: AppConfigError list) : string list =
         errors
@@ -46,5 +46,5 @@ module AppConfigErrors =
     let chooseVariants (errors: AppConfigError list) : string list =
         errors
         |> List.collect (function
-            | VariantError msg -> [ msg ]
+            | GenericError msg -> [ msg ]
             | _ -> [])

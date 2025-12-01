@@ -30,7 +30,7 @@ module RestTimeSection =
             ctx.FormCtx.Errors.Value <-
                 ctx.FormCtx.Errors.Value
                 |> List.filter (function
-                    | WorkRestsError restErrors ->
+                    | WorkRestsErrors restErrors ->
                         RestRecordErrors.chooseAll restErrors
                         |> List.exists (fun (errId, _) -> not (errId = item.Id))
                     | _ -> true)
@@ -76,7 +76,7 @@ module RestTimeSection =
                     .Children(
                         ComboBox()
                             .Width(100.0)
-                            .ItemsSource([ RestVariantEnum.RegularRest; RestVariantEnum.PaidRest ])
+                            .ItemsSource(RestVariantEnum.all)
                             .SelectedItem(item.Variant)
                             .OnSelectionChangedHandler(fun ctl _ ->
                                 match ctl.SelectedItem with
@@ -84,13 +84,7 @@ module RestTimeSection =
                                     update (fun rp -> { rp with Variant = v })
                                 | _ -> ())
                             .ItemTemplateFunc(fun (variant: RestVariantEnum) ->
-                                TextBlock()
-                                    .Text(
-                                        match variant with
-                                        | RestVariantEnum.RegularRest -> "休憩"
-                                        | RestVariantEnum.PaidRest -> "有給休暇"
-                                        | _ -> "不明"
-                                    )),
+                                TextBlock().Text(RestVariantEnum.toDisplayString variant)),
                         SymbolIconButton.create
                             { Symbol = Symbol.Delete |> R3.ret
                               OnClick = fun _ -> handleDelete item.Id
@@ -121,9 +115,28 @@ module RestTimeSection =
             |> disposables.Add
 
             let addCommand =
-                R3.command ()
-                |> R3.withSubscribe disposables (fun () ->
-                    RestRecordSaveRequestDto.empty ctx.CurrentDate.CurrentValue |> restItems.Add)
+                R3.command<RestVariantEnum> ()
+                |> R3.withSubscribe disposables (fun variant ->
+                    RestRecordSaveRequestDto.empty variant ctx.CurrentDate.CurrentValue
+                    |> restItems.Add)
+
+            let buildAddSplitButton () =
+                DropDownButton()
+                    .Content(SymbolIcon.create (Symbol.Add |> R3.ret))
+                    .FontSize(20.0)
+                    .Tip("休憩・有給休暇を追加する")
+                    .Flyout(
+                        let flyout = MenuFlyout()
+
+                        RestVariantEnum.all
+                        |> List.map (fun variant ->
+                            MenuItem()
+                                .Header($"{RestVariantEnum.toDisplayString variant}を追加")
+                                .OnClickHandler(fun _ _ -> addCommand.Execute variant))
+                        |> List.iter (flyout.Items.Add >> ignore)
+
+                        flyout
+                    )
 
             let buildContent () =
                 let isEmpty = ctx.FormCtx.Form |> R3.map _.RestRecords.IsEmpty
@@ -147,7 +160,7 @@ module RestTimeSection =
                                 |> disposables.Add
 
                                 addCommand
-                                |> R3.subscribe (fun () -> nextTick sv.ScrollToEnd)
+                                |> R3.subscribe (fun _ -> nextTick sv.ScrollToEnd)
                                 |> disposables.Add
 
                                 sv)
@@ -172,12 +185,7 @@ module RestTimeSection =
                                         .FontSize(18.0)
                                         .FontWeightBold()
                                         .Column(0),
-                                    SymbolIconButton.create
-                                        { Symbol = Symbol.Add |> R3.ret
-                                          OnClick = fun _ -> addCommand.Execute()
-                                          FontSize = Some 20.0 |> R3.ret
-                                          Tooltip = Some "休憩・有給休暇を追加" |> R3.ret }
-                                    |> _.Column(2)
+                                    buildAddSplitButton () |> _.Column(2)
                                 )
                                 .Row(0),
                             buildContent () |> _.Row(1)

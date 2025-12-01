@@ -143,7 +143,7 @@ module HistoryPageContext =
                     | Error errors ->
                         formCtx.Errors.Value <- errors
 
-                        match errors |> WorkRecordErrors.chooseVariants with
+                        match errors |> WorkRecordErrors.chooseGeneric with
                         | msgs when not (List.isEmpty msgs) ->
                             Notification.show
                                 { Title = "エラーが発生しました"

@@ -4,7 +4,7 @@ open System
 
 type RestRecordError =
     | RestDurationError of Guid * TimeDurationError
-    | RestVariantError of Guid * string
+    | RestGenericError of Guid * string
 
 module RestRecordErrors =
     let chooseDuration (errors: RestRecordError list) : (Guid * string) list =
@@ -13,14 +13,14 @@ module RestRecordErrors =
             | RestDurationError(id, TimeDurationError msg) -> [ (id, msg) ]
             | _ -> [])
 
-    let chooseVariants (errors: RestRecordError list) : (Guid * string) list =
+    let chooseGeneric (errors: RestRecordError list) : (Guid * string) list =
         errors
         |> List.collect (function
-            | RestVariantError(id, msg) -> [ (id, msg) ]
+            | RestGenericError(id, msg) -> [ (id, msg) ]
             | _ -> [])
 
     let chooseAll (errors: RestRecordError list) : (Guid * string) list =
         errors
         |> List.collect (function
             | RestDurationError(id, TimeDurationError msg) -> [ (id, msg) ]
-            | RestVariantError(id, msg) -> [ (id, msg) ])
+            | RestGenericError(id, msg) -> [ (id, msg) ])

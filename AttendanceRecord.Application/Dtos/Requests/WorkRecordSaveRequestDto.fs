@@ -21,11 +21,14 @@ type WorkRecordSaveRequestDto =
       RestRecords: RestRecordSaveRequestDto list }
 
 module RestRecordSaveRequestDto =
-    let empty (baseDate: DateTime) : RestRecordSaveRequestDto =
+    let empty (variant: RestVariantEnum) (baseDate: DateTime) : RestRecordSaveRequestDto =
         { Id = Guid.NewGuid()
           StartedAt = baseDate.Date
-          EndedAt = None
-          Variant = RestVariantEnum.RegularRest }
+          EndedAt =
+            match variant with
+            | RestVariantEnum.PaidRest -> Some baseDate.Date
+            | _ -> None
+          Variant = variant }
 
     let tryToDomain (dto: RestRecordSaveRequestDto) : Result<RestRecord, RestRecordError> =
         TimeDuration.tryCreate dto.StartedAt dto.EndedAt

@@ -4,17 +4,17 @@ open System
 
 type WorkRecordError =
     | WorkDurationError of TimeDurationError
-    | WorkRestsError of RestRecordError list
-    | WorkVariantError of string
+    | WorkRestsErrors of RestRecordError list
+    | WorkGenericError of string
 
 module WorkRecordErrors =
     let duration (error: TimeDurationError) : WorkRecordError list = [ WorkDurationError error ]
 
-    let rest (error: RestRecordError) : WorkRecordError list = [ WorkRestsError [ error ] ]
+    let rest (error: RestRecordError) : WorkRecordError list = [ WorkRestsErrors [ error ] ]
 
-    let restList (errors: RestRecordError list) : WorkRecordError list = [ WorkRestsError errors ]
+    let restList (errors: RestRecordError list) : WorkRecordError list = [ WorkRestsErrors errors ]
 
-    let variant (error: string) : WorkRecordError list = [ WorkVariantError error ]
+    let generic (error: string) : WorkRecordError list = [ WorkGenericError error ]
 
     let chooseDuration (errors: WorkRecordError list) : string list =
         errors
@@ -25,30 +25,30 @@ module WorkRecordErrors =
     let chooseRestsDuration (errors: WorkRecordError list) : (Guid * string) list =
         errors
         |> List.collect (function
-            | WorkRestsError restErrors -> RestRecordErrors.chooseDuration restErrors
+            | WorkRestsErrors restErrors -> RestRecordErrors.chooseDuration restErrors
             | _ -> [])
 
-    let chooseRestsVariants (errors: WorkRecordError list) : (Guid * string) list =
+    let chooseRestsGeneric (errors: WorkRecordError list) : (Guid * string) list =
         errors
         |> List.collect (function
-            | WorkRestsError restErrors -> RestRecordErrors.chooseVariants restErrors
+            | WorkRestsErrors restErrors -> RestRecordErrors.chooseGeneric restErrors
             | _ -> [])
 
     let chooseRestsAll (errors: WorkRecordError list) : (Guid * string) list =
         errors
         |> List.collect (function
-            | WorkRestsError restErrors -> RestRecordErrors.chooseAll restErrors
+            | WorkRestsErrors restErrors -> RestRecordErrors.chooseAll restErrors
             | _ -> [])
 
-    let chooseVariants (errors: WorkRecordError list) : string list =
+    let chooseGeneric (errors: WorkRecordError list) : string list =
         errors
         |> List.collect (function
-            | WorkVariantError msg -> [ msg ]
+            | WorkGenericError msg -> [ msg ]
             | _ -> [])
 
-    let chooseDurationOrVariants (errors: WorkRecordError list) : string list =
+    let chooseDurationOrGeneric (errors: WorkRecordError list) : string list =
         errors
         |> List.collect (function
             | WorkDurationError(TimeDurationError msg) -> [ msg ]
-            | WorkVariantError msg -> [ msg ]
+            | WorkGenericError msg -> [ msg ]
             | _ -> [])

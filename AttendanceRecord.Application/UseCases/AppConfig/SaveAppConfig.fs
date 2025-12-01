@@ -19,7 +19,7 @@ module SaveAppConfig =
         =
         taskResult {
             let! config = AppConfigSaveRequestDto.tryToDomain request
-            do! repository.SaveConfig config ct |> TaskResult.mapError AppConfigErrors.variant
+            do! repository.SaveConfig config ct |> TaskResult.mapError AppConfigErrors.generic
             appConfigStore.Set config
         }
 

@@ -19,6 +19,7 @@
 
     <Compile Include="ValueObjects/TimeDuration.fs" />
     <Compile Include="Entities/RestRecord.fs" />
+    <Compile Include="Helpers/WorkRecordHelper.fs" />
     <Compile Include="Entities/WorkRecord.fs" />
     <Compile Include="Entities/WorkRecordTally.fs" />
 

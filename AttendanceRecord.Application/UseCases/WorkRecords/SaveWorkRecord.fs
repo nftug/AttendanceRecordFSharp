@@ -36,11 +36,11 @@ module SaveWorkRecord =
                 | Some id ->
                     taskResult {
                         let! recordOption =
-                            repository.GetById id ct |> TaskResult.mapError WorkRecordErrors.variant
+                            repository.GetById id ct |> TaskResult.mapError WorkRecordErrors.generic
 
                         let! record =
                             recordOption
-                            |> Result.requireSome (WorkRecordErrors.variant "勤務記録が見つかりません。")
+                            |> Result.requireSome (WorkRecordErrors.generic "勤務記録が見つかりません。")
 
                         return! WorkRecord.tryUpdate duration restRecords record
                     }
@@ -48,16 +48,16 @@ module SaveWorkRecord =
 
             let! existingRecordOption =
                 repository.GetByDate (WorkRecord.getDate workRecord) ct
-                |> TaskResult.mapError WorkRecordErrors.variant
+                |> TaskResult.mapError WorkRecordErrors.generic
 
             do!
                 match existingRecordOption with
                 | Some existingRecord when existingRecord.Id <> workRecord.Id ->
-                    TaskResult.error (WorkRecordErrors.variant "指定した日付の勤務は既に登録されています。")
+                    TaskResult.error (WorkRecordErrors.generic "指定した日付の勤務は既に登録されています。")
                 | _ -> TaskResult.ok ()
 
-            do! repository.Save workRecord ct |> TaskResult.mapError WorkRecordErrors.variant
-            do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.variant
+            do! repository.Save workRecord ct |> TaskResult.mapError WorkRecordErrors.generic
+            do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.generic
 
             return workRecord.Id
         }

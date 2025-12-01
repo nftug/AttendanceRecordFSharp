@@ -18,15 +18,15 @@ module ToggleRest =
             let now = DateTime.Now
 
             let! workTodayOption =
-                repository.GetByDate now.Date ct |> TaskResult.mapError WorkRecordErrors.variant
+                repository.GetByDate now.Date ct |> TaskResult.mapError WorkRecordErrors.generic
 
             let! workToday =
                 match workTodayOption with
                 | Some record -> record |> WorkRecord.tryToggleRest now
-                | None -> Error(WorkRecordErrors.variant "今日の勤務記録が見つかりません。")
+                | None -> Error(WorkRecordErrors.generic "今日の勤務記録が見つかりません。")
 
-            do! repository.Save workToday ct |> TaskResult.mapError WorkRecordErrors.variant
-            do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.variant
+            do! repository.Save workToday ct |> TaskResult.mapError WorkRecordErrors.generic
+            do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.generic
 
             return workStatusStore.WorkStatus.CurrentValue
         }

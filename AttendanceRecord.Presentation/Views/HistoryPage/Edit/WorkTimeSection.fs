@@ -42,7 +42,7 @@ module WorkTimeSection =
                                     fun v -> update (fun wr -> { wr with EndedAt = v })
                                   Errors =
                                     ctx.FormCtx.Errors
-                                    |> R3.map WorkRecordErrors.chooseDurationOrVariants
+                                    |> R3.map WorkRecordErrors.chooseDurationOrGeneric
                                   Spacing = Some 15.0 }
                         )
                 ))

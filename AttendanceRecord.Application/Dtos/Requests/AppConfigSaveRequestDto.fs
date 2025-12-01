@@ -5,6 +5,7 @@ open FsToolkit.ErrorHandling
 open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Domain.Errors
 open AttendanceRecord.Application.Dtos.Responses
+open AttendanceRecord.Application.Dtos.Enums
 
 type WorkEndAlarmConfigSaveRequestDto =
     { IsEnabled: bool
@@ -17,7 +18,7 @@ type RestStartAlarmConfigSaveRequestDto =
       SnoozeMinutes: float }
 
 type AppConfigSaveRequestDto =
-    { ThemeMode: ThemeMode
+    { ThemeMode: ThemeModeEnum
       StandardWorkTimeMinutes: float
       WorkEndAlarm: WorkEndAlarmConfigSaveRequestDto
       RestStartAlarm: RestStartAlarmConfigSaveRequestDto }
@@ -52,7 +53,7 @@ module RestStartAlarmConfigSaveRequestDto =
 
 module AppConfigSaveRequestDto =
     let empty: AppConfigSaveRequestDto =
-        { ThemeMode = SystemTheme
+        { ThemeMode = ThemeModeEnum.SystemTheme
           StandardWorkTimeMinutes = 480.0
           WorkEndAlarm = WorkEndAlarmConfigSaveRequestDto.empty
           RestStartAlarm = RestStartAlarmConfigSaveRequestDto.empty }
@@ -69,7 +70,7 @@ module AppConfigSaveRequestDto =
 
             return!
                 AppConfig.tryCreate
-                    dto.ThemeMode
+                    (dto.ThemeMode |> ThemeModeEnum.toDomain)
                     (TimeSpan.FromMinutes dto.StandardWorkTimeMinutes)
                     workEndAlarmConfig
                     restStartAlarmConfig

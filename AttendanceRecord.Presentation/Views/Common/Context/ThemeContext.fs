@@ -3,12 +3,12 @@ namespace AttendanceRecord.Presentation.Views.Common.Context
 open R3
 open Avalonia.Styling
 open Avalonia.Media
-open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Shared
 open AttendanceRecord.Application.Dtos.Responses
+open AttendanceRecord.Application.Dtos.Enums
 
 type ThemeContext =
-    { ThemeMode: ReactiveProperty<ThemeMode>
+    { ThemeMode: ReactiveProperty<ThemeModeEnum>
       LoadFromConfig: unit -> unit
       GetBrushResourceObservable: string -> Observable<IBrush> }
 
@@ -17,16 +17,17 @@ module ThemeContext =
         (appConfig: Observable<AppConfigDto>)
         (disposables: CompositeDisposable)
         : ThemeContext =
-        let themeMode = R3.property SystemTheme |> R3.disposeWith disposables
+        let themeMode = R3.property ThemeModeEnum.SystemTheme |> R3.disposeWith disposables
         let appConfig = appConfig |> R3.readonly None |> R3.disposeWith disposables
 
         themeMode
         |> R3.subscribe (fun theme ->
             let variant =
                 match theme with
-                | SystemTheme -> ThemeVariant.Default
-                | LightTheme -> ThemeVariant.Light
-                | DarkTheme -> ThemeVariant.Dark
+                | ThemeModeEnum.SystemTheme -> ThemeVariant.Default
+                | ThemeModeEnum.LightTheme -> ThemeVariant.Light
+                | ThemeModeEnum.DarkTheme -> ThemeVariant.Dark
+                | _ -> ThemeVariant.Default
 
             Avalonia.Application.Current.RequestedThemeVariant <- variant
             themeMode.Value <- theme)

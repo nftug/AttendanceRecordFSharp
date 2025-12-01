@@ -1,54 +1,50 @@
 namespace AttendanceRecord.Presentation.Views.SettingsPage.Sections
 
 open R3
-open Avalonia.Media
 open NXUI.Extensions
-open type NXUI.Builders
+open FluentAvalonia.UI.Controls
+open Avalonia.Controls
 open AttendanceRecord.Presentation.Utils
-open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Presentation.Views.Common.Context
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
+open AttendanceRecord.Application.Dtos.Enums
 open AttendanceRecord.Shared
 
 module ThemeSection =
     let create () =
-        withLifecycle (fun _ self ->
+        withLifecycle (fun disposables self ->
             let ctx, _ = Context.require<SettingsPageContext> self
             let themeCtx = Context.require<ThemeContext> self |> fst
 
             self.DetachedFromVisualTree.Add(fun _ -> themeCtx.LoadFromConfig())
 
-            let createRadioButton (text: string) (theme: ThemeMode) =
-                RadioButton()
-                    .Content(text)
-                    .GroupName("ThemeGroup")
-                    .IsChecked(
-                        ctx.FormCtx.Form |> R3.map (fun f -> f.ThemeMode = theme) |> asBinding
-                    )
-                    .OnIsCheckedChangedHandler(fun ctl _ ->
-                        if ctl.IsChecked.HasValue && ctl.IsChecked.Value then
-                            ctx.FormCtx.Form.Value <-
-                                { ctx.FormCtx.Form.Value with
-                                    ThemeMode = theme }
+            let formThemeMode =
+                ctx.FormCtx.Form |> R3.map _.ThemeMode |> R3.distinctUntilChanged
 
-                            themeCtx.ThemeMode.Value <- theme)
+            formThemeMode
+            |> R3.subscribe (fun themeMode -> themeCtx.ThemeMode.Value <- themeMode)
+            |> disposables.Add
 
-            Border()
-                .BorderThickness(1.0)
-                .BorderBrush(Brushes.Gray)
-                .Padding(20.0)
-                .Child(
-                    StackPanel()
-                        .Spacing(15.0)
-                        .Children(
-                            TextBlock().Text("テーマ設定").FontSize(18.0).FontWeightBold(),
-                            StackPanel()
-                                .OrientationHorizontal()
-                                .Spacing(30.0)
-                                .Children(
-                                    createRadioButton "システム" SystemTheme,
-                                    createRadioButton "ライト" LightTheme,
-                                    createRadioButton "ダーク" DarkTheme
-                                )
-                        )
-                ))
+            let footer =
+                formThemeMode
+                |> toView (fun _ _ selectedTheme ->
+                    ComboBox()
+                        .ItemsSource(ThemeModeEnum.all)
+                        .Width(150.0)
+                        .SelectedItem(selectedTheme)
+                        .ItemTemplateFunc(fun (item: ThemeModeEnum) ->
+                            TextBlock().Text(ThemeModeEnum.toDisplayName item))
+                        .OnSelectionChangedHandler(fun ctl _ ->
+                            match ctl.SelectedItem with
+                            | :? ThemeModeEnum as theme ->
+                                ctx.FormCtx.Form.Value <-
+                                    { ctx.FormCtx.Form.Value with
+                                        ThemeMode = theme }
+                            | _ -> ()))
+
+            SettingsExpander(
+                Header = "テーマ設定",
+                Description = "アプリケーションのテーマに関する設定を行います。",
+                IconSource = SymbolIconSource(Symbol = Symbol.DarkTheme),
+                Footer = footer
+            ))

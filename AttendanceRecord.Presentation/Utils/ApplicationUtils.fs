@@ -63,7 +63,7 @@ module ApplicationUtils =
 
     let withLifecycle<'t when 't :> Control>
         (create: CompositeDisposable -> Control -> 't)
-        : Control =
+        : ContentControl =
         let mutable disposables: CompositeDisposable option = None
         let container = ContentControl()
 
@@ -87,7 +87,7 @@ module ApplicationUtils =
     let toView
         (render: CompositeDisposable -> Control -> 'a -> Control)
         (source: Observable<'a>)
-        : Control =
+        : ContentControl =
         let container = ContentControl()
         let disposables = new CompositeDisposable()
 
@@ -104,7 +104,7 @@ module ApplicationUtils =
     let toListView
         (itemTemplate: CompositeDisposable -> Control -> 'a -> Control)
         (source: Observable<'a list>)
-        : Control =
+        : ContentControl =
         source
         |> toView (fun d s v ->
             let stackPanel = StackPanel()
@@ -116,7 +116,7 @@ module ApplicationUtils =
     let toOptView
         (render: CompositeDisposable -> Control -> 'a -> Control)
         (source: Observable<'a option>)
-        : Control =
+        : ContentControl =
         source
         |> toView (fun d s ->
             function
@@ -126,7 +126,7 @@ module ApplicationUtils =
     let toOptListView
         (itemTemplate: CompositeDisposable -> Control -> 'a -> Control)
         (source: Observable<'a option list>)
-        : Control =
+        : ContentControl =
         source
         |> toView (fun d s vList ->
             let stackPanel = StackPanel()

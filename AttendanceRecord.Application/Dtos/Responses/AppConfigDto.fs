@@ -1,6 +1,7 @@
 namespace AttendanceRecord.Application.Dtos.Responses
 
 open AttendanceRecord.Domain.Entities
+open AttendanceRecord.Application.Dtos.Enums
 
 type WorkEndAlarmConfigDto =
     { IsEnabled: bool
@@ -13,14 +14,14 @@ type RestStartAlarmConfigDto =
       SnoozeMinutes: float }
 
 type AppConfigDto =
-    { ThemeMode: ThemeMode
+    { ThemeMode: ThemeModeEnum
       StandardWorkTimeMinutes: float
       WorkEndAlarm: WorkEndAlarmConfigDto
       RestStartAlarm: RestStartAlarmConfigDto }
 
 module AppConfigDto =
     let fromDomain (config: AppConfig) : AppConfigDto =
-        { ThemeMode = config.ThemeMode
+        { ThemeMode = config.ThemeMode |> ThemeModeEnum.fromDomain
           StandardWorkTimeMinutes =
             config.StandardWorkTime |> StandardWorkTime.value |> _.TotalMinutes
           WorkEndAlarm =

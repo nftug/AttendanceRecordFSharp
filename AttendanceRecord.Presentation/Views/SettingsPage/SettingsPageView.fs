@@ -27,7 +27,7 @@ module SettingsPageView =
                         .Content(
                             StackPanel()
                                 .HorizontalAlignmentStretch()
-                                .Spacing(20.0)
+                                .Spacing(15.0)
                                 .Children(
                                     ThemeSection.create (),
                                     BasicSettingsSection.create (),

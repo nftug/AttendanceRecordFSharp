@@ -1,8 +1,8 @@
 namespace AttendanceRecord.Presentation.Views.SettingsPage.Sections
 
-open Avalonia.Media
 open NXUI.Extensions
 open type NXUI.Builders
+open FluentAvalonia.UI.Controls
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
@@ -29,84 +29,102 @@ module WorkEndAlarmSection =
                 ctx.FormCtx.Errors.Value <-
                     ctx.FormCtx.Errors.Value |> List.filter (_.IsWorkEndAlarmError >> not)
 
-            let buildDurationPart () =
-                StackPanel()
-                    .Spacing(15.0)
-                    .Children(
-                        StackPanel()
-                            .OrientationHorizontal()
-                            .Spacing(10.0)
-                            .Children(
-                                TextBlock()
-                                    .Text("勤務終了前 (分)")
-                                    .VerticalAlignmentCenter()
-                                    .Width(120.0),
-                                NumericUpDown()
-                                    .Value(beforeEndMinutes |> asBinding)
-                                    .OnValueChangedHandler(fun _ e ->
-                                        update (fun f ->
-                                            { f with
-                                                BeforeEndMinutes = e.NewValue |> decimal |> float }))
-                                    .FormatString("0")
-                                    .Minimum(0m)
-                                    .Maximum(1440.0m)
-                                    .Width(120.0)
-                                    .IsEnabled(alarmEnabled |> asBinding)
-                            ),
-                        ValidationErrorsText.create
-                            { Errors =
-                                ctx.FormCtx.Errors
-                                |> R3.map AppConfigErrors.chooseWorkEndAlarmDuration
-                              FontSize = None }
-                    )
+            let expander =
+                SettingsExpander(
+                    Header = "勤務終了前のアラーム",
+                    Description = "勤務終了前にアラームを表示する設定を行います。",
+                    IconSource = SymbolIconSource(Symbol = Symbol.Alert)
+                )
 
-            let buildSnoozePart () =
-                StackPanel()
-                    .Spacing(15.0)
-                    .Children(
-                        StackPanel()
-                            .OrientationHorizontal()
-                            .Spacing(10.0)
-                            .Children(
-                                TextBlock().Text("スヌーズ (分)").VerticalAlignmentCenter().Width(120.0),
-                                NumericUpDown()
-                                    .Value(snoozeMinutes |> asBinding)
-                                    .OnValueChangedHandler(fun _ e ->
-                                        update (fun f ->
-                                            { f with
-                                                SnoozeMinutes = e.NewValue |> decimal |> float }))
-                                    .FormatString("0")
-                                    .Minimum(1m)
-                                    .Maximum(60m)
-                                    .Width(120.0)
-                                    .IsEnabled(alarmEnabled |> asBinding)
-                            ),
-                        ValidationErrorsText.create
-                            { Errors =
-                                ctx.FormCtx.Errors
-                                |> R3.map AppConfigErrors.chooseWorkEndAlarmSnoozeDuration
-                              FontSize = None }
-                    )
+            expander.Items.Add(
+                let footer =
+                    ToggleSwitch()
+                        .IsChecked(alarmEnabled |> asBinding)
+                        .OnIsCheckedChangedHandler(fun ctl _ ->
+                            update (fun f ->
+                                { f with
+                                    IsEnabled = ctl.IsChecked.GetValueOrDefault false }))
 
-            Border()
-                .BorderThickness(1.0)
-                .BorderBrush(Brushes.Gray)
-                .Padding(20.0)
-                .Child(
+                SettingsExpanderItem(Content = "アラームを有効にする", Footer = footer)
+            )
+            |> ignore
+
+            expander.Items.Add(
+                let footer =
                     StackPanel()
                         .Spacing(15.0)
                         .Children(
-                            TextBlock().Text("勤務終了アラーム").FontSize(18.0).FontWeightBold(),
-                            ToggleSwitch()
-                                .Content("アラームを有効にする")
-                                .IsChecked(alarmEnabled |> asBinding)
-                                .OnIsCheckedChangedHandler(fun ctl _ ->
-                                    update (fun f ->
-                                        { f with
-                                            IsEnabled = ctl.IsChecked.GetValueOrDefault false })),
                             StackPanel()
+                                .Spacing(12.0)
                                 .OrientationHorizontal()
-                                .Spacing(30.0)
-                                .Children(buildDurationPart (), buildSnoozePart ())
+                                .Children(
+                                    NumericUpDown()
+                                        .Value(beforeEndMinutes |> asBinding)
+                                        .OnValueChangedHandler(fun _ e ->
+                                            update (fun f ->
+                                                { f with
+                                                    BeforeEndMinutes =
+                                                        e.NewValue |> decimal |> float }))
+                                        .FormatString("0")
+                                        .Minimum(0m)
+                                        .Maximum(1440.0m)
+                                        .Width(120.0)
+                                        .IsEnabled(alarmEnabled |> asBinding),
+                                    TextBlock().Text("分前").VerticalAlignmentCenter()
+                                )
+                                .HorizontalAlignmentRight(),
+                            ValidationErrorsText.create
+                                { Errors =
+                                    ctx.FormCtx.Errors
+                                    |> R3.map AppConfigErrors.chooseWorkEndAlarmDuration
+                                  FontSize = None }
                         )
-                ))
+
+                SettingsExpanderItem(
+                    Content = "勤務終了前の残り時間",
+                    Description = "勤務終了前にアラームを表示する時間を分単位で設定します。",
+                    Footer = footer
+                )
+            )
+            |> ignore
+
+            expander.Items.Add(
+                let footer =
+                    StackPanel()
+                        .Spacing(15.0)
+                        .Children(
+                            StackPanel()
+                                .Spacing(12.0)
+                                .OrientationHorizontal()
+                                .Children(
+                                    NumericUpDown()
+                                        .Value(snoozeMinutes |> asBinding)
+                                        .OnValueChangedHandler(fun _ e ->
+                                            update (fun f ->
+                                                { f with
+                                                    SnoozeMinutes =
+                                                        e.NewValue |> decimal |> float }))
+                                        .FormatString("0")
+                                        .Minimum(1m)
+                                        .Maximum(60m)
+                                        .Width(120.0)
+                                        .IsEnabled(alarmEnabled |> asBinding),
+                                    TextBlock().Text("分間").VerticalAlignmentCenter()
+                                )
+                                .HorizontalAlignmentRight(),
+                            ValidationErrorsText.create
+                                { Errors =
+                                    ctx.FormCtx.Errors
+                                    |> R3.map AppConfigErrors.chooseWorkEndAlarmSnoozeDuration
+                                  FontSize = None }
+                        )
+
+                SettingsExpanderItem(
+                    Content = "スヌーズ",
+                    Description = "アラームを再度表示するまでの時間を分単位で設定します。",
+                    Footer = footer
+                )
+            )
+            |> ignore
+
+            expander)

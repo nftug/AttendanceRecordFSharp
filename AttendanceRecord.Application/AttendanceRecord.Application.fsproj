@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Compile Include="Dtos/Enums/RestVariantEnum.fs" />
+    <Compile Include="Dtos/Enums/ThemeModeEnum.fs" />
 
     <Compile Include="Dtos/Responses/TimeDurationDto.fs" />
     <Compile Include="Dtos/Responses/WorkRecordSummaryDto.fs" />

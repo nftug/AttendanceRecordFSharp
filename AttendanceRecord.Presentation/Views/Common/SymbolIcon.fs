@@ -15,6 +15,14 @@ type __SymbolIconExtensions =
         icon.Foreground <- brush
         icon
 
+    [<Extension>]
+    static member Foreground(icon: SymbolIcon, brush: Avalonia.Data.IBinding) : SymbolIcon =
+        let binding =
+            SymbolIcon.ForegroundProperty.Bind().WithMode(Avalonia.Data.BindingMode.OneWay)
+
+        icon[binding] <- brush
+        icon
+
 module SymbolIcon =
     let create (symbol: Observable<Symbol>) : SymbolIcon =
         let icon = SymbolIcon()

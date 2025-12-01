@@ -32,11 +32,16 @@ module WorkRecordListView =
     open Avalonia.Media
     open AttendanceRecord.Application.Dtos.Responses
     open FluentAvalonia.UI.Controls
+    open AttendanceRecord.Presentation.Views.Common.Context
 
     let create () : Avalonia.Controls.Control =
         withLifecycle (fun disposables self ->
             let ctx, _ = Context.require<HistoryPageContext> self
             let records = ctx.MonthlyRecords |> R3.map _.WorkRecords
+
+            let warningColor =
+                let themeCtx = Context.require<ThemeContext> self |> fst
+                themeCtx.GetBrushResourceObservable "SystemFillColorCriticalBrush"
 
             let itemTemplate (item: WorkRecordListItemDto) =
                 let isSelected =
@@ -55,7 +60,10 @@ module WorkRecordListView =
                                     .Foreground(Brushes.DarkGray),
                                 TextBlock()
                                     .Text(item.Date.ToString "yyyy/MM/dd (ddd)")
-                                    .VerticalAlignmentCenter()
+                                    .VerticalAlignmentCenter(),
+                                (SymbolIcon.create (enum<Symbol> 0xE7BA |> R3.ret))
+                                    .Foreground(warningColor |> asBinding)
+                                    .IsVisible(item.HasUnfinishedWarning |> R3.ret |> asBinding)
                             )
                     )
                     .OnClickHandler(fun _ _ -> handleDateSelect ctx disposables item.Date)
@@ -66,6 +74,11 @@ module WorkRecordListView =
                     .CornerRadius(0.0)
                     .Padding(10.0)
                     .FontSize(14.0)
+                    .Tip(
+                        match item.HasUnfinishedWarning with
+                        | true -> "未完了の項目があります。"
+                        | false -> null
+                    )
 
             ItemsControl()
                 .ItemsSource(records |> asBinding)

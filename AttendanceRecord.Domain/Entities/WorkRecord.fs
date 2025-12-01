@@ -65,6 +65,15 @@ module WorkRecord =
     let isWorking (now: DateTime) (record: WorkRecord) : bool =
         isActive now record && not (isResting now record)
 
+    let hasUnfinishedWarning (now: DateTime) (record: WorkRecord) : bool =
+        let isNotActive = not (isActive now record)
+        let hasNotFinishedWork = getEndedAt record |> Option.isNone
+
+        let hasNotFinishedRest =
+            record.RestRecords |> List.exists (RestRecord.getEndedAt >> Option.isNone)
+
+        isNotActive && (hasNotFinishedWork || hasNotFinishedRest)
+
     // Factory methods
     let tryCreate
         (duration: TimeDuration)

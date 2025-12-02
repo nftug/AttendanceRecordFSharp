@@ -193,11 +193,7 @@ module RestTimeSection =
                             Grid()
                                 .ColumnDefinitions("Auto,*,Auto")
                                 .Children(
-                                    TextBlock()
-                                        .Text("休憩・有給休暇")
-                                        .FontSize(18.0)
-                                        .FontWeightBold()
-                                        .Column(0),
+                                    TextBlock().Text("休憩・有給休暇").FontSize(18.0).Column(0),
                                     buildAddSplitButton () |> _.Column(2)
                                 )
                                 .Row(0),

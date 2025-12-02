@@ -46,7 +46,6 @@ module NavigationView =
                     TextBlock()
                         .Text(pageTitle |> asBinding)
                         .FontSize(22.0)
-                        .FontWeightBold()
                         .Margin(20.0, 20.0, 0.0, 10.0)
                         .DockTop(),
                     frame

@@ -30,7 +30,7 @@ module WorkTimeSection =
                     StackPanel()
                         .Spacing(15.0)
                         .Children(
-                            TextBlock().Text("出退勤").FontSize(18.0).FontWeightBold(),
+                            TextBlock().Text("出退勤").FontSize(18.0),
                             TimeDurationPicker.create
                                 { StartedAt = ctx.FormCtx.Form |> R3.map _.StartedAt
                                   EndedAt = ctx.FormCtx.Form |> R3.map _.EndedAt

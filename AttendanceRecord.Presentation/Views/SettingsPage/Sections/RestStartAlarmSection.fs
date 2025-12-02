@@ -39,6 +39,8 @@ module RestStartAlarmSection =
             expander.Items.Add(
                 let footer =
                     ToggleSwitch()
+                        .OnContent("有効")
+                        .OffContent("無効")
                         .IsChecked(alarmEnabled |> asBinding)
                         .OnIsCheckedChangedHandler(fun ctl _ ->
                             update (fun f ->

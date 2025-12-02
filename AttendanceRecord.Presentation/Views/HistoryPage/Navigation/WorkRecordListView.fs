@@ -40,9 +40,6 @@ module WorkRecordListView =
             let records = ctx.MonthlyRecords |> R3.map _.WorkRecords
             let themeCtx = Context.require<ThemeContext> self |> fst
 
-            let warningColor =
-                themeCtx.GetBrushResourceObservable "SystemFillColorCriticalBrush"
-
             let itemTemplate (item: WorkRecordListItemDto) =
                 let isSelected =
                     ctx.SelectedDate
@@ -62,7 +59,11 @@ module WorkRecordListView =
                                     .Text(item.Date.ToString "yyyy/MM/dd (ddd)")
                                     .VerticalAlignmentCenter(),
                                 (SymbolIcon.create (enum<Symbol> 0xE7BA |> R3.ret))
-                                    .Foreground(warningColor |> asBinding)
+                                    .Foreground(
+                                        themeCtx.GetBrushResourceObservable
+                                            "SystemFillColorCriticalBrush"
+                                        |> asBinding
+                                    )
                                     .IsVisible(item.HasUnfinishedWarning |> R3.ret |> asBinding)
                             )
                     )

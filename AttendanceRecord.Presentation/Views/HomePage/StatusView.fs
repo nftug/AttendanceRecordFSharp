@@ -9,6 +9,8 @@ open AttendanceRecord.Shared
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Presentation.Views.HomePage.Context
+open AttendanceRecord.Presentation.Views.Common
+open AttendanceRecord.Presentation.Views.Common.Context
 
 module StatusView =
     let private createSummaryInfoRow (label: string) (duration: Observable<TimeSpan>) =
@@ -25,10 +27,9 @@ module StatusView =
     let create () : Avalonia.Controls.Control =
         withLifecycle (fun _ self ->
             let ctx, _ = Context.require<HomePageContext> self
+            let themeCtx = Context.require<ThemeContext> self |> fst
 
-            Border()
-                .BorderThickness(1.0)
-                .BorderBrush(Brushes.Gray)
+            (ControlBorder.create themeCtx)
                 .Padding(25.0)
                 .Height(250.0)
                 .Child(

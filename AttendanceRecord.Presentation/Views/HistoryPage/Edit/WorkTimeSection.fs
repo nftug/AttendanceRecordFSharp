@@ -4,6 +4,8 @@ open Avalonia.Media
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
+open AttendanceRecord.Presentation.Views.Common
+open AttendanceRecord.Presentation.Views.Common.Context
 open AttendanceRecord.Domain.Errors
 open AttendanceRecord.Shared
 
@@ -14,6 +16,7 @@ module WorkTimeSection =
     let create () =
         withLifecycle (fun _ self ->
             let ctx, _ = Context.require<HistoryPageContext> self
+            let themeCtx = Context.require<ThemeContext> self |> fst
 
             let update (updater: WorkRecordSaveRequestDto -> WorkRecordSaveRequestDto) =
                 ctx.FormCtx.Form.Value <- updater ctx.FormCtx.Form.Value
@@ -21,9 +24,7 @@ module WorkTimeSection =
                 ctx.FormCtx.Errors.Value <-
                     ctx.FormCtx.Errors.Value |> List.filter (_.IsWorkDurationError >> not)
 
-            Border()
-                .BorderThickness(1.0)
-                .BorderBrush(Brushes.Gray)
+            (ControlBorder.create themeCtx)
                 .Padding(15.0)
                 .Child(
                     StackPanel()

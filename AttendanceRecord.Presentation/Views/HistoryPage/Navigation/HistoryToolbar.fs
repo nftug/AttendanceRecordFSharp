@@ -69,7 +69,7 @@ module HistoryToolbar =
             Grid()
                 .ColumnDefinitions("Auto,*,Auto")
                 .Height(50.0)
-                .Margin(0.0, 5.0)
+                .Margin(5.0)
                 .Children(
                     StackPanel()
                         .OrientationHorizontal()
@@ -110,7 +110,7 @@ module HistoryToolbar =
                     StackPanel()
                         .OrientationHorizontal()
                         .VerticalAlignmentCenter()
-                        .Margin(0.0, 0.0, 20.0, 0.0)
+                        .Margin(0.0, 0.0, 15.0, 0.0)
                         .Spacing(10.0)
                         .Column(2)
                         .Children(

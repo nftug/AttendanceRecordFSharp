@@ -45,6 +45,7 @@
     <Compile Include="Views/Common/Context/ApplicationContext.fs" />
     <Compile Include="Views/Common/Context/ThemeContext.fs" />
     <Compile Include="Views/Common/ValidationErrorsText.fs" />
+    <Compile Include="Views/Common/ControlBorder.fs" />
     <Compile Include="Views/Common/SymbolIcon.fs" />
     <Compile Include="Views/Common/Dialog.fs" />
     <Compile Include="Views/Common/DatePickerDialog.fs" />

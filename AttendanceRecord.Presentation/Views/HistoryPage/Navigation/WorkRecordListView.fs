@@ -38,9 +38,9 @@ module WorkRecordListView =
         withLifecycle (fun disposables self ->
             let ctx, _ = Context.require<HistoryPageContext> self
             let records = ctx.MonthlyRecords |> R3.map _.WorkRecords
+            let themeCtx = Context.require<ThemeContext> self |> fst
 
             let warningColor =
-                let themeCtx = Context.require<ThemeContext> self |> fst
                 themeCtx.GetBrushResourceObservable "SystemFillColorCriticalBrush"
 
             let itemTemplate (item: WorkRecordListItemDto) =
@@ -85,7 +85,15 @@ module WorkRecordListView =
                 .TemplateFunc(fun _ ->
                     Border()
                         .BorderThickness(1.0)
-                        .BorderBrush(Brushes.Gray)
+                        .BorderBrush(
+                            themeCtx.GetBrushResourceObservable "ControlStrokeColorDefaultBrush"
+                            |> asBinding
+                        )
+                        .Background(
+                            themeCtx.GetBrushResourceObservable "ControlFillColorDefaultBrush"
+                            |> asBinding
+                        )
+                        .Padding(5.0)
                         .Child(ScrollViewer().Content(ItemsPresenter())))
                 .ItemTemplateFunc(itemTemplate)
                 .MinWidth(200.0))

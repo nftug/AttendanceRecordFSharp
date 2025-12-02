@@ -11,7 +11,7 @@ module ControlBorder =
         let borderBrush = themeCtx.GetBrushResourceObservable "ControlElevationBorderBrush"
 
         let backgroundBrush =
-            themeCtx.GetBrushResourceObservable "ControlFillColorDefaultBrush"
+            themeCtx.GetBrushResourceObservable "CardBackgroundFillColorDefaultBrush"
 
         Border()
             .BorderThickness(1.0)

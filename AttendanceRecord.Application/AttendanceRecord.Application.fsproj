@@ -33,6 +33,7 @@
     <Compile Include="Services/TimerProvider.fs" />
     <Compile Include="Services/WorkStatusStore.fs" />
     <Compile Include="Services/AlarmService.fs" />
+    <Compile Include="Services/WorkStatusFormatter.fs" />
 
     <Compile Include="UseCases/WorkRecords/ToggleWork.fs" />
     <Compile Include="UseCases/WorkRecords/ToggleRest.fs" />

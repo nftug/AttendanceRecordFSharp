@@ -17,7 +17,8 @@ type AppConfigDto =
     { ThemeMode: ThemeModeEnum
       StandardWorkTimeMinutes: float
       WorkEndAlarm: WorkEndAlarmConfigDto
-      RestStartAlarm: RestStartAlarmConfigDto }
+      RestStartAlarm: RestStartAlarmConfigDto
+      WorkStatusFormat: string }
 
 module AppConfigDto =
     let fromDomain (config: AppConfig) : AppConfigDto =
@@ -31,4 +32,5 @@ module AppConfigDto =
           RestStartAlarm =
             { IsEnabled = config.RestStartAlarm.IsEnabled
               BeforeStartMinutes = config.RestStartAlarm.BeforeStartDuration.TotalMinutes
-              SnoozeMinutes = config.RestStartAlarm.SnoozeDuration.TotalMinutes } }
+              SnoozeMinutes = config.RestStartAlarm.SnoozeDuration.TotalMinutes }
+          WorkStatusFormat = config.WorkStatusFormat }

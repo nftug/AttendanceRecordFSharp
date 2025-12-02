@@ -8,4 +8,6 @@ public record AppConfigFileDto(
     string ThemeMode,
     double StandardWorkMinutes,
     WorkEndAlarmConfigFileDto WorkEndAlarm,
-    RestStartAlarmConfigFileDto RestStartAlarm);
+    RestStartAlarmConfigFileDto RestStartAlarm,
+    string WorkStatusFormat
+);

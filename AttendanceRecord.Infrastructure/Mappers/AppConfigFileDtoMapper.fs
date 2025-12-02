@@ -22,6 +22,7 @@ module AppConfigFileDtoMapper =
                 float config.RestStartAlarm.BeforeStartDuration.TotalMinutes,
                 float config.RestStartAlarm.SnoozeDuration.TotalMinutes
             )
+            , config.WorkStatusFormat
         )
 
     let toDomain (dto: AppConfigFileDto) : AppConfig =
@@ -41,4 +42,8 @@ module AppConfigFileDtoMapper =
             { IsEnabled = dto.RestStartAlarm.IsEnabled
               BeforeStartDuration =
                 TimeSpan.FromMinutes(float dto.RestStartAlarm.BeforeStartMinutes)
-              SnoozeDuration = TimeSpan.FromMinutes(float dto.RestStartAlarm.SnoozeMinutes) } }
+              SnoozeDuration = TimeSpan.FromMinutes(float dto.RestStartAlarm.SnoozeMinutes) }
+          WorkStatusFormat =
+            dto.WorkStatusFormat
+            |> Option.ofObj
+            |> Option.defaultValue AppConfig.initial.WorkStatusFormat }

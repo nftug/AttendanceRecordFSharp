@@ -25,7 +25,8 @@ type AppConfig =
     { ThemeMode: ThemeMode
       StandardWorkTime: StandardWorkTime
       WorkEndAlarm: WorkEndAlarmConfig
-      RestStartAlarm: RestStartAlarmConfig }
+      RestStartAlarm: RestStartAlarmConfig
+      WorkStatusFormat: string }
 
 module WorkEndAlarmConfig =
     let initial: WorkEndAlarmConfig =
@@ -89,13 +90,19 @@ module AppConfig =
         { ThemeMode = SystemTheme
           StandardWorkTime = StandardWorkTime(TimeSpan.FromHours 8.0)
           WorkEndAlarm = WorkEndAlarmConfig.initial
-          RestStartAlarm = RestStartAlarmConfig.initial }
+          RestStartAlarm = RestStartAlarmConfig.initial
+          WorkStatusFormat =
+            """- 勤務時間: {work_hh}時間{work_mm}分
+- 休憩時間: {rest_hh}時間{rest_mm}分
+- 今日の残業時間: {over_hh}時間{over_mm}分
+- 今月の残業時間: {over_monthly_hh}時間{over_monthly_mm}分""" }
 
     let tryCreate
         (themeMode: ThemeMode)
         (standardWorkTime: TimeSpan)
         (workEndAlarmConfig: WorkEndAlarmConfig)
         (restStartAlarmConfig: RestStartAlarmConfig)
+        (workStatusFormat: string)
         : Validation<AppConfig, AppConfigError> =
         validation {
             let! standardWorkTimeVo =
@@ -113,5 +120,6 @@ module AppConfig =
                     { ThemeMode = themeMode
                       StandardWorkTime = standardWorkTimeVo
                       WorkEndAlarm = workEndAlarmConfig
-                      RestStartAlarm = restStartAlarmConfig }
+                      RestStartAlarm = restStartAlarmConfig
+                      WorkStatusFormat = workStatusFormat }
         }

@@ -21,6 +21,7 @@ module private NavigationContext =
                   fun () ->
                       HomePageView.create
                           { Status = services.WorkStatusStore.WorkStatus
+                            AppConfig = services.AppConfig
                             ToggleWork = services.ToggleWorkUseCase
                             ToggleRest = services.ToggleRestUseCase } }
               { Path = "/history"

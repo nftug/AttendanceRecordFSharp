@@ -1,23 +1,28 @@
 namespace AttendanceRecord.Presentation.Views.SettingsPage.Sections
 
-open R3
+open NXUI.Extensions
+open type NXUI.Builders
 open FluentAvalonia.UI.Controls
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.SettingsPage.Context
+open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Shared
 open AttendanceRecord.Application.Dtos.Requests
 open AttendanceRecord.Application.Services
 
+[<AutoOpen>]
 module private WorkStatusFormattingDialogView =
-    open NXUI.Extensions
-    open type NXUI.Builders
+    let createDialogContent (ctx: SettingsPageContext) =
+        withLifecycle (fun _ self ->
+            let formatText = ctx.FormCtx.Form |> R3.map _.WorkStatusFormat
 
-    let createDialogContent (ctx: SettingsPageContext) (formatText: ReactiveProperty<string>) =
-        withLifecycle (fun disposables _ ->
             let textBox =
                 TextBox()
                     .Text(formatText |> asBinding)
-                    .OnTextChangedHandler(fun ctl _ -> formatText.Value <- ctl.Text)
+                    .OnTextChangedHandler(fun ctl _ ->
+                        ctx.FormCtx.Form.Value <-
+                            { ctx.FormCtx.Form.Value with
+                                WorkStatusFormat = ctl.Text })
                     .AcceptsReturn(true)
                     .TextWrappingWrap()
                     .VerticalScrollBarVisibilityAuto()
@@ -25,15 +30,7 @@ module private WorkStatusFormattingDialogView =
                     .Padding(12.0)
                     .LineHeight(25.0)
 
-            nextTick (fun () -> textBox.Focus() |> ignore)
-
-            ctx.FormCtx.Form
-            |> R3.map _.WorkStatusFormat
-            |> R3.subscribe (fun format ->
-                textBox.IsUndoEnabled <- false
-                formatText.Value <- format
-                textBox.IsUndoEnabled <- true)
-            |> disposables.Add
+            self.Loaded.Add(fun _ -> textBox.Focus() |> ignore)
 
             let insertSnippet (snippet: string) =
                 let caret = textBox.CaretIndex
@@ -90,38 +87,20 @@ module private WorkStatusFormattingDialogView =
                     textBox
                 ))
 
-module private WorkStatusFormattingDialog =
-    let show (ctx: SettingsPageContext) (disposables: CompositeDisposable) =
-        invokeTask disposables (fun ct ->
-            task {
-                let formatText = R3.property "" |> R3.disposeWith disposables
-
-                let content = WorkStatusFormattingDialogView.createDialogContent ctx formatText
-                let dialog = ContentDialog()
-                dialog.Title <- "勤務記録コピーの書式設定"
-                dialog.Content <- content
-                dialog.CloseButtonText <- "閉じる"
-
-                dialog.PrimaryButtonCommand <-
-                    R3.command ()
-                    |> R3.withSubscribe disposables (fun _ -> printfn "Resetting format")
-
-                let! _ = dialog.ShowAsync()
-                ct.ThrowIfCancellationRequested()
-
-                ctx.FormCtx.Form.Value <-
-                    { ctx.FormCtx.Form.Value with
-                        WorkStatusFormat = formatText.Value }
-            })
-
 module WorkStatusFormattingSection =
-    open NXUI.Extensions
-    open type NXUI.Builders
-    open AttendanceRecord.Presentation.Views.Common
-
     let create () =
-        withLifecycle (fun disposables self ->
-            let ctx, _ = Context.require<SettingsPageContext> self
+        withLifecycle (fun _ self ->
+            let ctx = Context.require<SettingsPageContext> self |> fst
+
+            let showDialog () =
+                let dialog =
+                    ContentDialog(
+                        Title = "勤務記録コピーの書式設定",
+                        Content = createDialogContent ctx,
+                        CloseButtonText = "閉じる"
+                    )
+
+                dialog.ShowAsync() |> ignore
 
             let footer =
                 Button()
@@ -131,8 +110,7 @@ module WorkStatusFormattingSection =
                               Label = "書式を編集..." |> R3.ret
                               Spacing = Some 7.5 |> R3.ret }
                     )
-                    .OnClickHandler(fun _ _ ->
-                        WorkStatusFormattingDialog.show ctx disposables |> ignore)
+                    .OnClickHandler(fun _ _ -> showDialog ())
 
             SettingsExpander(
                 Header = "勤務記録コピーの書式設定",

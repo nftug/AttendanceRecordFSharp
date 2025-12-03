@@ -1,10 +1,12 @@
-﻿open Avalonia
+﻿open System
+open Avalonia
 open NXUI.Extensions
 open AttendanceRecord.Presentation
 open FluentAvalonia.Styling
 open AttendanceRecord.Presentation.Utils
 
 [<EntryPoint>]
+[<STAThread>]
 let main argv =
     let buildWindow () =
         let services = ServiceContainer.create ()

@@ -72,7 +72,6 @@ module WorkRecordListView =
                     .HorizontalContentAlignmentLeft()
                     .Background(Brushes.Transparent)
                     .BorderBrush(Brushes.Transparent)
-                    .CornerRadius(0.0)
                     .Padding(10.0)
                     .FontSize(14.0)
                     .Tip(

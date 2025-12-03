@@ -32,7 +32,8 @@ module SettingsPageView =
                                     ThemeSection.create (),
                                     BasicSettingsSection.create (),
                                     WorkEndAlarmSection.create (),
-                                    RestStartAlarmSection.create ()
+                                    RestStartAlarmSection.create (),
+                                    WorkStatusFormattingSection.create ()
                                 )
                         )
                         .Row(0),

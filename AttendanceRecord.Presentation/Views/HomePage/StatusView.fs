@@ -72,7 +72,7 @@ module StatusView =
                                 .Padding(10.0)
                                 .VerticalAlignmentBottom()
                                 .HorizontalAlignmentRight()
-                                .Tip("勤務時間をクリップボードにコピー")
+                                .Tip("勤務記録をクリップボードにコピー")
                                 .OnClickHandler(fun _ _ -> handleClickCopyButton ())
                         )
                 ))

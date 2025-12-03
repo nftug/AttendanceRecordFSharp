@@ -76,6 +76,7 @@
     <Compile Include="Views/SettingsPage/Sections/BasicSettingsSection.fs" />
     <Compile Include="Views/SettingsPage/Sections/WorkEndAlarmSection.fs" />
     <Compile Include="Views/SettingsPage/Sections/RestStartAlarmSection.fs" />
+    <Compile Include="Views/SettingsPage/Sections/WorkStatusFormattingSection.fs" />
     <Compile Include="Views/SettingsPage/SettingsActionsView.fs" />
     <Compile Include="Views/SettingsPage/SettingsPageView.fs" />
 

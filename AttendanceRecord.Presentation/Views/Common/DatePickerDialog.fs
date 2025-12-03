@@ -11,9 +11,14 @@ type DatePickerDialogProps =
 module private DatePickerDialogView =
     open NXUI.Extensions
     open type NXUI.Builders
+    open FluentAvalonia.UI.Controls
 
-    let create (props: DatePickerDialogProps) (selectedDate: R3.ReactiveProperty<DateTime option>) =
-        withLifecycle (fun disposables _ ->
+    let create
+        (props: DatePickerDialogProps)
+        (selectedDate: R3.ReactiveProperty<DateTime option>)
+        (disposables: R3.CompositeDisposable)
+        =
+        let content =
             let onDisplayDateChanged (newDate: DateTime) =
                 match selectedDate.Value with
                 | Some date when date.Month <> newDate.Month -> selectedDate.Value <- None
@@ -29,7 +34,20 @@ module private DatePickerDialogView =
                     e.Subscribe(fun _ ->
                         selectedDate.Value <- ctl.SelectedDate |> Option.ofNullable)
                     |> disposables.Add)
-                .HorizontalAlignmentCenter())
+                .HorizontalAlignmentCenter()
+
+        let dialog = ContentDialog()
+        dialog.Title <- "日付を選択"
+        dialog.Content <- content
+        dialog.PrimaryButtonText <- "選択"
+        dialog.CloseButtonText <- "キャンセル"
+
+        selectedDate
+        |> R3.map Option.isSome
+        |> R3.subscribe (fun hasDate -> dialog.IsPrimaryButtonEnabled <- hasDate)
+        |> disposables.Add
+
+        dialog
 
 module DatePickerDialog =
     open System.Threading
@@ -41,17 +59,7 @@ module DatePickerDialog =
             let disposables = new R3.CompositeDisposable()
             let selectedDate = R3.property props.InitialDate |> R3.disposeWith disposables
 
-            let dialog = ContentDialog()
-            dialog.Title <- "日付を選択"
-            dialog.Content <- DatePickerDialogView.create props selectedDate
-            dialog.PrimaryButtonText <- "選択"
-            dialog.CloseButtonText <- "キャンセル"
-
-            selectedDate
-            |> R3.map Option.isSome
-            |> R3.subscribe (fun hasDate -> dialog.IsPrimaryButtonEnabled <- hasDate)
-            |> disposables.Add
-
+            let dialog = DatePickerDialogView.create props selectedDate disposables
             let! dialogResult = dialog.ShowAsync()
 
             ct |> Option.iter _.ThrowIfCancellationRequested()

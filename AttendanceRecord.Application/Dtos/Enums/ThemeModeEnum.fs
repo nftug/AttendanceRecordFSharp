@@ -27,7 +27,7 @@ module ThemeModeEnum =
 
     let toDisplayName (mode: ThemeModeEnum) : string =
         match mode with
-        | ThemeModeEnum.SystemTheme -> "システム"
+        | ThemeModeEnum.SystemTheme -> "システムに合わせる"
         | ThemeModeEnum.LightTheme -> "ライト"
         | ThemeModeEnum.DarkTheme -> "ダーク"
-        | _ -> "システム"
+        | _ -> "システムに合わせる"

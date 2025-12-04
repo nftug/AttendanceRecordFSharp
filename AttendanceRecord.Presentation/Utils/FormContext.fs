@@ -5,6 +5,7 @@ open AttendanceRecord.Shared
 
 type FormContext<'TDto, 'TError> =
     { Form: ReactiveProperty<'TDto>
+      DefaultForm: ReadOnlyReactiveProperty<'TDto>
       IsFormDirty: ReadOnlyReactiveProperty<bool>
       Errors: ReactiveProperty<'TError list>
       ResetForm: 'TDto option -> unit
@@ -44,6 +45,7 @@ module FormContext =
         onReset |> R3.subscribe (fun v -> errors.Value <- List.empty) |> disposables.Add
 
         { Form = form
+          DefaultForm = defaultForm
           IsFormDirty = isFormDirty
           Errors = errors
           ResetForm = resetForm

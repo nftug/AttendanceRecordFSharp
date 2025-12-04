@@ -1,6 +1,6 @@
 namespace AttendanceRecord.Presentation.Views.SettingsPage.Sections
 
-open NXUI.Extensions
+open R3
 open type NXUI.Builders
 open FluentAvalonia.UI.Controls
 open AttendanceRecord.Presentation.Utils
@@ -12,17 +12,14 @@ open AttendanceRecord.Application.Services
 
 [<AutoOpen>]
 module private WorkStatusFormattingDialogView =
-    let createDialogContent (ctx: SettingsPageContext) =
-        withLifecycle (fun _ self ->
-            let formatText = ctx.FormCtx.Form |> R3.map _.WorkStatusFormat
+    open NXUI.Extensions
 
+    let createDialogContent (formatText: ReactiveProperty<string>) =
+        withLifecycle (fun _ self ->
             let textBox =
                 TextBox()
                     .Text(formatText |> asBinding)
-                    .OnTextChangedHandler(fun ctl _ ->
-                        ctx.FormCtx.Form.Value <-
-                            { ctx.FormCtx.Form.Value with
-                                WorkStatusFormat = ctl.Text })
+                    .OnTextChangedHandler(fun ctl _ -> formatText.Value <- ctl.Text)
                     .AcceptsReturn(true)
                     .TextWrappingWrap()
                     .VerticalScrollBarVisibilityAuto()
@@ -30,7 +27,11 @@ module private WorkStatusFormattingDialogView =
                     .Padding(12.0)
                     .LineHeight(25.0)
 
-            self.Loaded.Add(fun _ -> textBox.Focus() |> ignore)
+            self.Loaded.Add(fun _ ->
+                // Reset undo stack to prevent large memory usage
+                textBox.IsUndoEnabled <- false
+                textBox.IsUndoEnabled <- true
+                textBox.Focus() |> ignore)
 
             let insertSnippet (snippet: string) =
                 let caret = textBox.CaretIndex
@@ -87,20 +88,73 @@ module private WorkStatusFormattingDialogView =
                     textBox
                 ))
 
-module WorkStatusFormattingSection =
-    let create () =
-        withLifecycle (fun _ self ->
-            let ctx = Context.require<SettingsPageContext> self |> fst
+[<AutoOpen>]
+module private WorkStatusFormattingDialog =
+    type FormDialogButton =
+        | OkButton
+        | CancelButton
 
-            let showDialog () =
+    let showDialog
+        (ctx: SettingsPageContext)
+        (root: Avalonia.Controls.Control)
+        (disposables: CompositeDisposable)
+        =
+        invokeTask disposables (fun ct ->
+            task {
+                let formatText =
+                    R3.property ctx.FormCtx.Form.Value.WorkStatusFormat
+                    |> R3.disposeWith disposables
+
+                let defaultValue = formatText.CurrentValue
+
                 let dialog =
-                    ContentDialog(
-                        Title = "勤務記録コピーの書式設定",
-                        Content = createDialogContent ctx,
-                        CloseButtonText = "閉じる"
+                    TaskDialog(
+                        Title = getApplicationTitle (),
+                        Header = "勤務記録コピーの書式設定",
+                        Content = createDialogContent formatText,
+                        Buttons =
+                            ([ TaskDialogButton("OK", OkButton)
+                               TaskDialogButton("キャンセル", CancelButton) ]
+                             |> List.toArray),
+                        XamlRoot = root
                     )
 
-                dialog.ShowAsync() |> ignore
+                dialog.add_Closing (fun _ e ->
+                    task {
+                        let deferral = e.GetDeferral()
+
+                        match (e.Result :?> FormDialogButton) with
+                        | CancelButton when formatText.CurrentValue <> defaultValue ->
+                            let! confirm =
+                                Dialog.show
+                                    { Title = "変更の確認"
+                                      Message = "保存されていない変更があります。\n変更を破棄してもよろしいですか？"
+                                      Buttons = YesNoButton(Some "破棄", Some "キャンセル") }
+                                    (Some ct)
+
+                            e.Cancel <- confirm <> YesResult
+                        | _ -> ()
+
+                        deferral.Complete()
+                    }
+                    |> ignore)
+
+                let! result = dialog.ShowAsync()
+                ct.ThrowIfCancellationRequested()
+
+                if result = OkButton then
+                    ctx.FormCtx.Form.Value <-
+                        { ctx.FormCtx.Form.Value with
+                            WorkStatusFormat = formatText.CurrentValue }
+            })
+        |> ignore
+
+module WorkStatusFormattingSection =
+    open NXUI.Extensions
+
+    let create () =
+        withLifecycle (fun disposables self ->
+            let ctx = Context.require<SettingsPageContext> self |> fst
 
             let footer =
                 Button()
@@ -110,7 +164,7 @@ module WorkStatusFormattingSection =
                               Label = "書式を編集..." |> R3.ret
                               Spacing = Some 7.5 |> R3.ret }
                     )
-                    .OnClickHandler(fun _ _ -> showDialog ())
+                    .OnClickHandler(fun _ _ -> showDialog ctx self disposables)
 
             SettingsExpander(
                 Header = "勤務記録コピーの書式設定",

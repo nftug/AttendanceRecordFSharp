@@ -16,6 +16,7 @@ type ServiceContainer =
       WorkStatusStore: WorkStatusStore
       AlarmService: AlarmService
       AppConfig: R3.Observable<AppConfigDto>
+      AppDirectoryPath: string
       ToggleWorkUseCase: ToggleWork
       ToggleRestUseCase: ToggleRest
       SaveWorkRecordUseCase: SaveWorkRecord
@@ -40,6 +41,7 @@ module ServiceContainer =
         let timerProvider = TimerProvider.create ()
         let appConfigStore = AppConfigStore.create appConfigRepository disposables
         let getAppConfig () = appConfigStore.Current.CurrentValue
+        let appDirectory = appDirService.Value
 
         let workStatusStore =
             WorkStatusStore.create
@@ -77,6 +79,7 @@ module ServiceContainer =
           WorkStatusStore = workStatusStore
           AlarmService = alarmService
           AppConfig = appConfig
+          AppDirectoryPath = appDirectory
           ToggleWorkUseCase = toggleWorkUseCase
           ToggleRestUseCase = toggleRestUseCase
           SaveWorkRecordUseCase = saveWorkRecordUseCase

@@ -38,7 +38,8 @@ module private NavigationContext =
                   fun () ->
                       SettingsPageView.create
                           { AppConfig = services.AppConfig
-                            SaveAppConfig = services.SaveAppConfigUseCase } }
+                            SaveAppConfig = services.SaveAppConfigUseCase
+                            AppDirectoryPath = services.AppDirectoryPath } }
               { Path = "/about"
                 ViewFn = fun () -> AboutPageView.create () } ]
 

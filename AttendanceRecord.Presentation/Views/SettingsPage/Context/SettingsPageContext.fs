@@ -14,11 +14,13 @@ open AttendanceRecord.Presentation.Utils
 type SettingsPageContext =
     { FormCtx: FormContext<AppConfigSaveRequestDto, AppConfigError>
       ConfirmDiscard: CancellationToken -> Tasks.Task<bool>
-      SaveMutation: UseMutationResult<unit, unit, AppConfigError list> }
+      SaveMutation: UseMutationResult<unit, unit, AppConfigError list>
+      AppDirectoryPath: string }
 
 type SettingsPageContextProps =
     { AppConfig: Observable<AppConfigDto>
-      SaveAppConfig: SaveAppConfig }
+      SaveAppConfig: SaveAppConfig
+      AppDirectoryPath: string }
 
 module SettingsPageContext =
     let create
@@ -79,4 +81,5 @@ module SettingsPageContext =
 
         { FormCtx = formCtx
           ConfirmDiscard = confirmDiscard
-          SaveMutation = saveMutation }
+          SaveMutation = saveMutation
+          AppDirectoryPath = props.AppDirectoryPath }

@@ -33,7 +33,8 @@ module SettingsPageView =
                                     BasicSettingsSection.create (),
                                     WorkEndAlarmSection.create (),
                                     RestStartAlarmSection.create (),
-                                    WorkStatusFormattingSection.create ()
+                                    WorkStatusFormattingSection.create (),
+                                    AppDirectorySection.create ()
                                 )
                         )
                         .Row(0),

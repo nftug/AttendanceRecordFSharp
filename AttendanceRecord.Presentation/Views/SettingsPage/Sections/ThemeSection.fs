@@ -30,7 +30,7 @@ module ThemeSection =
                 |> toView (fun _ _ selectedTheme ->
                     ComboBox()
                         .ItemsSource(ThemeModeEnum.all)
-                        .Width(180.0)
+                        .Width(170.0)
                         .SelectedItem(selectedTheme)
                         .ItemTemplateFunc(fun (item: ThemeModeEnum) ->
                             TextBlock().Text(ThemeModeEnum.toDisplayName item))

@@ -46,7 +46,5 @@ module TimeDurationPicker =
                           IsClearable = props.IsEndedAtClearable
                           HasErrors = props.Errors |> R3.map (not << List.isEmpty) }
                   ),
-               ValidationErrorsText.create
-                  { Errors = props.Errors
-                    FontSize = None }
+               ValidationErrorsText.create props.Errors
             ))

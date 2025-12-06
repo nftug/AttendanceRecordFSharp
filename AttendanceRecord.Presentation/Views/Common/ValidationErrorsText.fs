@@ -5,18 +5,14 @@ open type NXUI.Builders
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Shared
 
-type ValidationErrorsTextProps =
-   { Errors: R3.Observable<string list>
-     FontSize: float option }
-
 module ValidationErrorsText =
-   let create (props: ValidationErrorsTextProps) =
+   let create (errors: R3.Observable<string list>) =
       ItemsControl()
-         .ItemsSource(props.Errors |> asBinding)
+         .ItemsSource(errors |> asBinding)
          .ItemTemplateFunc(fun (error: string) ->
             TextBlock()
                .Text(error)
                .Foreground(getDynamicBrushResource "SystemFillColorCriticalBrush" |> asBinding)
                .TextWrappingWrap()
-               .FontSize(props.FontSize |> Option.defaultValue 13.0))
-         .IsVisible(props.Errors |> R3.map (List.isEmpty >> not) |> asBinding)
+               .FontSize(13.0))
+         .IsVisible(errors |> R3.map (List.isEmpty >> not) |> asBinding)

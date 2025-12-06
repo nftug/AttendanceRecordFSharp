@@ -34,7 +34,7 @@ module BasicSettingsSection =
          expander.Items.Add(
             let footer =
                StackPanel()
-                  .Spacing(15.0)
+                  .Spacing(5.0)
                   .Children(
                      StackPanel()
                         .Spacing(12.0)
@@ -56,10 +56,9 @@ module BasicSettingsSection =
                            TextBlock().Text("分間").VerticalAlignmentCenter()
                         )
                         .HorizontalAlignmentRight(),
-                     ValidationErrorsText.create
-                        { Errors =
-                           ctx.FormCtx.Errors |> R3.map AppConfigErrors.chooseStandardWorkTime
-                          FontSize = None }
+                     ValidationErrorsText.create (
+                        ctx.FormCtx.Errors |> R3.map AppConfigErrors.chooseStandardWorkTime
+                     )
                   )
 
             SettingsExpanderItem(

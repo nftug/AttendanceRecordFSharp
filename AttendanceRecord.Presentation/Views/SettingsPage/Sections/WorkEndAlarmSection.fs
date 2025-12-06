@@ -54,7 +54,7 @@ module WorkEndAlarmSection =
          expander.Items.Add(
             let footer =
                StackPanel()
-                  .Spacing(15.0)
+                  .Spacing(5.0)
                   .Children(
                      StackPanel()
                         .Spacing(12.0)
@@ -74,10 +74,9 @@ module WorkEndAlarmSection =
                            TextBlock().Text("分前").VerticalAlignmentCenter()
                         )
                         .HorizontalAlignmentRight(),
-                     ValidationErrorsText.create
-                        { Errors =
-                           ctx.FormCtx.Errors |> R3.map AppConfigErrors.chooseWorkEndAlarmDuration
-                          FontSize = None }
+                     ValidationErrorsText.create (
+                        ctx.FormCtx.Errors |> R3.map AppConfigErrors.chooseWorkEndAlarmDuration
+                     )
                   )
 
             SettingsExpanderItem(
@@ -91,7 +90,7 @@ module WorkEndAlarmSection =
          expander.Items.Add(
             let footer =
                StackPanel()
-                  .Spacing(15.0)
+                  .Spacing(5.0)
                   .Children(
                      StackPanel()
                         .Spacing(12.0)
@@ -111,11 +110,10 @@ module WorkEndAlarmSection =
                            TextBlock().Text("分間").VerticalAlignmentCenter()
                         )
                         .HorizontalAlignmentRight(),
-                     ValidationErrorsText.create
-                        { Errors =
-                           ctx.FormCtx.Errors
-                           |> R3.map AppConfigErrors.chooseWorkEndAlarmSnoozeDuration
-                          FontSize = None }
+                     ValidationErrorsText.create (
+                        ctx.FormCtx.Errors
+                        |> R3.map AppConfigErrors.chooseWorkEndAlarmSnoozeDuration
+                     )
                   )
 
             SettingsExpanderItem(

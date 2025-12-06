@@ -54,7 +54,7 @@ module RestStartAlarmSection =
          expander.Items.Add(
             let footer =
                StackPanel()
-                  .Spacing(15.0)
+                  .Spacing(5.0)
                   .Children(
                      StackPanel()
                         .Spacing(12.0)
@@ -74,11 +74,9 @@ module RestStartAlarmSection =
                            TextBlock().Text("分後").VerticalAlignmentCenter()
                         )
                         .HorizontalAlignmentRight(),
-                     ValidationErrorsText.create
-                        { Errors =
-                           ctx.FormCtx.Errors
-                           |> R3.map AppConfigErrors.chooseRestStartAlarmDuration
-                          FontSize = None }
+                     ValidationErrorsText.create (
+                        ctx.FormCtx.Errors |> R3.map AppConfigErrors.chooseRestStartAlarmDuration
+                     )
                   )
 
             SettingsExpanderItem(
@@ -92,7 +90,7 @@ module RestStartAlarmSection =
          expander.Items.Add(
             let footer =
                StackPanel()
-                  .Spacing(15.0)
+                  .Spacing(5.0)
                   .Children(
                      StackPanel()
                         .Spacing(12.0)
@@ -112,11 +110,10 @@ module RestStartAlarmSection =
                            TextBlock().Text("分間").VerticalAlignmentCenter()
                         )
                         .HorizontalAlignmentRight(),
-                     ValidationErrorsText.create
-                        { Errors =
-                           ctx.FormCtx.Errors
-                           |> R3.map AppConfigErrors.chooseRestStartAlarmSnoozeDuration
-                          FontSize = None }
+                     ValidationErrorsText.create (
+                        ctx.FormCtx.Errors
+                        |> R3.map AppConfigErrors.chooseRestStartAlarmSnoozeDuration
+                     )
                   )
 
             SettingsExpanderItem(

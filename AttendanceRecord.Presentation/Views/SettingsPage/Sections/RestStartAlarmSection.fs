@@ -29,14 +29,7 @@ module RestStartAlarmSection =
             ctx.FormCtx.Errors.Value <-
                ctx.FormCtx.Errors.Value |> List.filter (_.IsRestStartAlarmError >> not)
 
-         let expander =
-            SettingsExpander(
-               Header = "休憩開始前のアラーム",
-               Description = "休憩開始前にアラームを表示する設定を行います。",
-               IconSource = SymbolIconSource(Symbol = enum<Symbol> 0xEC32)
-            )
-
-         expander.Items.Add(
+         let toggleSubsection =
             let footer =
                ToggleSwitch()
                   .OnContent("有効")
@@ -48,10 +41,8 @@ module RestStartAlarmSection =
                            IsEnabled = ctl.IsChecked.GetValueOrDefault false }))
 
             SettingsExpanderItem(Content = "アラームを有効にする", Footer = footer)
-         )
-         |> ignore
 
-         expander.Items.Add(
+         let durationSubsection =
             let footer =
                StackPanel()
                   .Spacing(5.0)
@@ -84,10 +75,8 @@ module RestStartAlarmSection =
                Description = "休憩開始前にアラームを表示する時間を分単位で設定します。",
                Footer = footer
             )
-         )
-         |> ignore
 
-         expander.Items.Add(
+         let snoozeDurationSubsection =
             let footer =
                StackPanel()
                   .Spacing(5.0)
@@ -121,7 +110,10 @@ module RestStartAlarmSection =
                Description = "アラームを再度表示するまでの時間を分単位で設定します。",
                Footer = footer
             )
-         )
-         |> ignore
 
-         expander)
+         SettingsExpander(
+            Header = "休憩開始前のアラーム",
+            Description = "休憩開始前にアラームを表示する設定を行います。",
+            IconSource = SymbolIconSource(Symbol = enum<Symbol> 0xEC32),
+            ItemsSource = [ toggleSubsection; durationSubsection; snoozeDurationSubsection ]
+         ))

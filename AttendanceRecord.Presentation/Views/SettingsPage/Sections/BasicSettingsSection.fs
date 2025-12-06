@@ -24,14 +24,7 @@ module BasicSettingsSection =
             ctx.FormCtx.Errors.Value <-
                ctx.FormCtx.Errors.Value |> List.filter (_.IsStandardWorkTimeError >> not)
 
-         let expander =
-            SettingsExpander(
-               Header = "基本設定",
-               Description = "システムの基本的な動作に関する設定を行います。",
-               IconSource = SymbolIconSource(Symbol = Symbol.Setting)
-            )
-
-         expander.Items.Add(
+         let standardWorkTimeSubsection =
             let footer =
                StackPanel()
                   .Spacing(5.0)
@@ -66,7 +59,10 @@ module BasicSettingsSection =
                Description = "1日の標準的な勤務時間を分単位で設定します。",
                Footer = footer
             )
-         )
-         |> ignore
 
-         expander)
+         SettingsExpander(
+            Header = "基本設定",
+            Description = "システムの基本的な動作に関する設定を行います。",
+            IconSource = SymbolIconSource(Symbol = Symbol.Setting),
+            ItemsSource = [ standardWorkTimeSubsection ]
+         ))

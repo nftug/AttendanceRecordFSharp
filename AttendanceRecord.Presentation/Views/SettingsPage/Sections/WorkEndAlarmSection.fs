@@ -29,14 +29,7 @@ module WorkEndAlarmSection =
             ctx.FormCtx.Errors.Value <-
                ctx.FormCtx.Errors.Value |> List.filter (_.IsWorkEndAlarmError >> not)
 
-         let expander =
-            SettingsExpander(
-               Header = "勤務終了前のアラーム",
-               Description = "勤務終了前にアラームを表示する設定を行います。",
-               IconSource = SymbolIconSource(Symbol = Symbol.Alert)
-            )
-
-         expander.Items.Add(
+         let toggleSubsection =
             let footer =
                ToggleSwitch()
                   .OnContent("有効")
@@ -48,10 +41,8 @@ module WorkEndAlarmSection =
                            IsEnabled = ctl.IsChecked.GetValueOrDefault false }))
 
             SettingsExpanderItem(Content = "アラームを有効にする", Footer = footer)
-         )
-         |> ignore
 
-         expander.Items.Add(
+         let durationSubsection =
             let footer =
                StackPanel()
                   .Spacing(5.0)
@@ -84,10 +75,8 @@ module WorkEndAlarmSection =
                Description = "勤務終了前にアラームを表示する時間を分単位で設定します。",
                Footer = footer
             )
-         )
-         |> ignore
 
-         expander.Items.Add(
+         let snoozeDurationSubsection =
             let footer =
                StackPanel()
                   .Spacing(5.0)
@@ -104,7 +93,7 @@ module WorkEndAlarmSection =
                                        SnoozeMinutes = e.NewValue |> decimal |> float }))
                               .FormatString("0")
                               .Minimum(1m)
-                              .Maximum(60m)
+                              .Maximum(60.0m)
                               .Width(120.0)
                               .IsEnabled(alarmEnabled |> asBinding),
                            TextBlock().Text("分間").VerticalAlignmentCenter()
@@ -121,7 +110,10 @@ module WorkEndAlarmSection =
                Description = "アラームを再度表示するまでの時間を分単位で設定します。",
                Footer = footer
             )
-         )
-         |> ignore
 
-         expander)
+         SettingsExpander(
+            Header = "勤務終了前のアラーム",
+            Description = "勤務終了前にアラームを表示する設定を行います。",
+            IconSource = SymbolIconSource(Symbol = Symbol.Alert),
+            ItemsSource = [ toggleSubsection; durationSubsection; snoozeDurationSubsection ]
+         ))

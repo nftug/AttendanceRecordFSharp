@@ -10,7 +10,6 @@ open AttendanceRecord.Domain.Errors
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
-open AttendanceRecord.Presentation.Views.Common.Context
 open AttendanceRecord.Shared
 
 module RestTimeSection =
@@ -110,8 +109,6 @@ module RestTimeSection =
    let create () : Avalonia.Controls.Control =
       withLifecycle (fun disposables self ->
          let ctx, _ = Context.require<HistoryPageContext> self
-         let themeCtx = Context.require<ThemeContext> self |> fst
-
          let restItems = ObservableList<RestRecordSaveRequestDto>()
 
          ctx.FormCtx.OnReset
@@ -183,7 +180,7 @@ module RestTimeSection =
                      .IsVisible(isEmpty |> R3.map not |> asBinding)
                )
 
-         (ControlBorder.create themeCtx)
+         (ControlBorder.create ())
             .Padding(15.0)
             .Child(
                Grid()

@@ -3,7 +3,6 @@ namespace AttendanceRecord.Presentation.Views.HistoryPage
 open R3
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common.Navigation
-open AttendanceRecord.Presentation.Views.Common.Context
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Presentation.Views.HistoryPage.Edit
 open AttendanceRecord.Presentation.Views.HistoryPage.Navigation
@@ -16,7 +15,6 @@ module HistoryPageView =
    let create (props: HistoryPageContextProps) : Avalonia.Controls.Control =
       withLifecycle (fun disposables self ->
          let ctx = createHistoryPageContext props disposables
-         let themeCtx = Context.require<ThemeContext> self |> fst
 
          // Register navigation guard
          Context.resolve<NavigationContext> self
@@ -38,8 +36,7 @@ module HistoryPageView =
                         .Width(1.0)
                         .Margin(0.0, 5.0)
                         .Background(
-                           themeCtx.GetBrushResourceObservable "DividerStrokeColorDefaultBrush"
-                           |> asBinding
+                           getDynamicBrushResource "DividerStrokeColorDefaultBrush" |> asBinding
                         )
                         .ResizeDirectionColumns(),
                      WorkRecordEditView.create ()

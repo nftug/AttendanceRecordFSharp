@@ -2,11 +2,9 @@ namespace AttendanceRecord.Presentation.Views.HistoryPage.Edit
 
 open System
 open R3
-open Avalonia.Media
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.HistoryPage.Context
 open AttendanceRecord.Presentation.Views.Common
-open AttendanceRecord.Presentation.Views.Common.Context
 open AttendanceRecord.Shared
 open AttendanceRecord.Application.Dtos.Responses
 
@@ -28,12 +26,11 @@ module WorkStatusSummarySection =
    let create () =
       withLifecycle (fun _ self ->
          let ctx, _ = Context.require<HistoryPageContext> self
-         let themeCtx = Context.require<ThemeContext> self |> fst
 
          let summary =
             ctx.CurrentSummary |> R3.map (Option.defaultValue WorkRecordSummaryDto.empty)
 
-         (ControlBorder.create themeCtx)
+         (ControlBorder.create ())
             .Padding(18.0)
             .Child(
                StackPanel()

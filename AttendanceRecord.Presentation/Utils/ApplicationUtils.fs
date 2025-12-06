@@ -37,6 +37,16 @@ module ApplicationUtils =
    let getPlatformColors () : Platform.PlatformColorValues =
       Application.Current.PlatformSettings.GetColorValues()
 
+   let getDynamicBrushResource (resourceKey: string) : Observable<Media.IBrush> =
+      R3.everyValueChanged Application.Current _.ActualThemeVariant
+      |> R3.map (fun variant ->
+         let resource =
+            Application.Current.Styles.TryGetResource(resourceKey, variant) |> snd
+
+         match resource with
+         | :? Media.IBrush as brush -> brush
+         | _ -> null)
+
    let getApplicationTitle () : string =
       Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title
 

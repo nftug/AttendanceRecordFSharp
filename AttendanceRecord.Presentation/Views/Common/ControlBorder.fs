@@ -1,20 +1,13 @@
 namespace AttendanceRecord.Presentation.Views.Common
 
-open AttendanceRecord.Presentation.Views.Common.Context
+open NXUI.Extensions
+open type NXUI.Builders
 open AttendanceRecord.Presentation.Utils
 
 module ControlBorder =
-   open NXUI.Extensions
-   open type NXUI.Builders
-
-   let create (themeCtx: ThemeContext) =
-      let borderBrush = themeCtx.GetBrushResourceObservable "ControlElevationBorderBrush"
-
-      let backgroundBrush =
-         themeCtx.GetBrushResourceObservable "CardBackgroundFillColorDefaultBrush"
-
+   let create () =
       Border()
          .BorderThickness(1.0)
-         .BorderBrush(borderBrush |> asBinding)
-         .Background(backgroundBrush |> asBinding)
+         .BorderBrush(getDynamicBrushResource "ControlElevationBorderBrush" |> asBinding)
+         .Background(getDynamicBrushResource "CardBackgroundFillColorDefaultBrush" |> asBinding)
          .CornerRadius(4.0)

@@ -10,7 +10,6 @@ open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Presentation.Views.HomePage.Context
 open AttendanceRecord.Presentation.Views.Common
-open AttendanceRecord.Presentation.Views.Common.Context
 open AttendanceRecord.Application.Services
 
 module StatusView =
@@ -28,7 +27,6 @@ module StatusView =
    let create () : Avalonia.Controls.Control =
       withLifecycle (fun disposables self ->
          let ctx, _ = Context.require<HomePageContext> self
-         let themeCtx = Context.require<ThemeContext> self |> fst
          let appConfig = ctx.AppConfig |> R3.readonly None |> R3.disposeWith disposables
 
          let handleClickCopyButton () =
@@ -43,7 +41,7 @@ module StatusView =
                  Message = "勤務記録をクリップボードにコピーしました。"
                  NotificationType = InformationNotification }
 
-         (ControlBorder.create themeCtx)
+         (ControlBorder.create ())
             .Padding(25.0)
             .Height(250.0)
             .Child(

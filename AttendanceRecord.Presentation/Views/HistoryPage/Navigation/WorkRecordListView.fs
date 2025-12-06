@@ -32,13 +32,11 @@ module WorkRecordListView =
    open Avalonia.Media
    open AttendanceRecord.Application.Dtos.Responses
    open FluentAvalonia.UI.Controls
-   open AttendanceRecord.Presentation.Views.Common.Context
 
    let create () : Avalonia.Controls.Control =
       withLifecycle (fun disposables self ->
          let ctx, _ = Context.require<HistoryPageContext> self
          let records = ctx.MonthlyRecords |> R3.map _.WorkRecords
-         let themeCtx = Context.require<ThemeContext> self |> fst
 
          let itemTemplate (item: WorkRecordListItemDto) =
             let isSelected =
@@ -60,8 +58,7 @@ module WorkRecordListView =
                            .VerticalAlignmentCenter(),
                         (SymbolIcon.create (enum<Symbol> 0xE7BA |> R3.ret))
                            .Foreground(
-                              themeCtx.GetBrushResourceObservable "SystemFillColorCriticalBrush"
-                              |> asBinding
+                              getDynamicBrushResource "SystemFillColorCriticalBrush" |> asBinding
                            )
                            .IsVisible(item.HasUnfinishedWarning |> R3.ret |> asBinding)
                      )
@@ -85,13 +82,9 @@ module WorkRecordListView =
                Border()
                   .BorderThickness(1.0)
                   .BorderBrush(
-                     themeCtx.GetBrushResourceObservable "ControlStrokeColorDefaultBrush"
-                     |> asBinding
+                     getDynamicBrushResource "ControlStrokeColorDefaultBrush" |> asBinding
                   )
-                  .Background(
-                     themeCtx.GetBrushResourceObservable "ControlFillColorDefaultBrush"
-                     |> asBinding
-                  )
+                  .Background(getDynamicBrushResource "ControlFillColorDefaultBrush" |> asBinding)
                   .Padding(5.0)
                   .Child(ScrollViewer().Content(ItemsPresenter())))
             .ItemTemplateFunc(itemTemplate)

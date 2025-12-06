@@ -6,49 +6,49 @@ open AttendanceRecord.Domain.Entities
 open AttendanceRecord.Domain.ValueObjects
 
 module private TimeDurationFileDtoMapper =
-    let fromDomain (duration: TimeDuration) : TimeDurationFileDto =
-        TimeDurationFileDto(
-            duration |> TimeDuration.getStartedAt,
-            duration |> TimeDuration.getEndedAt |> Option.toNullable
-        )
+   let fromDomain (duration: TimeDuration) : TimeDurationFileDto =
+      TimeDurationFileDto(
+         duration |> TimeDuration.getStartedAt,
+         duration |> TimeDuration.getEndedAt |> Option.toNullable
+      )
 
-    let toDomain (dto: TimeDurationFileDto) : TimeDuration =
-        TimeDuration.hydrate dto.StartedOn (dto.FinishedOn |> Option.ofNullable)
+   let toDomain (dto: TimeDurationFileDto) : TimeDuration =
+      TimeDuration.hydrate dto.StartedOn (dto.FinishedOn |> Option.ofNullable)
 
 module WorkRecordFileDtoMapper =
-    let fromDomain (records: WorkRecord list) : IEnumerable<WorkRecordFileDto> =
-        records
-        |> WorkRecord.getSortedList
-        |> Seq.map (fun r ->
-            WorkRecordFileDto(
-                r.Id,
-                TimeDurationFileDtoMapper.fromDomain r.Duration,
-                r.RestRecords
-                |> Seq.map (fun r ->
-                    RestRecordFileDto(
-                        r.Id,
-                        TimeDurationFileDtoMapper.fromDomain r.Duration,
-                        match r.Variant with
-                        | RegularRest -> RestVariantEnum.RegularRest
-                        | PaidRest -> RestVariantEnum.PaidRest
-                    ))
-            ))
+   let fromDomain (records: WorkRecord list) : IEnumerable<WorkRecordFileDto> =
+      records
+      |> WorkRecord.getSortedList
+      |> Seq.map (fun r ->
+         WorkRecordFileDto(
+            r.Id,
+            TimeDurationFileDtoMapper.fromDomain r.Duration,
+            r.RestRecords
+            |> Seq.map (fun r ->
+               RestRecordFileDto(
+                  r.Id,
+                  TimeDurationFileDtoMapper.fromDomain r.Duration,
+                  match r.Variant with
+                  | RegularRest -> RestVariantEnum.RegularRest
+                  | PaidRest -> RestVariantEnum.PaidRest
+               ))
+         ))
 
-    let toDomain (dtos: IEnumerable<WorkRecordFileDto>) : WorkRecord list =
-        dtos
-        |> Seq.map (fun dto ->
-            WorkRecord.hydrate
-                dto.Id
-                (TimeDurationFileDtoMapper.toDomain dto.Duration)
-                (dto.RestRecords
-                 |> Seq.map (fun r ->
-                     RestRecord.hydrate
-                         r.Id
-                         (match r.Variant with
-                          | RestVariantEnum.RegularRest -> RegularRest
-                          | RestVariantEnum.PaidRest -> PaidRest
-                          | _ -> RegularRest)
-                         (TimeDurationFileDtoMapper.toDomain r.Duration))
-                 |> Seq.toList))
-        |> Seq.toList
-        |> WorkRecord.getSortedList
+   let toDomain (dtos: IEnumerable<WorkRecordFileDto>) : WorkRecord list =
+      dtos
+      |> Seq.map (fun dto ->
+         WorkRecord.hydrate
+            dto.Id
+            (TimeDurationFileDtoMapper.toDomain dto.Duration)
+            (dto.RestRecords
+             |> Seq.map (fun r ->
+                RestRecord.hydrate
+                   r.Id
+                   (match r.Variant with
+                    | RestVariantEnum.RegularRest -> RegularRest
+                    | RestVariantEnum.PaidRest -> PaidRest
+                    | _ -> RegularRest)
+                   (TimeDurationFileDtoMapper.toDomain r.Duration))
+             |> Seq.toList))
+      |> Seq.toList
+      |> WorkRecord.getSortedList

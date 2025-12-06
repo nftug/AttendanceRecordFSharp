@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plist version="1.0">
-<dict>
-  <key>CFBundleName</key>
-  <string>AttendanceRecord</string>
-  <key>CFBundleIdentifier</key>
-  <string>com.example.AttendanceRecord</string>
-  <key>CFBundleVersion</key>
-  <string>3.0</string>
-  <key>CFBundleExecutable</key>
-  <string>AttendanceRecord</string>
-  <key>CFBundlePackageType</key>
-  <string>APPL</string>
-  <key>LSMinimumSystemVersion</key>
-  <string>10.13</string>
-  <key>CFBundleInfoDictionaryVersion</key>
-  <string>6.0</string>
-</dict>
+  <dict>
+    <key>CFBundleName</key>
+    <string>AttendanceRecord</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.example.AttendanceRecord</string>
+    <key>CFBundleVersion</key>
+    <string>3.0</string>
+    <key>CFBundleExecutable</key>
+    <string>AttendanceRecord</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>10.13</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+  </dict>
 </plist>

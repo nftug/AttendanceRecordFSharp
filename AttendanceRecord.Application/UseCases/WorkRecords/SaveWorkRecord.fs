@@ -11,59 +11,57 @@ open AttendanceRecord.Domain.ValueObjects
 open AttendanceRecord.Domain.Errors
 
 type SaveWorkRecord =
-    { Handle:
-        WorkRecordSaveRequestDto -> CancellationToken -> TaskResult<Guid, WorkRecordError list> }
+   { Handle: WorkRecordSaveRequestDto -> CancellationToken -> TaskResult<Guid, WorkRecordError list> }
 
 module SaveWorkRecord =
-    let private handle
-        (repository: WorkRecordRepository)
-        (workStatusStore: WorkStatusStore)
-        (request: WorkRecordSaveRequestDto)
-        (ct: CancellationToken)
-        =
-        taskResult {
-            let! restRecords =
-                request.RestRecords
-                |> RestRecordSaveRequestDto.tryToDomainOfList
-                |> Result.mapError WorkRecordErrors.restList
+   let private handle
+      (repository: WorkRecordRepository)
+      (workStatusStore: WorkStatusStore)
+      (request: WorkRecordSaveRequestDto)
+      (ct: CancellationToken)
+      =
+      taskResult {
+         let! restRecords =
+            request.RestRecords
+            |> RestRecordSaveRequestDto.tryToDomainOfList
+            |> Result.mapError WorkRecordErrors.restList
 
-            let! duration =
-                TimeDuration.tryCreate request.StartedAt request.EndedAt
-                |> Result.mapError WorkRecordErrors.duration
+         let! duration =
+            TimeDuration.tryCreate request.StartedAt request.EndedAt
+            |> Result.mapError WorkRecordErrors.duration
 
-            let! workRecord =
-                match request.Id with
-                | Some id ->
-                    taskResult {
-                        let! recordOption =
-                            repository.GetById id ct |> TaskResult.mapError WorkRecordErrors.generic
+         let! workRecord =
+            match request.Id with
+            | Some id ->
+               taskResult {
+                  let! recordOption =
+                     repository.GetById id ct |> TaskResult.mapError WorkRecordErrors.generic
 
-                        let! record =
-                            recordOption
-                            |> Result.requireSome (WorkRecordErrors.generic "勤務記録が見つかりません。")
+                  let! record =
+                     recordOption |> Result.requireSome (WorkRecordErrors.generic "勤務記録が見つかりません。")
 
-                        return! WorkRecord.tryUpdate duration restRecords record
-                    }
-                | None -> taskResult { return! WorkRecord.tryCreate duration restRecords }
+                  return! WorkRecord.tryUpdate duration restRecords record
+               }
+            | None -> taskResult { return! WorkRecord.tryCreate duration restRecords }
 
-            let! existingRecordOption =
-                repository.GetByDate (WorkRecord.getDate workRecord) ct
-                |> TaskResult.mapError WorkRecordErrors.generic
+         let! existingRecordOption =
+            repository.GetByDate (WorkRecord.getDate workRecord) ct
+            |> TaskResult.mapError WorkRecordErrors.generic
 
-            do!
-                match existingRecordOption with
-                | Some existingRecord when existingRecord.Id <> workRecord.Id ->
-                    TaskResult.error (WorkRecordErrors.generic "指定した日付の勤務は既に登録されています。")
-                | _ -> TaskResult.ok ()
+         do!
+            match existingRecordOption with
+            | Some existingRecord when existingRecord.Id <> workRecord.Id ->
+               TaskResult.error (WorkRecordErrors.generic "指定した日付の勤務は既に登録されています。")
+            | _ -> TaskResult.ok ()
 
-            do! repository.Save workRecord ct |> TaskResult.mapError WorkRecordErrors.generic
-            do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.generic
+         do! repository.Save workRecord ct |> TaskResult.mapError WorkRecordErrors.generic
+         do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.generic
 
-            return workRecord.Id
-        }
+         return workRecord.Id
+      }
 
-    let create
-        (repository: WorkRecordRepository)
-        (workStatusStore: WorkStatusStore)
-        : SaveWorkRecord =
-        { Handle = fun request ct -> handle repository workStatusStore request ct }
+   let create
+      (repository: WorkRecordRepository)
+      (workStatusStore: WorkStatusStore)
+      : SaveWorkRecord =
+      { Handle = fun request ct -> handle repository workStatusStore request ct }

@@ -6,17 +6,17 @@ open AttendanceRecord.Presentation.Utils
 
 [<AutoOpen>]
 module private AccentToggleButtonHelpers =
-    let applyAccentStyle (isChecked: Observable<bool>) (ctl: ToggleButton) =
-        task {
-            let! isChecked = isChecked.FirstAsync()
-            ctl.IsChecked <- isChecked
-        }
-        |> ignore
+   let applyAccentStyle (isChecked: Observable<bool>) (ctl: ToggleButton) =
+      task {
+         let! isChecked = isChecked.FirstAsync()
+         ctl.IsChecked <- isChecked
+      }
+      |> ignore
 
 module AccentToggleButton =
-    open NXUI.Extensions
+   open NXUI.Extensions
 
-    let create (isChecked: Observable<bool>) : ToggleButton =
-        ToggleButton()
-            .IsChecked(isChecked |> asBinding)
-            .OnIsCheckedChangedHandler(fun ctl _ -> applyAccentStyle isChecked ctl)
+   let create (isChecked: Observable<bool>) : ToggleButton =
+      ToggleButton()
+         .IsChecked(isChecked |> asBinding)
+         .OnIsCheckedChangedHandler(fun ctl _ -> applyAccentStyle isChecked ctl)

@@ -7,82 +7,82 @@ open type NXUI.Builders
 open NXUI.Extensions
 
 type NavigationViewProps =
-    { MenuItems: NavigationViewItem list
-      FooterMenuItems: NavigationViewItem list }
+   { MenuItems: NavigationViewItem list
+     FooterMenuItems: NavigationViewItem list }
 
 module NavigationView =
-    type private NavigationFactory() =
-        interface INavigationPageFactory with
-            member _.GetPage _ = null
+   type private NavigationFactory() =
+      interface INavigationPageFactory with
+         member _.GetPage _ = null
 
-            member _.GetPageFromObject(target: obj) : Avalonia.Controls.Control =
-                target :?> Avalonia.Controls.Control
+         member _.GetPageFromObject(target: obj) : Avalonia.Controls.Control =
+            target :?> Avalonia.Controls.Control
 
-    let private findNavigationItemByRoute
-        (props: NavigationViewProps)
-        (route: Route)
-        : NavigationViewItem option =
-        props.MenuItems @ props.FooterMenuItems
-        |> List.tryFind (fun item -> (item.Tag :?> string) = route.Path)
+   let private findNavigationItemByRoute
+      (props: NavigationViewProps)
+      (route: Route)
+      : NavigationViewItem option =
+      props.MenuItems @ props.FooterMenuItems
+      |> List.tryFind (fun item -> (item.Tag :?> string) = route.Path)
 
-    let private createContent (ctx: NavigationContext) (props: NavigationViewProps) =
-        withLifecycle (fun disposables _ ->
-            let pageTitle =
-                ctx.CurrentRoute
-                |> R3.map (fun route ->
-                    findNavigationItemByRoute props route
-                    |> Option.map _.Content
-                    |> Option.defaultValue "Unknown")
-
-            let frame = Frame(NavigationPageFactory = NavigationFactory())
-
+   let private createContent (ctx: NavigationContext) (props: NavigationViewProps) =
+      withLifecycle (fun disposables _ ->
+         let pageTitle =
             ctx.CurrentRoute
-            |> R3.subscribe (fun r -> frame.NavigateFromObject(r.ViewFn()) |> ignore)
-            |> disposables.Add
+            |> R3.map (fun route ->
+               findNavigationItemByRoute props route
+               |> Option.map _.Content
+               |> Option.defaultValue "Unknown")
 
-            DockPanel()
-                .LastChildFill(true)
-                .Children(
-                    TextBlock()
-                        .Text(pageTitle |> asBinding)
-                        .FontSize(22.0)
-                        .Margin(20.0, 20.0, 0.0, 10.0)
-                        .DockTop(),
-                    frame
-                ))
+         let frame = Frame(NavigationPageFactory = NavigationFactory())
 
-    let create (props: NavigationViewProps) =
-        withLifecycle (fun disposables self ->
-            let ctx, _ = Context.require<NavigationContext> self
+         ctx.CurrentRoute
+         |> R3.subscribe (fun r -> frame.NavigateFromObject(r.ViewFn()) |> ignore)
+         |> disposables.Add
 
-            let navigation =
-                NavigationView(
-                    PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact,
-                    IsSettingsVisible = false,
-                    MenuItemsSource = (props.MenuItems |> List.toArray),
-                    FooterMenuItemsSource = (props.FooterMenuItems |> List.toArray),
-                    Content = createContent ctx props
-                )
+         DockPanel()
+            .LastChildFill(true)
+            .Children(
+               TextBlock()
+                  .Text(pageTitle |> asBinding)
+                  .FontSize(22.0)
+                  .Margin(20.0, 20.0, 0.0, 10.0)
+                  .DockTop(),
+               frame
+            ))
 
-            ctx.CurrentRoute
-            |> R3.subscribe (fun route ->
-                findNavigationItemByRoute props route
-                |> Option.iter (fun item -> navigation.SelectedItem <- item))
-            |> disposables.Add
+   let create (props: NavigationViewProps) =
+      withLifecycle (fun disposables self ->
+         let ctx, _ = Context.require<NavigationContext> self
 
-            navigation.SelectionChanged.Add(fun args ->
-                args.SelectedItem
-                |> Option.ofObj
-                |> Option.iter (fun v ->
-                    let navItem = v :?> NavigationViewItem
+         let navigation =
+            NavigationView(
+               PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact,
+               IsSettingsVisible = false,
+               MenuItemsSource = (props.MenuItems |> List.toArray),
+               FooterMenuItemsSource = (props.FooterMenuItems |> List.toArray),
+               Content = createContent ctx props
+            )
 
-                    // Sync selected item with current route
-                    navigation.SelectedItem <-
-                        ctx.CurrentRoute.CurrentValue
-                        |> findNavigationItemByRoute props
-                        |> Option.defaultValue navItem
+         ctx.CurrentRoute
+         |> R3.subscribe (fun route ->
+            findNavigationItemByRoute props route
+            |> Option.iter (fun item -> navigation.SelectedItem <- item))
+         |> disposables.Add
 
-                    let path = navItem.Tag :?> string
-                    ctx.NavigateTo path |> ignore))
+         navigation.SelectionChanged.Add(fun args ->
+            args.SelectedItem
+            |> Option.ofObj
+            |> Option.iter (fun v ->
+               let navItem = v :?> NavigationViewItem
 
-            navigation)
+               // Sync selected item with current route
+               navigation.SelectedItem <-
+                  ctx.CurrentRoute.CurrentValue
+                  |> findNavigationItemByRoute props
+                  |> Option.defaultValue navItem
+
+               let path = navItem.Tag :?> string
+               ctx.NavigateTo path |> ignore))
+
+         navigation)

@@ -10,26 +10,26 @@ open AttendanceRecord.Application.Dtos.Responses
 open AttendanceRecord.Application.Services
 
 type ToggleWork =
-    { Handle: unit -> CancellationToken -> TaskResult<WorkStatusDto, WorkRecordError list> }
+   { Handle: unit -> CancellationToken -> TaskResult<WorkStatusDto, WorkRecordError list> }
 
 module ToggleWork =
-    let private handle repository (workStatusStore: WorkStatusStore) (ct: CancellationToken) =
-        taskResult {
-            let now = DateTime.Now
+   let private handle repository (workStatusStore: WorkStatusStore) (ct: CancellationToken) =
+      taskResult {
+         let now = DateTime.Now
 
-            let! workTodayOption =
-                repository.GetByDate now.Date ct |> TaskResult.mapError WorkRecordErrors.generic
+         let! workTodayOption =
+            repository.GetByDate now.Date ct |> TaskResult.mapError WorkRecordErrors.generic
 
-            let! workToday =
-                match workTodayOption with
-                | Some record -> record |> WorkRecord.tryToggleWork now
-                | None -> WorkRecord.createStart () |> Ok
+         let! workToday =
+            match workTodayOption with
+            | Some record -> record |> WorkRecord.tryToggleWork now
+            | None -> WorkRecord.createStart () |> Ok
 
-            do! repository.Save workToday ct |> TaskResult.mapError WorkRecordErrors.generic
-            do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.generic
+         do! repository.Save workToday ct |> TaskResult.mapError WorkRecordErrors.generic
+         do! workStatusStore.Reload() |> TaskResult.mapError WorkRecordErrors.generic
 
-            return workStatusStore.WorkStatus.CurrentValue
-        }
+         return workStatusStore.WorkStatus.CurrentValue
+      }
 
-    let create (repository: WorkRecordRepository) (workStatusStore: WorkStatusStore) : ToggleWork =
-        { Handle = fun () ct -> handle repository workStatusStore ct }
+   let create (repository: WorkRecordRepository) (workStatusStore: WorkStatusStore) : ToggleWork =
+      { Handle = fun () ct -> handle repository workStatusStore ct }

@@ -11,36 +11,36 @@ open AttendanceRecord.Shared
 open AttendanceRecord.Application.Dtos.Responses
 
 module WorkStatusSummarySection =
-    open NXUI.Extensions
-    open type NXUI.Builders
+   open NXUI.Extensions
+   open type NXUI.Builders
 
-    let private createSummaryInfoRow (label: string) (duration: Observable<TimeSpan>) =
-        let durationText = duration |> R3.map TimeSpan.formatDuration
+   let private createSummaryInfoRow (label: string) (duration: Observable<TimeSpan>) =
+      let durationText = duration |> R3.map TimeSpan.formatDuration
 
-        StackPanel()
-            .OrientationHorizontal()
-            .Spacing(3.0)
-            .Children(
-                TextBlock().Text(label).FontWeightBold().Width(120.0),
-                TextBlock().Text(durationText |> asBinding).VerticalAlignmentCenter()
-            )
+      StackPanel()
+         .OrientationHorizontal()
+         .Spacing(3.0)
+         .Children(
+            TextBlock().Text(label).FontWeightBold().Width(120.0),
+            TextBlock().Text(durationText |> asBinding).VerticalAlignmentCenter()
+         )
 
-    let create () =
-        withLifecycle (fun _ self ->
-            let ctx, _ = Context.require<HistoryPageContext> self
-            let themeCtx = Context.require<ThemeContext> self |> fst
+   let create () =
+      withLifecycle (fun _ self ->
+         let ctx, _ = Context.require<HistoryPageContext> self
+         let themeCtx = Context.require<ThemeContext> self |> fst
 
-            let summary =
-                ctx.CurrentSummary |> R3.map (Option.defaultValue WorkRecordSummaryDto.empty)
+         let summary =
+            ctx.CurrentSummary |> R3.map (Option.defaultValue WorkRecordSummaryDto.empty)
 
-            (ControlBorder.create themeCtx)
-                .Padding(18.0)
-                .Child(
-                    StackPanel()
-                        .Spacing(10.0)
-                        .Children(
-                            createSummaryInfoRow "勤務時間" (summary |> R3.map _.TotalWorkTime),
-                            createSummaryInfoRow "休憩時間" (summary |> R3.map _.TotalRestTime),
-                            createSummaryInfoRow "残業時間" (summary |> R3.map _.Overtime)
-                        )
-                ))
+         (ControlBorder.create themeCtx)
+            .Padding(18.0)
+            .Child(
+               StackPanel()
+                  .Spacing(10.0)
+                  .Children(
+                     createSummaryInfoRow "勤務時間" (summary |> R3.map _.TotalWorkTime),
+                     createSummaryInfoRow "休憩時間" (summary |> R3.map _.TotalRestTime),
+                     createSummaryInfoRow "残業時間" (summary |> R3.map _.Overtime)
+                  )
+            ))

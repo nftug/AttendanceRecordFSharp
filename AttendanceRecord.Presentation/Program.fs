@@ -8,14 +8,14 @@ open AttendanceRecord.Presentation.Utils
 [<EntryPoint>]
 [<STAThread>]
 let main argv =
-    let buildWindow () =
-        let services = ServiceContainer.create ()
-        MainWindow.create services
+   let buildWindow () =
+      let services = ServiceContainer.create ()
+      MainWindow.create services
 
-    AppBuilder
-        .Configure<Application>()
-        .UsePlatformDetect()
-        .UseR3()
-        .WithApplicationName(getApplicationTitle ())
-        .AfterSetup(fun builder -> builder.Instance.Styles.Add(FluentAvaloniaTheme()))
-        .StartWithClassicDesktopLifetime(buildWindow, argv)
+   AppBuilder
+      .Configure<Application>()
+      .UsePlatformDetect()
+      .UseR3()
+      .WithApplicationName(getApplicationTitle ())
+      .AfterSetup(fun builder -> builder.Instance.Styles.Add(FluentAvaloniaTheme()))
+      .StartWithClassicDesktopLifetime(buildWindow, argv)

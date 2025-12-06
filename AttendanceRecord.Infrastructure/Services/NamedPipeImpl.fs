@@ -10,76 +10,76 @@ open AttendanceRecord.Persistence.Dtos
 open AttendanceRecord.Persistence.Constants
 
 module NamedPipeImpl =
-    let create (pipeName: string) : NamedPipe =
-        let receiverObservable =
-            Observable.Create<NamedPipeMessage>(fun observer ->
-                let cts = new Threading.CancellationTokenSource()
+   let create (pipeName: string) : NamedPipe =
+      let receiverObservable =
+         Observable.Create<NamedPipeMessage>(fun observer ->
+            let cts = new Threading.CancellationTokenSource()
 
-                let rec listenLoop () =
-                    task {
-                        use server =
-                            new NamedPipeServerStream(
-                                pipeName,
-                                PipeDirection.In,
-                                NamedPipeServerStream.MaxAllowedServerInstances,
-                                PipeTransmissionMode.Byte,
-                                PipeOptions.Asynchronous
-                            )
+            let rec listenLoop () =
+               task {
+                  use server =
+                     new NamedPipeServerStream(
+                        pipeName,
+                        PipeDirection.In,
+                        NamedPipeServerStream.MaxAllowedServerInstances,
+                        PipeTransmissionMode.Byte,
+                        PipeOptions.Asynchronous
+                     )
 
-                        do! server.WaitForConnectionAsync cts.Token
+                  do! server.WaitForConnectionAsync cts.Token
 
-                        let! message =
-                            JsonSerializer.DeserializeAsync<NamedPipeMessage>(
-                                server,
-                                InfraJsonContext.Default.NamedPipeMessage,
-                                cts.Token
-                            )
+                  let! message =
+                     JsonSerializer.DeserializeAsync<NamedPipeMessage>(
+                        server,
+                        InfraJsonContext.Default.NamedPipeMessage,
+                        cts.Token
+                     )
 
-                        match message with
-                        | null -> ()
-                        | msg -> observer.OnNext msg
+                  match message with
+                  | null -> ()
+                  | msg -> observer.OnNext msg
 
-                        if not cts.Token.IsCancellationRequested then
-                            do! listenLoop ()
-                    }
+                  if not cts.Token.IsCancellationRequested then
+                     do! listenLoop ()
+               }
 
-                listenLoop () |> ignore
+            listenLoop () |> ignore
 
-                Disposable.Create(fun () -> cts.Cancel()))
+            Disposable.Create(fun () -> cts.Cancel()))
 
-        let sendMessage (content: string) : Task<Result<unit, string>> =
-            task {
-                let message =
-                    NamedPipeMessage(
-                        Sender = Environment.ProcessId.ToString(),
-                        Content = content,
-                        Timestamp = DateTime.UtcNow
-                    )
+      let sendMessage (content: string) : Task<Result<unit, string>> =
+         task {
+            let message =
+               NamedPipeMessage(
+                  Sender = Environment.ProcessId.ToString(),
+                  Content = content,
+                  Timestamp = DateTime.UtcNow
+               )
 
-                try
-                    use client =
-                        new NamedPipeClientStream(
-                            ".",
-                            pipeName,
-                            PipeDirection.Out,
-                            PipeOptions.Asynchronous
-                        )
+            try
+               use client =
+                  new NamedPipeClientStream(
+                     ".",
+                     pipeName,
+                     PipeDirection.Out,
+                     PipeOptions.Asynchronous
+                  )
 
-                    do! client.ConnectAsync 3000
+               do! client.ConnectAsync 3000
 
-                    do!
-                        JsonSerializer.SerializeAsync(
-                            client,
-                            message,
-                            InfraJsonContext.Default.NamedPipeMessage
-                        )
+               do!
+                  JsonSerializer.SerializeAsync(
+                     client,
+                     message,
+                     InfraJsonContext.Default.NamedPipeMessage
+                  )
 
-                    do! client.FlushAsync()
+               do! client.FlushAsync()
 
-                    return Ok()
-                with ex ->
-                    return Error ex.Message
-            }
+               return Ok()
+            with ex ->
+               return Error ex.Message
+         }
 
-        { Receiver = receiverObservable
-          SendMessage = sendMessage }
+      { Receiver = receiverObservable
+        SendMessage = sendMessage }

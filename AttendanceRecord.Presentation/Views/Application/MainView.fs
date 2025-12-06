@@ -14,75 +14,75 @@ open AttendanceRecord.Presentation.Views.SettingsPage
 open AttendanceRecord.Presentation.Utils
 
 module private NavigationContext =
-    let provide (services: ServiceContainer) (content: Avalonia.Controls.Control) =
-        let routes =
-            [ { Path = "/"
-                ViewFn =
-                  fun () ->
-                      HomePageView.create
-                          { Status = services.WorkStatusStore.WorkStatus
-                            AppConfig = services.AppConfig
-                            ToggleWork = services.ToggleWorkUseCase
-                            ToggleRest = services.ToggleRestUseCase } }
-              { Path = "/history"
-                ViewFn =
-                  fun () ->
-                      HistoryPageView.create
-                          { GetMonthlyWorkRecords = services.GetMonthlyWorkRecordsUseCase
-                            GetWorkRecordDetails = services.GetWorkRecordDetailsUseCase
-                            SaveWorkRecord = services.SaveWorkRecordUseCase
-                            DeleteWorkRecord = services.DeleteWorkRecordUseCase
-                            WorkStatusStore = services.WorkStatusStore } }
-              { Path = "/settings"
-                ViewFn =
-                  fun () ->
-                      SettingsPageView.create
-                          { AppConfig = services.AppConfig
-                            SaveAppConfig = services.SaveAppConfigUseCase
-                            AppDirectoryPath = services.AppDirectoryPath } }
-              { Path = "/about"
-                ViewFn = fun () -> AboutPageView.create () } ]
+   let provide (services: ServiceContainer) (content: Avalonia.Controls.Control) =
+      let routes =
+         [ { Path = "/"
+             ViewFn =
+              fun () ->
+                 HomePageView.create
+                    { Status = services.WorkStatusStore.WorkStatus
+                      AppConfig = services.AppConfig
+                      ToggleWork = services.ToggleWorkUseCase
+                      ToggleRest = services.ToggleRestUseCase } }
+           { Path = "/history"
+             ViewFn =
+              fun () ->
+                 HistoryPageView.create
+                    { GetMonthlyWorkRecords = services.GetMonthlyWorkRecordsUseCase
+                      GetWorkRecordDetails = services.GetWorkRecordDetailsUseCase
+                      SaveWorkRecord = services.SaveWorkRecordUseCase
+                      DeleteWorkRecord = services.DeleteWorkRecordUseCase
+                      WorkStatusStore = services.WorkStatusStore } }
+           { Path = "/settings"
+             ViewFn =
+              fun () ->
+                 SettingsPageView.create
+                    { AppConfig = services.AppConfig
+                      SaveAppConfig = services.SaveAppConfigUseCase
+                      AppDirectoryPath = services.AppDirectoryPath } }
+           { Path = "/about"
+             ViewFn = fun () -> AboutPageView.create () } ]
 
-        Context.provideWithBuilder (NavigationContext.create routes "/") content
+      Context.provideWithBuilder (NavigationContext.create routes "/") content
 
 module MainView =
-    let create (services: ServiceContainer) =
-        withLifecycle (fun disposables self ->
-            let appCtx, _ = Context.require<ApplicationContext> self
-            let navigationCtx, _ = Context.require<NavigationContext> self
+   let create (services: ServiceContainer) =
+      withLifecycle (fun disposables self ->
+         let appCtx, _ = Context.require<ApplicationContext> self
+         let navigationCtx, _ = Context.require<NavigationContext> self
 
-            appCtx.RegisterOnClosingGuard(fun () -> navigationCtx.NavigateTo "/")
-            |> disposables.Add
+         appCtx.RegisterOnClosingGuard(fun () -> navigationCtx.NavigateTo "/")
+         |> disposables.Add
 
-            Panel()
-                .Children(
-                    NavigationView.create
-                        { MenuItems =
-                            [ NavigationViewItem(
-                                  Content = "ホーム",
-                                  IconSource = SymbolIconSource(Symbol = Symbol.Home),
-                                  Tag = "/"
-                              )
-                              NavigationViewItem(
-                                  Content = "履歴",
-                                  IconSource = SymbolIconSource(Symbol = Symbol.CalendarMonth),
-                                  Tag = "/history"
-                              ) ]
-                          FooterMenuItems =
-                            [ NavigationViewItem(
-                                  Content = "設定",
-                                  IconSource = SymbolIconSource(Symbol = Symbol.Settings),
-                                  Tag = "/settings"
-                              )
-                              NavigationViewItem(
-                                  Content = "このアプリについて",
-                                  IconSource = SymbolIconSource(Symbol = Symbol.Help),
-                                  Tag = "/about"
-                              ) ] },
-                    AppTrayIconHost.create (),
-                    AlarmHost.create services.AlarmService,
-                    WindowNotificationManager().PositionBottomCenter().MaxItems(1)
-                ))
-        |> NavigationContext.provide services
-        |> Context.provideWithBuilder (ThemeContext.create services.AppConfig)
-        |> Context.provideWithBuilder (ApplicationContext.create { HideOnClose = true })
+         Panel()
+            .Children(
+               NavigationView.create
+                  { MenuItems =
+                     [ NavigationViewItem(
+                          Content = "ホーム",
+                          IconSource = SymbolIconSource(Symbol = Symbol.Home),
+                          Tag = "/"
+                       )
+                       NavigationViewItem(
+                          Content = "履歴",
+                          IconSource = SymbolIconSource(Symbol = Symbol.CalendarMonth),
+                          Tag = "/history"
+                       ) ]
+                    FooterMenuItems =
+                     [ NavigationViewItem(
+                          Content = "設定",
+                          IconSource = SymbolIconSource(Symbol = Symbol.Settings),
+                          Tag = "/settings"
+                       )
+                       NavigationViewItem(
+                          Content = "このアプリについて",
+                          IconSource = SymbolIconSource(Symbol = Symbol.Help),
+                          Tag = "/about"
+                       ) ] },
+               AppTrayIconHost.create (),
+               AlarmHost.create services.AlarmService,
+               WindowNotificationManager().PositionBottomCenter().MaxItems(1)
+            ))
+      |> NavigationContext.provide services
+      |> Context.provideWithBuilder (ThemeContext.create services.AppConfig)
+      |> Context.provideWithBuilder (ApplicationContext.create { HideOnClose = true })

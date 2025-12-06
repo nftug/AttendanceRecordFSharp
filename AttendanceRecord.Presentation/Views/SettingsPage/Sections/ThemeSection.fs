@@ -11,40 +11,40 @@ open AttendanceRecord.Application.Dtos.Enums
 open AttendanceRecord.Shared
 
 module ThemeSection =
-    let create () =
-        withLifecycle (fun disposables self ->
-            let ctx, _ = Context.require<SettingsPageContext> self
-            let themeCtx = Context.require<ThemeContext> self |> fst
+   let create () =
+      withLifecycle (fun disposables self ->
+         let ctx, _ = Context.require<SettingsPageContext> self
+         let themeCtx = Context.require<ThemeContext> self |> fst
 
-            self.DetachedFromVisualTree.Add(fun _ -> themeCtx.LoadFromConfig())
+         self.DetachedFromVisualTree.Add(fun _ -> themeCtx.LoadFromConfig())
 
-            let formThemeMode =
-                ctx.FormCtx.Form |> R3.map _.ThemeMode |> R3.distinctUntilChanged
+         let formThemeMode =
+            ctx.FormCtx.Form |> R3.map _.ThemeMode |> R3.distinctUntilChanged
 
+         formThemeMode
+         |> R3.subscribe (fun themeMode -> themeCtx.ThemeMode.Value <- themeMode)
+         |> disposables.Add
+
+         let footer =
             formThemeMode
-            |> R3.subscribe (fun themeMode -> themeCtx.ThemeMode.Value <- themeMode)
-            |> disposables.Add
+            |> toView (fun _ _ selectedTheme ->
+               ComboBox()
+                  .ItemsSource(ThemeModeEnum.all)
+                  .Width(170.0)
+                  .SelectedItem(selectedTheme)
+                  .ItemTemplateFunc(fun (item: ThemeModeEnum) ->
+                     TextBlock().Text(ThemeModeEnum.toDisplayName item))
+                  .OnSelectionChangedHandler(fun ctl _ ->
+                     match ctl.SelectedItem with
+                     | :? ThemeModeEnum as theme ->
+                        ctx.FormCtx.Form.Value <-
+                           { ctx.FormCtx.Form.Value with
+                              ThemeMode = theme }
+                     | _ -> ()))
 
-            let footer =
-                formThemeMode
-                |> toView (fun _ _ selectedTheme ->
-                    ComboBox()
-                        .ItemsSource(ThemeModeEnum.all)
-                        .Width(170.0)
-                        .SelectedItem(selectedTheme)
-                        .ItemTemplateFunc(fun (item: ThemeModeEnum) ->
-                            TextBlock().Text(ThemeModeEnum.toDisplayName item))
-                        .OnSelectionChangedHandler(fun ctl _ ->
-                            match ctl.SelectedItem with
-                            | :? ThemeModeEnum as theme ->
-                                ctx.FormCtx.Form.Value <-
-                                    { ctx.FormCtx.Form.Value with
-                                        ThemeMode = theme }
-                            | _ -> ()))
-
-            SettingsExpander(
-                Header = "テーマ設定",
-                Description = "アプリケーションのテーマに関する設定を行います。",
-                IconSource = SymbolIconSource(Symbol = Symbol.DarkTheme),
-                Footer = footer
-            ))
+         SettingsExpander(
+            Header = "テーマ設定",
+            Description = "アプリケーションのテーマに関する設定を行います。",
+            IconSource = SymbolIconSource(Symbol = Symbol.DarkTheme),
+            Footer = footer
+         ))

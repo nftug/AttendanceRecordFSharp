@@ -6,108 +6,107 @@ open Avalonia.VisualTree
 open R3
 
 type ContextProvider<'T when 'T: not struct>() =
-    inherit ContentControl()
+   inherit ContentControl()
 
-    let mutable value: 'T = Unchecked.defaultof<'T>
-    let mutable disposables = new CompositeDisposable()
-    let mutable builder: (CompositeDisposable -> 'T) option = None
+   let mutable value: 'T = Unchecked.defaultof<'T>
+   let mutable disposables = new CompositeDisposable()
+   let mutable builder: (CompositeDisposable -> 'T) option = None
 
-    // === constructor helpers ===
-    member this.Init(v: 'T, content: Control, ?name: string) =
-        value <- v
-        this.Content <- content
-        this.Name <- defaultArg name this.Name
-        this
+   // === constructor helpers ===
+   member this.Init(v: 'T, content: Control, ?name: string) =
+      value <- v
+      this.Content <- content
+      this.Name <- defaultArg name this.Name
+      this
 
-    member this.Init(b: CompositeDisposable -> 'T, content: Control, ?name: string) =
-        builder <- Some b
-        this.Content <- content
-        this.Name <- defaultArg name this.Name
-        this
+   member this.Init(b: CompositeDisposable -> 'T, content: Control, ?name: string) =
+      builder <- Some b
+      this.Content <- content
+      this.Name <- defaultArg name this.Name
+      this
 
-    // === lifecycle ===
-    override _.OnAttachedToVisualTree e =
-        base.OnAttachedToVisualTree e
-        disposables <- new CompositeDisposable()
+   // === lifecycle ===
+   override _.OnAttachedToVisualTree e =
+      base.OnAttachedToVisualTree e
+      disposables <- new CompositeDisposable()
 
-        match builder with
-        | Some b -> value <- b disposables
-        | None -> ()
+      match builder with
+      | Some b -> value <- b disposables
+      | None -> ()
 
-    override _.OnDetachedFromVisualTree e =
-        base.OnDetachedFromVisualTree e
-        disposables.Dispose()
-        disposables <- new CompositeDisposable()
+   override _.OnDetachedFromVisualTree e =
+      base.OnDetachedFromVisualTree e
+      disposables.Dispose()
+      disposables <- new CompositeDisposable()
 
-        match box value with
-        | :? IDisposable as d -> d.Dispose()
-        | _ -> ()
+      match box value with
+      | :? IDisposable as d -> d.Dispose()
+      | _ -> ()
 
-    // === internal accessors ===
-    member internal _.ValueInternal = value
-    member internal _.DisposablesInternal = disposables
+   // === internal accessors ===
+   member internal _.ValueInternal = value
+   member internal _.DisposablesInternal = disposables
 
 module Context =
-    // === provide functions ===
-    let provide<'T when 'T: not struct> (value: 'T) (content: Control) : ContextProvider<'T> =
-        ContextProvider<'T>().Init(value, content)
+   // === provide functions ===
+   let provide<'T when 'T: not struct> (value: 'T) (content: Control) : ContextProvider<'T> =
+      ContextProvider<'T>().Init(value, content)
 
-    let provideWithBuilder<'T when 'T: not struct>
-        (builder: CompositeDisposable -> 'T)
-        (content: Control)
-        : ContextProvider<'T> =
-        ContextProvider<'T>().Init(builder, content)
+   let provideWithBuilder<'T when 'T: not struct>
+      (builder: CompositeDisposable -> 'T)
+      (content: Control)
+      : ContextProvider<'T> =
+      ContextProvider<'T>().Init(builder, content)
 
-    let provideWithName<'T when 'T: not struct>
-        (name: string)
-        (value: 'T)
-        (content: Control)
-        : ContextProvider<'T> =
-        ContextProvider<'T>().Init(value, content, name)
+   let provideWithName<'T when 'T: not struct>
+      (name: string)
+      (value: 'T)
+      (content: Control)
+      : ContextProvider<'T> =
+      ContextProvider<'T>().Init(value, content, name)
 
-    let provideWithBuilderAndName<'T when 'T: not struct>
-        (name: string)
-        (builder: CompositeDisposable -> 'T)
-        (content: Control)
-        : ContextProvider<'T> =
-        ContextProvider<'T>().Init(builder, content, name)
+   let provideWithBuilderAndName<'T when 'T: not struct>
+      (name: string)
+      (builder: CompositeDisposable -> 'T)
+      (content: Control)
+      : ContextProvider<'T> =
+      ContextProvider<'T>().Init(builder, content, name)
 
-    // === require / resolve functions ===
-    let private findContextFromAncestors<'T when 'T: not struct>
-        (control: Control)
-        (name: string option)
-        : ContextProvider<'T> option =
-        control.GetVisualAncestors()
-        |> Seq.tryPick (fun c ->
-            match c with
-            | :? ContextProvider<'T> as ctx -> Some ctx
-            | _ -> None)
-        |> Option.filter (fun ctx ->
-            match name with
-            | Some n -> ctx.Name = n
-            | None -> true)
+   // === require / resolve functions ===
+   let private findContextFromAncestors<'T when 'T: not struct>
+      (control: Control)
+      (name: string option)
+      : ContextProvider<'T> option =
+      control.GetVisualAncestors()
+      |> Seq.tryPick (fun c ->
+         match c with
+         | :? ContextProvider<'T> as ctx -> Some ctx
+         | _ -> None)
+      |> Option.filter (fun ctx ->
+         match name with
+         | Some n -> ctx.Name = n
+         | None -> true)
 
-    let resolve<'T when 'T: not struct> (control: Control) : ('T * CompositeDisposable) option =
-        findContextFromAncestors control None
-        |> Option.map (fun ctx -> ctx.ValueInternal, ctx.DisposablesInternal)
+   let resolve<'T when 'T: not struct> (control: Control) : ('T * CompositeDisposable) option =
+      findContextFromAncestors control None
+      |> Option.map (fun ctx -> ctx.ValueInternal, ctx.DisposablesInternal)
 
-    let require<'T when 'T: not struct> (control: Control) : ('T * CompositeDisposable) =
-        match findContextFromAncestors control None with
-        | Some ctx -> ctx.ValueInternal, ctx.DisposablesInternal
-        | None -> invalidOp $"Context<{typeof<'T>.Name}> not found in visual tree."
+   let require<'T when 'T: not struct> (control: Control) : ('T * CompositeDisposable) =
+      match findContextFromAncestors control None with
+      | Some ctx -> ctx.ValueInternal, ctx.DisposablesInternal
+      | None -> invalidOp $"Context<{typeof<'T>.Name}> not found in visual tree."
 
-    let resolveWithName<'T when 'T: not struct>
-        (control: Control)
-        (name: string)
-        : ('T * CompositeDisposable) option =
-        findContextFromAncestors<'T> control (Some name)
-        |> Option.map (fun ctx -> ctx.ValueInternal, ctx.DisposablesInternal)
+   let resolveWithName<'T when 'T: not struct>
+      (control: Control)
+      (name: string)
+      : ('T * CompositeDisposable) option =
+      findContextFromAncestors<'T> control (Some name)
+      |> Option.map (fun ctx -> ctx.ValueInternal, ctx.DisposablesInternal)
 
-    let requireWithName<'T when 'T: not struct>
-        (control: Control)
-        (name: string)
-        : ('T * CompositeDisposable) =
-        match findContextFromAncestors<'T> control (Some name) with
-        | Some ctx -> ctx.ValueInternal, ctx.DisposablesInternal
-        | None ->
-            invalidOp $"Context<{typeof<'T>.Name}> with name '{name}' not found in visual tree."
+   let requireWithName<'T when 'T: not struct>
+      (control: Control)
+      (name: string)
+      : ('T * CompositeDisposable) =
+      match findContextFromAncestors<'T> control (Some name) with
+      | Some ctx -> ctx.ValueInternal, ctx.DisposablesInternal
+      | None -> invalidOp $"Context<{typeof<'T>.Name}> with name '{name}' not found in visual tree."

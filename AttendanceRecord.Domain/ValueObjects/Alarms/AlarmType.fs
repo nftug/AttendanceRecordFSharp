@@ -1,5 +1,5 @@
 namespace AttendanceRecord.Domain.ValueObjects.Alarms
 
 type AlarmType =
-    | WorkEndAlarm
-    | RestStartAlarm
+   | WorkEndAlarm
+   | RestStartAlarm

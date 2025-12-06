@@ -8,13 +8,13 @@ open Avalonia.Layout
 open Avalonia.Controls.Primitives
 
 type AppStyles() =
-    inherit Styles()
+   inherit Styles()
 
-    do
-        base.AddRange
-            [ Style(_.OfType<Button>())
-                  .SetContentControlHorizontalContentAlignment(HorizontalAlignment.Center)
-                  .SetContentControlVerticalContentAlignment(VerticalAlignment.Center)
-              Style(_.OfType<ToggleButton>())
-                  .SetContentControlHorizontalContentAlignment(HorizontalAlignment.Center)
-                  .SetContentControlVerticalContentAlignment(VerticalAlignment.Center) ]
+   do
+      base.AddRange
+         [ Style(_.OfType<Button>())
+              .SetContentControlHorizontalContentAlignment(HorizontalAlignment.Center)
+              .SetContentControlVerticalContentAlignment(VerticalAlignment.Center)
+           Style(_.OfType<ToggleButton>())
+              .SetContentControlHorizontalContentAlignment(HorizontalAlignment.Center)
+              .SetContentControlVerticalContentAlignment(VerticalAlignment.Center) ]

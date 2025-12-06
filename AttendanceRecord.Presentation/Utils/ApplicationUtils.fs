@@ -5,6 +5,7 @@ open Avalonia.Controls
 open Avalonia.VisualTree
 open Avalonia.Controls.ApplicationLifetimes
 open Avalonia.Threading
+open Avalonia.Styling
 open System
 open System.Threading
 open System.Threading.Tasks
@@ -35,8 +36,11 @@ module ApplicationUtils =
          | None -> failwith $"Control of type {typeof<'t>.FullName} not found."
 
    let getDynamicBrushResource (resourceKey: string) : Observable<Media.IBrush> =
-      R3.everyValueChanged Application.Current _.ActualThemeVariant
-      |> R3.map (fun variant ->
+      R3.fromEventHandlerUnit Application.Current.ActualThemeVariantChanged
+      |> R3.prepend ()
+      |> R3.map (fun () ->
+         let variant = Application.Current.ActualThemeVariant
+
          let resource =
             Application.Current.Styles.TryGetResource(resourceKey, variant) |> snd
 

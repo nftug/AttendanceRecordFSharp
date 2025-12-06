@@ -41,7 +41,8 @@ module AppTrayIconHost =
             // AssetLoader can only be used after Avalonia is initialized
             let assemblyName = Assembly.GetExecutingAssembly().GetName().Name
 
-            R3.everyValueChanged Application.Current.PlatformSettings _.GetColorValues()
+            R3.fromEventHandler Application.Current.PlatformSettings.ColorValuesChanged
+            |> R3.prepend (Application.Current.PlatformSettings.GetColorValues())
             |> R3.subscribe (fun colorValues ->
                let iconFileName =
                   match colorValues.ThemeVariant with

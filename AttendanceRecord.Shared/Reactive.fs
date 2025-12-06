@@ -95,3 +95,16 @@ module R3 =
 
    let collectionChanged (source: ObservableList<'T>) : Observable<CollectionChangedEvent<'T>> =
       source.ObserveChanged()
+
+   let fromEventHandler<'TEventArgs>
+      (event: IEvent<EventHandler<'TEventArgs>, 'TEventArgs>)
+      : Observable<'TEventArgs> =
+      Observable.FromEventHandler<'TEventArgs>(
+         (fun h -> event.AddHandler h),
+         (fun h -> event.RemoveHandler h)
+      )
+      |> map (_.ToTuple() >> snd)
+
+   let fromEventHandlerUnit (event: IEvent<EventHandler, EventArgs>) : Observable<unit> =
+      Observable.FromEventHandler((fun h -> event.AddHandler h), (fun h -> event.RemoveHandler h))
+      |> map (_.ToTuple() >> snd >> ignore)

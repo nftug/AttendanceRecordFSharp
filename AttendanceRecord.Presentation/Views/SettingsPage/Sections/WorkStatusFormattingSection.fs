@@ -46,24 +46,22 @@ module private WorkStatusFormattingSectionContent =
                   | OvertimeMonthly -> "残業時間 (月)"
                )
                .Flyout(
-                  let flyout = MenuFlyout()
-
-                  [ Hours; Minutes; Seconds ]
-                  |> List.map (fun formatItem ->
-                     MenuItem()
-                        .Header(
-                           match formatItem with
-                           | Hours -> "時間を挿入"
-                           | Minutes -> "分を挿入"
-                           | Seconds -> "秒を挿入"
-                        )
-                        .OnClickHandler(fun _ _ ->
-                           TimeFormat(timeType, formatItem)
-                           |> WorkStatusFormatter.toFormatString
-                           |> insertSnippet))
-                  |> List.iter (flyout.Items.Add >> ignore)
-
-                  flyout
+                  MenuFlyout()
+                     .ItemsSource(
+                        [ Hours; Minutes; Seconds ]
+                        |> List.map (fun formatItem ->
+                           MenuItem()
+                              .Header(
+                                 match formatItem with
+                                 | Hours -> "時間を挿入"
+                                 | Minutes -> "分を挿入"
+                                 | Seconds -> "秒を挿入"
+                              )
+                              .OnClickHandler(fun _ _ ->
+                                 TimeFormat(timeType, formatItem)
+                                 |> WorkStatusFormatter.toFormatString
+                                 |> insertSnippet))
+                     )
                )
                .Focusable(false)
 

@@ -138,16 +138,14 @@ module RestTimeSection =
                .FontSize(20.0)
                .Tip("休憩・有給休暇を追加する")
                .Flyout(
-                  let flyout = MenuFlyout()
-
-                  RestVariantEnum.all
-                  |> List.map (fun variant ->
-                     MenuItem()
-                        .Header($"{RestVariantEnum.toDisplayString variant}を追加")
-                        .OnClickHandler(fun _ _ -> addCommand.Execute variant))
-                  |> List.iter (flyout.Items.Add >> ignore)
-
-                  flyout
+                  MenuFlyout()
+                     .ItemsSource(
+                        RestVariantEnum.all
+                        |> List.map (fun variant ->
+                           MenuItem()
+                              .Header($"{RestVariantEnum.toDisplayString variant}を追加")
+                              .OnClickHandler(fun _ _ -> addCommand.Execute variant))
+                     )
                )
 
          let buildContent () =

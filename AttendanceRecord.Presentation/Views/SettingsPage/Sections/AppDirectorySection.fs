@@ -35,7 +35,7 @@ module AppDirectorySection =
 
             SettingsExpander(
                 Header = "設定フォルダ",
-                Description = "アプリケーションのデータが保存されるディレクトリを開きます。",
+                Description = "アプリケーションのデータが保存されるフォルダを開きます。",
                 IconSource = SymbolIconSource(Symbol = Symbol.Folder),
                 Footer = footer
             ))

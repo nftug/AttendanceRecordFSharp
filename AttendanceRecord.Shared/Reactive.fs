@@ -70,7 +70,7 @@ module R3 =
         : Observable<'T1 * 'T2 * 'T3 * 'T4> =
         source1.CombineLatest(source2, source3, source4, fun v1 v2 v3 v4 -> v1, v2, v3, v4)
 
-    let everyValueChanged (selector: 'T -> 'U) (source: 'T) : Observable<'U> =
+    let everyValueChanged (source: 'T) (selector: 'T -> 'U) : Observable<'U> =
         Observable.EveryValueChanged(source, selector)
 
     let selectMany (selector: 'T -> Observable<'U>) (source: Observable<'T>) : Observable<'U> =

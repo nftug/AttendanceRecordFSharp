@@ -15,39 +15,26 @@ module private WorkStatusFormattingSectionContent =
     let createContent (isVisible: Observable<bool>) =
         withLifecycle (fun disposables self ->
             let ctx, _ = Context.require<SettingsPageContext> self
-
-            let textBox =
-                TextBox()
-                    .Text(ctx.FormCtx.Form |> R3.map _.WorkStatusFormat |> asBinding)
-                    .OnTextChangedHandler(fun ctl _ ->
-                        ctx.FormCtx.Form.Value <-
-                            { ctx.FormCtx.Form.Value with
-                                WorkStatusFormat = ctl.Text })
-                    .AcceptsReturn(true)
-                    .TextWrappingWrap()
-                    .VerticalScrollBarVisibilityAuto()
-                    .Height(130.0)
-                    .Padding(12.0)
-                    .LineHeight(25.0)
+            let mutable textBoxRef: Avalonia.Controls.TextBox | null = null
 
             self.Loaded.Add(fun _ ->
                 // Clear undo stack on load to prevent from undoing to empty state
-                textBox.IsUndoEnabled <- false
-                textBox.IsUndoEnabled <- true
-                textBox.Focus() |> ignore)
+                textBoxRef.IsUndoEnabled <- false
+                textBoxRef.IsUndoEnabled <- true
+                textBoxRef.Focus() |> ignore)
 
             isVisible
             |> R3.filter id
-            |> R3.subscribe (fun _ -> textBox.Focus() |> ignore)
+            |> R3.subscribe (fun _ -> textBoxRef.Focus() |> ignore)
             |> disposables.Add
 
             let insertSnippet (snippet: string) =
-                let caret = textBox.CaretIndex
-                let before = textBox.Text.Substring(0, caret)
-                let after = textBox.Text.Substring caret
-                textBox.Text <- before + snippet + after
-                textBox.CaretIndex <- caret + snippet.Length
-                textBox.Focus() |> ignore
+                let caret = textBoxRef.CaretIndex
+                let before = textBoxRef.Text.Substring(0, caret)
+                let after = textBoxRef.Text.Substring caret
+                textBoxRef.Text <- before + snippet + after
+                textBoxRef.CaretIndex <- caret + snippet.Length
+                textBoxRef.Focus() |> ignore
 
             let createSnippetButton (timeType: TimeType) =
                 DropDownButton()
@@ -96,22 +83,32 @@ module private WorkStatusFormattingSectionContent =
                             |> List.map createSnippetButton
                             |> toChildren
                         ),
-                    textBox
+                    TextBox(&textBoxRef)
+                        .Text(ctx.FormCtx.Form |> R3.map _.WorkStatusFormat |> asBinding)
+                        .OnTextChangedHandler(fun ctl _ ->
+                            ctx.FormCtx.Form.Value <-
+                                { ctx.FormCtx.Form.Value with
+                                    WorkStatusFormat = ctl.Text })
+                        .AcceptsReturn(true)
+                        .TextWrappingWrap()
+                        .VerticalScrollBarVisibilityAuto()
+                        .Height(130.0)
+                        .Padding(12.0)
+                        .LineHeight(25.0)
                 ))
 
 module WorkStatusFormattingSection =
     let create () =
-        withLifecycle (fun _ _ ->
-            let expander =
-                SettingsExpander(
-                    Header = "勤務記録コピーの書式設定",
-                    Description = "勤務記録をクリップボードにコピーする際の書式を設定します。",
-                    IconSource = SymbolIconSource(Symbol = Symbol.Copy)
-                )
+        let expander =
+            SettingsExpander(
+                Header = "勤務記録コピーの書式設定",
+                Description = "勤務記録をクリップボードにコピーする際の書式を設定します。",
+                IconSource = SymbolIconSource(Symbol = Symbol.Copy)
+            )
 
-            let isVisible = expander |> R3.everyValueChanged _.IsExpanded
+        let isVisible = R3.everyValueChanged expander _.IsExpanded
 
-            expander.Items.Add(SettingsExpanderItem(Content = createContent isVisible))
-            |> ignore
+        expander.Items.Add(SettingsExpanderItem(Content = createContent isVisible))
+        |> ignore
 
-            expander)
+        expander

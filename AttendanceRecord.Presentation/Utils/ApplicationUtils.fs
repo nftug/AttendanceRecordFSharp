@@ -34,9 +34,6 @@ module ApplicationUtils =
          | Some control -> control :?> 't
          | None -> failwith $"Control of type {typeof<'t>.FullName} not found."
 
-   let getPlatformColors () : Platform.PlatformColorValues =
-      Application.Current.PlatformSettings.GetColorValues()
-
    let getDynamicBrushResource (resourceKey: string) : Observable<Media.IBrush> =
       R3.everyValueChanged Application.Current _.ActualThemeVariant
       |> R3.map (fun variant ->

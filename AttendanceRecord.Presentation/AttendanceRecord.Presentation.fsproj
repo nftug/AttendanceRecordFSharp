@@ -33,7 +33,6 @@
     <Compile Include="ServiceContainer.fs" />
 
     <Compile Include="Utils/ApplicationUtils.fs" />
-    <Compile Include="Utils/PlatformColors.fs" />
     <Compile Include="Utils/ContextProvider.fs" />
     <Compile Include="Utils/FormContext.fs" />
     <Compile Include="Utils/UseMutation.fs" />
@@ -87,9 +86,7 @@
     <Compile Include="Views/Application/AlarmHost.fs" />
     <Compile Include="Views/Application/MainView.fs" />
 
-    <Compile Include="AppStyles.fs" />
     <Compile Include="MainWindow.fs" />
-
     <Compile Include="Program.fs" />
   </ItemGroup>
 

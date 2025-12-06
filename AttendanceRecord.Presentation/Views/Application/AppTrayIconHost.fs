@@ -2,9 +2,12 @@ namespace AttendanceRecord.Presentation.Views.Application
 
 open System
 open System.Reflection
+open Avalonia
+open Avalonia.Platform
 open Avalonia.Controls
 open AttendanceRecord.Presentation.Utils
 open AttendanceRecord.Presentation.Views.Common.Context
+open AttendanceRecord.Shared
 
 module AppTrayIconHost =
    let create () =
@@ -32,15 +35,23 @@ module AppTrayIconHost =
 
          let trayIcons = new TrayIcons()
          trayIcons.Add trayIcon
-         TrayIcon.SetIcons(Avalonia.Application.Current, trayIcons)
+         TrayIcon.SetIcons(Application.Current, trayIcons)
 
          window.Loaded.Add(fun _ ->
             // AssetLoader can only be used after Avalonia is initialized
             let assemblyName = Assembly.GetExecutingAssembly().GetName().Name
 
-            use iconStream =
-               NXUI.AssetLoader.Open(new Uri $"avares://{assemblyName}/Assets/tray_icon.ico")
+            R3.everyValueChanged Application.Current.PlatformSettings _.GetColorValues()
+            |> R3.subscribe (fun colorValues ->
+               let iconFileName =
+                  match colorValues.ThemeVariant with
+                  | PlatformThemeVariant.Dark -> "tray_icon_dark.png"
+                  | _ -> "tray_icon_light.png"
 
-            trayIcon.Icon <- WindowIcon(new Avalonia.Media.Imaging.Bitmap(iconStream)))
+               use iconStream =
+                  NXUI.AssetLoader.Open(new Uri $"avares://{assemblyName}/Assets/{iconFileName}")
+
+               trayIcon.Icon <- WindowIcon(new Media.Imaging.Bitmap(iconStream)))
+            |> ignore)
 
          Control())

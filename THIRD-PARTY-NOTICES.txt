@@ -1,0 +1,8 @@
+License Notice for Material Design Icons
+
+---
+
+Licensed under the Apache License, Version 2.0.
+https://github.com/google/material-design-icons/blob/master/LICENSE
+
+License notice for tray icon assets

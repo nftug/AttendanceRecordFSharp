@@ -34,7 +34,8 @@ module NavigationView =
                |> Option.map _.Content
                |> Option.defaultValue "Unknown")
 
-         let frame = Frame(NavigationPageFactory = NavigationFactory())
+         let frame =
+            Frame(NavigationPageFactory = NavigationFactory(), IsNavigationStackEnabled = false)
 
          ctx.CurrentRoute
          |> R3.subscribe (fun r -> frame.NavigateFromObject(r.ViewFn()) |> ignore)

@@ -5,7 +5,6 @@ open Avalonia.Controls
 open Avalonia.VisualTree
 open Avalonia.Controls.ApplicationLifetimes
 open Avalonia.Threading
-open Avalonia.Styling
 open System
 open System.Threading
 open System.Threading.Tasks
@@ -72,17 +71,14 @@ module ApplicationUtils =
          | :? ObjectDisposedException -> return Unchecked.defaultof<'a>
       }
 
-   let withLifecycle<'t when 't :> Control>
-      (create: CompositeDisposable -> Control -> 't)
-      : ContentControl =
+   let withLifecycle (create: CompositeDisposable -> ContentControl -> #Control) : ContentControl =
       let mutable disposables: CompositeDisposable option = None
       let container = ContentControl()
 
       container.AttachedToVisualTree.Add(fun _ ->
          let d = new CompositeDisposable()
          disposables <- Some d
-         let control = create d container
-         container.Content <- control)
+         container.Content <- create d container)
 
       container.DetachedFromVisualTree.Add(fun _ ->
          disposables
@@ -96,7 +92,7 @@ module ApplicationUtils =
       items |> Seq.toArray |> Array.map (fun c -> c :> Control)
 
    let toView
-      (render: CompositeDisposable -> Control -> 'a -> Control)
+      (render: CompositeDisposable -> ContentControl -> 'a -> #Control)
       (source: Observable<'a>)
       : ContentControl =
       let container = ContentControl()
@@ -111,39 +107,3 @@ module ApplicationUtils =
       container.DetachedFromVisualTree.Add(fun _ -> disposables.Dispose())
 
       container
-
-   let toListView
-      (itemTemplate: CompositeDisposable -> Control -> 'a -> Control)
-      (source: Observable<'a list>)
-      : ContentControl =
-      source
-      |> toView (fun d s v ->
-         let stackPanel = StackPanel()
-
-         stackPanel.Children.AddRange(v |> List.map (itemTemplate d s) |> toChildren)
-
-         stackPanel)
-
-   let toOptView
-      (render: CompositeDisposable -> Control -> 'a -> Control)
-      (source: Observable<'a option>)
-      : ContentControl =
-      source
-      |> toView (fun d s ->
-         function
-         | Some v -> render d s v
-         | None -> Panel())
-
-   let toOptListView
-      (itemTemplate: CompositeDisposable -> Control -> 'a -> Control)
-      (source: Observable<'a option list>)
-      : ContentControl =
-      source
-      |> toView (fun d s vList ->
-         let stackPanel = StackPanel()
-
-         stackPanel.Children.AddRange(
-            vList |> List.choose id |> List.map (itemTemplate d s) |> toChildren
-         )
-
-         stackPanel)

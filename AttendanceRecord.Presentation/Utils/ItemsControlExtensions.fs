@@ -35,8 +35,8 @@ type __ItemsControlExtensions =
       control
 
    [<Extension>]
-   static member ItemsSourceObservable<'items, 'T when 'items :> ItemsControl>
-      (control: 'items, source: ObservableList<'T>)
+   static member ItemsSourceNotification<'items, 'T when 'items :> ItemsControl>
+      (control: 'items, source: NotifyCollectionChangedSynchronizedViewList<'T>)
       : 'items =
-      control.ItemsSource <- source.ToNotifyCollectionChangedSlim()
+      control.ItemsSource <- source
       control

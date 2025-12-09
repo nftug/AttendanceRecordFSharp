@@ -151,6 +151,9 @@ module RestTimeSection =
          let buildContent () =
             let isEmpty = ctx.FormCtx.Form |> R3.map _.RestRecords.IsEmpty
 
+            let restItemsNotification =
+               restItems.ToNotifyCollectionChangedSlim() |> R3.disposeWith disposables
+
             Panel()
                .Children(
                   TextBlock()
@@ -159,7 +162,7 @@ module RestTimeSection =
                      .Foreground(Brushes.Gray)
                      .IsVisible(isEmpty |> asBinding),
                   ItemsControl()
-                     .ItemsSourceObservable(restItems)
+                     .ItemsSourceNotification(restItemsNotification)
                      .ItemsPanelFunc(fun () -> VirtualizingStackPanel())
                      .TemplateFunc(fun () ->
                         let sv = ScrollViewer().Content(ItemsPresenter())

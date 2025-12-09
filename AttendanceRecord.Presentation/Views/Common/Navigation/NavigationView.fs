@@ -70,9 +70,8 @@ module NavigationView =
             )
 
          ctx.CurrentRoute
-         |> R3.subscribe (fun route ->
-            findNavigationItemByRoute props route
-            |> Option.iter (fun item -> navigation.SelectedItem <- item))
+         |> R3.map (findNavigationItemByRoute props)
+         |> R3.subscribe (Option.iter (fun item -> navigation.SelectedItem <- item))
          |> disposables.Add
 
          navigation.SelectionChanged.Add(fun args ->
@@ -80,14 +79,16 @@ module NavigationView =
             |> Option.ofObj
             |> Option.iter (fun v ->
                let navItem = v :?> NavigationViewItem
-
-               // Sync selected item with current route
-               navigation.SelectedItem <-
-                  ctx.CurrentRoute.CurrentValue
-                  |> findNavigationItemByRoute props
-                  |> Option.defaultValue navItem
-
                let path = navItem.Tag :?> string
-               ctx.NavigateTo path |> ignore))
+
+               (fun () -> ctx.NavigateTo path)
+               |> thenDo (fun result ->
+                  if not result then
+                     // Revert selection if navigation was cancelled
+                     navigation.SelectedItem <-
+                        ctx.CurrentRoute.CurrentValue
+                        |> findNavigationItemByRoute props
+                        |> Option.defaultValue navItem)
+               |> ignore))
 
          navigation)

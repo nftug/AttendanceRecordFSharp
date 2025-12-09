@@ -107,3 +107,9 @@ module ApplicationUtils =
       container.DetachedFromVisualTree.Add(fun _ -> disposables.Dispose())
 
       container
+
+   let thenDo (next: 'a -> unit) (work: unit -> Task<'a>) =
+      task {
+         let! result = work ()
+         next result
+      }

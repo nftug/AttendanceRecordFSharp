@@ -108,8 +108,8 @@ module ApplicationUtils =
 
       container
 
-   let thenDo (next: 'a -> unit) (work: unit -> Task<'a>) =
+   let thenDo (next: 'b -> 'c) (work: unit -> Task<'b>) =
       task {
          let! result = work ()
-         next result
+         return next result
       }

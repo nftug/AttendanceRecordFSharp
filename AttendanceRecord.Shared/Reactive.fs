@@ -106,5 +106,5 @@ module R3 =
       |> map (_.ToTuple() >> snd)
 
    let fromEventHandlerUnit (event: IEvent<EventHandler, EventArgs>) : Observable<unit> =
-      Observable.FromEventHandler((fun h -> event.AddHandler h), (fun h -> event.RemoveHandler h))
+      Observable.FromEventHandler(event.AddHandler, event.RemoveHandler)
       |> map (_.ToTuple() >> snd >> ignore)

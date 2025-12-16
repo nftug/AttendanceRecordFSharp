@@ -17,5 +17,6 @@ let main argv =
       .UsePlatformDetect()
       .UseR3()
       .WithApplicationName(getApplicationTitle ())
-      .AfterSetup(fun builder -> builder.Instance.Styles.Add(FluentAvaloniaTheme()))
+      .AfterSetup(fun builder ->
+         builder.Instance.Styles.Add(FluentAvaloniaTheme(PreferUserAccentColor = true)))
       .StartWithClassicDesktopLifetime(buildWindow, argv)

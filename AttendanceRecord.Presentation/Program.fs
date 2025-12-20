@@ -19,4 +19,5 @@ let main argv =
       .WithApplicationName(getApplicationTitle ())
       .AfterSetup(fun builder ->
          builder.Instance.Styles.Add(FluentAvaloniaTheme(PreferUserAccentColor = true)))
+      .With(MacOSPlatformOptions(ShowInDock = false))
       .StartWithClassicDesktopLifetime(buildWindow, argv)

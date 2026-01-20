@@ -35,20 +35,40 @@ module WorkRecordFileDtoMapper =
          ))
 
    let toDomain (dtos: IEnumerable<WorkRecordFileDto>) : WorkRecord list =
+      let toRestRecord (dto: RestRecordFileDto) : RestRecord option =
+         match Option.ofObj dto with
+         | None -> None
+         | Some dto ->
+            dto.Duration
+            |> Option.ofObj
+            |> Option.map (fun duration ->
+               RestRecord.hydrate
+                  dto.Id
+                  (match dto.Variant with
+                   | RestVariantEnum.RegularRest -> RegularRest
+                   | RestVariantEnum.PaidRest -> PaidRest
+                   | _ -> RegularRest)
+                  (TimeDurationFileDtoMapper.toDomain duration))
+
+      let toWorkRecord (dto: WorkRecordFileDto) : WorkRecord option =
+         match Option.ofObj dto with
+         | None -> None
+         | Some dto ->
+            dto.Duration
+            |> Option.ofObj
+            |> Option.map (fun duration ->
+               let restRecords =
+                  dto.RestRecords
+                  |> Option.ofObj
+                  |> Option.defaultValue Seq.empty
+                  |> Seq.choose toRestRecord
+                  |> Seq.toList
+
+               WorkRecord.hydrate dto.Id (TimeDurationFileDtoMapper.toDomain duration) restRecords)
+
       dtos
-      |> Seq.map (fun dto ->
-         WorkRecord.hydrate
-            dto.Id
-            (TimeDurationFileDtoMapper.toDomain dto.Duration)
-            (dto.RestRecords
-             |> Seq.map (fun r ->
-                RestRecord.hydrate
-                   r.Id
-                   (match r.Variant with
-                    | RestVariantEnum.RegularRest -> RegularRest
-                    | RestVariantEnum.PaidRest -> PaidRest
-                    | _ -> RegularRest)
-                   (TimeDurationFileDtoMapper.toDomain r.Duration))
-             |> Seq.toList))
+      |> Option.ofObj
+      |> Option.defaultValue Seq.empty
+      |> Seq.choose toWorkRecord
       |> Seq.toList
       |> WorkRecord.getSortedList

@@ -1,7 +1,24 @@
 # Attendance Record
 
 勤務・休憩の開始/終了をワンクリックで記録し、累計時間を計算するデスクトップアプリです。
+
 システムトレイ／メニューバー常駐で動作し、ウィンドウを閉じてもバックグラウンドでタイマーを更新します。
+
+---
+
+## 動作環境
+
+### 配布バイナリ
+
+- Windows: Windows 10/11
+- macOS: 10.13+
+- Linux: 各種ディストリビューション (X11 or Wayland)
+
+※ 配布物は `dotnet publish`（AOT）によるビルドを使用しているため、.NET ランタイムのインストールは不要です。
+
+### 開発（ソースからビルド）
+
+- .NET SDK（`net10.0` 対応）
 
 ---
 
@@ -99,10 +116,6 @@
 
 ## ビルド / 実行（開発者向け）
 
-### 必要要件
-
-- .NET SDK（`net10.0` 対応）
-
 ### 起動（開発）
 
 ```bash
@@ -151,7 +164,7 @@ dotnet publish -c Release -r osx-arm64 AttendanceRecord.Presentation
 
 ## ライセンス
 
-MIT License. See [LICENSE.md](LICENSE.md).
+MIT License. See [LICENSE.txt](LICENSE.txt).
 
 ---
 

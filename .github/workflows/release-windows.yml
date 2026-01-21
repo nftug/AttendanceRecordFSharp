@@ -1,0 +1,54 @@
+name: Release (Windows)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'preview'
+
+      - name: Restore
+        run: dotnet restore AttendanceRecord.Presentation/AttendanceRecord.Presentation.fsproj
+
+      - name: Publish (win-x64)
+        run: >
+          dotnet publish AttendanceRecord.Presentation/AttendanceRecord.Presentation.fsproj
+          -c Release
+          -r win-x64
+          -o artifacts/AttendanceRecord-windows-x64
+
+      - name: Verify output
+        shell: pwsh
+        run: |
+          if (-not (Test-Path 'artifacts/AttendanceRecord-windows-x64/AttendanceRecord.exe')) {
+            Write-Error 'AttendanceRecord.exe was not found in publish output.'
+          }
+
+      - name: Create zip
+        shell: pwsh
+        run: |
+          $zipPath = 'artifacts/AttendanceRecord-windows-x64.zip'
+          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+          Compress-Archive -Path 'artifacts/AttendanceRecord-windows-x64/*' -DestinationPath $zipPath
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/AttendanceRecord-windows-x64.zip

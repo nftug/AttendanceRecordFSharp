@@ -38,7 +38,7 @@ module WorkStatusStore =
             let standardWorkTime = appConfig.StandardWorkTime |> StandardWorkTime.value
 
             monthlyRecords
-            |> WorkRecordTally.getOvertimeTotal now standardWorkTime
+            |> WorkRecordList.getOvertimeTotal now standardWorkTime
             |> WorkStatusDto.fromDomain now standardWorkTime workRecord)
          |> R3.readonly (WorkStatusDto.getEmpty () |> Some)
          |> R3.disposeWith deps.Disposables

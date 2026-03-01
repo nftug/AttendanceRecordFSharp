@@ -2,7 +2,10 @@ namespace AttendanceRecord.Domain.Entities
 
 open System
 
-module WorkRecordTally =
+module WorkRecordList =
+   let getSorted (records: WorkRecord list) : WorkRecord list =
+      records |> List.sortBy WorkRecord.getStartedAt
+
    let getWorkTimeTotal (now: DateTime) (workRecords: WorkRecord list) : TimeSpan =
       workRecords
       |> List.sumBy (WorkRecord.getWorkDuration now >> _.Ticks)

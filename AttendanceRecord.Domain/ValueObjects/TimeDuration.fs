@@ -10,27 +10,30 @@ type private TimeDurationRecord =
 type TimeDuration = private TimeDuration of TimeDurationRecord
 
 module TimeDuration =
-   let hydrate (startedAt: DateTime) (endedAt: DateTime option) : TimeDuration =
-      TimeDuration
-         { StartedAt = startedAt
-           EndedAt = endedAt }
+   // --- Accessors ---
+   let getStartedAt (TimeDuration td) : DateTime = td.StartedAt
+
+   let getEndedAt (TimeDuration td) : DateTime option = td.EndedAt
+
+   let getDate (TimeDuration td) : DateTime = td.StartedAt.Date
 
    let isActive (now: DateTime) (TimeDuration td) : bool =
       match td.StartedAt, td.EndedAt with
       | start, None when start.Date = now.Date -> true
       | _ -> false
 
+   // --- Status queries ---
    let getDuration (now: DateTime) (TimeDuration td) : TimeSpan =
       match td.StartedAt, td.EndedAt with
       | start, None when start.Date = now.Date -> now - start
       | start, None -> start.Date.AddDays 1 - start
       | start, Some endDt -> endDt - start
 
-   let getStartedAt (TimeDuration td) : DateTime = td.StartedAt
-
-   let getEndedAt (TimeDuration td) : DateTime option = td.EndedAt
-
-   let getDate (TimeDuration td) : DateTime = td.StartedAt.Date
+   // --- Factory methods ---
+   let hydrate (startedAt: DateTime) (endedAt: DateTime option) : TimeDuration =
+      TimeDuration
+         { StartedAt = startedAt
+           EndedAt = endedAt }
 
    let tryCreate
       (startedAt: DateTime)
@@ -44,6 +47,7 @@ module TimeDuration =
 
    let createStart () : TimeDuration = hydrate DateTime.Now None
 
+   // --- State transitions ---
    let tryCreateEnd (TimeDuration td) : Result<TimeDuration, TimeDurationError> =
       match td.EndedAt with
       | Some _ -> Error(TimeDurationError "この記録は既に終了しています。")

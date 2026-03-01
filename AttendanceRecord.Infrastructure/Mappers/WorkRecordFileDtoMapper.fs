@@ -18,7 +18,7 @@ module private TimeDurationFileDtoMapper =
 module WorkRecordFileDtoMapper =
    let fromDomain (records: WorkRecord list) : IEnumerable<WorkRecordFileDto> =
       records
-      |> WorkRecord.getSortedList
+      |> WorkRecordList.getSorted
       |> Seq.map (fun r ->
          WorkRecordFileDto(
             r.Id,
@@ -71,4 +71,4 @@ module WorkRecordFileDtoMapper =
       |> Option.defaultValue Seq.empty
       |> Seq.choose toWorkRecord
       |> Seq.toList
-      |> WorkRecord.getSortedList
+      |> WorkRecordList.getSorted

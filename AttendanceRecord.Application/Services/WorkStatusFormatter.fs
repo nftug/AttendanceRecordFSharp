@@ -21,24 +21,26 @@ type FormatPlaceholder =
 
 module private FormatPlaceholder =
    let parseTimeFormat (key: string) : TimeFormatPlaceHolder =
-      if key.EndsWith("hh") then Hours
-      elif key.EndsWith("mm") then Minutes
-      elif key.EndsWith("ss") then Seconds
+      if key.EndsWith "hh" then Hours
+      elif key.EndsWith "mm" then Minutes
+      elif key.EndsWith "ss" then Seconds
       else Minutes
 
    let parse (key: string) : FormatPlaceholder =
       match key.ToLowerInvariant() with
-      | k when k.StartsWith("work") -> TimeFormat(WorkTime, parseTimeFormat k)
-      | k when k.StartsWith("rest") -> TimeFormat(RestTime, parseTimeFormat k)
-      | k when k.StartsWith("over_monthly") -> TimeFormat(OvertimeMonthly, parseTimeFormat k)
-      | k when k.StartsWith("over") -> TimeFormat(Overtime, parseTimeFormat k)
+      | k when k.StartsWith "work" -> TimeFormat(WorkTime, parseTimeFormat k)
+      | k when k.StartsWith "rest" -> TimeFormat(RestTime, parseTimeFormat k)
+      | k when k.StartsWith "over_monthly" -> TimeFormat(OvertimeMonthly, parseTimeFormat k)
+      | k when k.StartsWith "over" -> TimeFormat(Overtime, parseTimeFormat k)
       | _ -> Unknown key
 
    let formatTimeSpan (ts: TimeSpan) (format: TimeFormatPlaceHolder) : string =
+      let sign = if ts < TimeSpan.Zero then "-" else ""
+
       match format with
-      | Hours -> int ts.TotalHours |> string
-      | Minutes -> abs ts.Minutes |> string
-      | Seconds -> abs ts.Seconds |> string
+      | Hours -> sign + Math.Abs(ts.TotalHours).ToString "0"
+      | Minutes -> sign + Math.Abs(ts.TotalMinutes).ToString "0"
+      | Seconds -> sign + Math.Abs(ts.TotalSeconds).ToString "0"
 
    let formatValue (status: WorkStatusDto) (placeholder: FormatPlaceholder) : string =
       match placeholder with

@@ -101,10 +101,26 @@
 
 アプリのデータは OS のアプリケーション設定フォルダ配下に保存されます。
 
-- `appConfig.json`：アプリ設定
-- `workRecords.json`：勤務記録
-- `*.bak`：バックアップ
+- `attendance.db`：勤務記録（SQLite）
+- `appConfig.json`：アプリ設定（JSON）
 - `app.lock`：単一起動のロックファイル
+
+### 旧JSONデータの移行
+
+旧データ（`workRecords.json`）を `attendance.db` へ移行するには、以下を実行します。
+
+```bash
+dotnet run --project AttendanceRecord.MigrationCli -- migrate
+```
+
+任意で保存先ディレクトリを指定できます。
+
+```bash
+dotnet run --project AttendanceRecord.MigrationCli -- migrate --app-dir "/path/to/app-data"
+```
+
+- `attendance.db` に既存データがある場合は中断します。
+- 移行元のJSONファイルは削除・更新せず、そのまま残ります。
 
 ### 保存先のパス
 
@@ -120,6 +136,12 @@
 
 ```bash
 dotnet run --project AttendanceRecord.Presentation
+```
+
+### JSON -> SQLite 移行CLI（開発）
+
+```bash
+dotnet run --project AttendanceRecord.MigrationCli -- migrate
 ```
 
 ### 発行
@@ -152,6 +174,7 @@ dotnet publish -c Release -r osx-arm64 AttendanceRecord.Presentation
 - `AttendanceRecord.Domain`：ドメイン層
 - `AttendanceRecord.Infrastructure`：インフラ層
 - `AttendanceRecord.Persistence`：永続化 DTO / JSON Context 等（C#）
+- `AttendanceRecord.MigrationCli`：JSON から SQLite への移行CLI
 - `AttendanceRecord.Shared`：共通ユーティリティ
 
 ---

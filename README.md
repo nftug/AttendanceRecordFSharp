@@ -101,9 +101,8 @@
 
 アプリのデータは OS のアプリケーション設定フォルダ配下に保存されます。
 
-- `appConfig.json`：アプリ設定
-- `workRecords.json`：勤務記録
-- `*.bak`：バックアップ
+- `attendance.db`：勤務記録（SQLite）
+- `appConfig.json`：アプリ設定（JSON）
 - `app.lock`：単一起動のロックファイル
 
 ### 保存先のパス

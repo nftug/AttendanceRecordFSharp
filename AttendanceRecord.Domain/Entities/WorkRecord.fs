@@ -12,12 +12,7 @@ type WorkRecord =
      RestRecords: RestRecord list }
 
 module WorkRecord =
-   let hydrate (id: Guid) (duration: TimeDuration) (restTimes: RestRecord list) : WorkRecord =
-      { Id = id
-        Duration = duration
-        RestRecords = restTimes |> RestRecord.getSortedList }
-
-   // Status getters
+   // --- Accessors ---
    let getStartedAt (record: WorkRecord) : DateTime =
       record.Duration |> TimeDuration.getStartedAt
 
@@ -29,7 +24,7 @@ module WorkRecord =
    let getRestDuration (now: DateTime) (variant: RestVariant) (record: WorkRecord) : TimeSpan =
       record.RestRecords
       |> List.filter (fun r -> r.Variant = variant)
-      |> RestRecord.getDurationOfList now
+      |> RestRecordList.getDuration now
 
    let getWorkDuration (now: DateTime) (record: WorkRecord) : TimeSpan =
       let baseDur = TimeDuration.getDuration now record.Duration
@@ -52,6 +47,7 @@ module WorkRecord =
       : TimeSpan =
       getWorkDurationWithPaidRest now record - standardWorkTime
 
+   // --- State queries ---
    let hasDate (date: DateTime) (record: WorkRecord) : bool = getDate record = date.Date
 
    let isActive (now: DateTime) (record: WorkRecord) : bool =
@@ -60,7 +56,7 @@ module WorkRecord =
    let isResting (now: DateTime) (record: WorkRecord) : bool =
       record.RestRecords
       |> List.filter (fun r -> r.Variant = RegularRest)
-      |> RestRecord.isRestingOfList now
+      |> RestRecordList.isResting now
 
    let isWorking (now: DateTime) (record: WorkRecord) : bool =
       isActive now record && not (isResting now record)
@@ -74,7 +70,17 @@ module WorkRecord =
 
       isNotActive && (hasNotFinishedWork || hasNotFinishedRest)
 
-   // Factory methods
+   // --- Factory methods ---
+   let hydrate (id: Guid) (duration: TimeDuration) (restTimes: RestRecord list) : WorkRecord =
+      { Id = id
+        Duration = duration
+        RestRecords = restTimes |> RestRecordList.getSorted }
+
+   let createStart () : WorkRecord =
+      { Id = Guid.NewGuid()
+        Duration = TimeDuration.createStart ()
+        RestRecords = [] }
+
    let tryCreate
       (duration: TimeDuration)
       (restTimes: RestRecord list)
@@ -83,8 +89,9 @@ module WorkRecord =
       |> Result.map (fun _ ->
          { Id = Guid.NewGuid()
            Duration = duration
-           RestRecords = restTimes |> RestRecord.getSortedList })
+           RestRecords = restTimes |> RestRecordList.getSorted })
 
+   // --- State transitions ---
    let tryUpdate
       (newDuration: TimeDuration)
       (newRestTimes: RestRecord list)
@@ -94,12 +101,7 @@ module WorkRecord =
       |> Result.map (fun _ ->
          { record with
             Duration = newDuration
-            RestRecords = newRestTimes |> RestRecord.getSortedList })
-
-   let createStart () : WorkRecord =
-      { Id = Guid.NewGuid()
-        Duration = TimeDuration.createStart ()
-        RestRecords = [] }
+            RestRecords = newRestTimes |> RestRecordList.getSorted })
 
    let tryToggleRest
       (now: DateTime)
@@ -111,7 +113,7 @@ module WorkRecord =
          else
             let! restRecords =
                record.RestRecords
-               |> RestRecord.toggleOfList now
+               |> RestRecordList.tryAddToggled now
                |> Result.mapError (fun e -> WorkRestsErrors [ e ])
 
             return
@@ -136,7 +138,7 @@ module WorkRecord =
                let! restRecords =
                   record.RestRecords
                   |> List.filter (fun r -> r.Variant = RegularRest)
-                  |> RestRecord.finishOfList now
+                  |> RestRecordList.tryAddEnd now
                   |> Result.mapError (fun e -> WorkRestsErrors [ e ])
 
                return
@@ -152,7 +154,7 @@ module WorkRecord =
                let! restRecords =
                   TimeDuration.tryCreate endedAt (Some now)
                   |> Result.map (RestRecord.create (Guid.NewGuid()) RegularRest)
-                  |> Result.map (fun rr -> record.RestRecords |> RestRecord.addToList rr)
+                  |> Result.map (fun rr -> record.RestRecords |> RestRecordList.add rr)
                   |> Result.mapError WorkDurationError
 
                return
@@ -161,7 +163,3 @@ module WorkRecord =
                      RestRecords = restRecords }
             | false, None -> return! Error(WorkGenericError "勤務記録の状態が不正です。")
       }
-
-   // List operations
-   let getSortedList (records: WorkRecord list) : WorkRecord list =
-      records |> List.sortBy getStartedAt

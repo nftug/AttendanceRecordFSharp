@@ -15,7 +15,7 @@
     <IlcDisableUnhandledExceptionExperience>false</IlcDisableUnhandledExceptionExperience>
     <IsAotCompatible>true</IsAotCompatible>
 
-    <Version>1.0.0.0</Version>
+    <Version>1.1.0.0</Version>
     <AssemblyName>AttendanceRecord</AssemblyName>
     <AssemblyTitle>Attendance Record</AssemblyTitle>
     <Company>Harakazu</Company>

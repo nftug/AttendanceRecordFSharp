@@ -1,5 +1,7 @@
 namespace AttendanceRecord.Presentation
 
+open System
+open System.Reflection
 open Avalonia.Controls
 open AttendanceRecord.Application.Interfaces
 open AttendanceRecord.Presentation.Utils
@@ -8,8 +10,18 @@ open AttendanceRecord.Shared
 
 [<AutoOpen>]
 module private MainWindowHelpers =
+   let setWindowIcon (window: Window) =
+      let assemblyName = Assembly.GetExecutingAssembly().GetName().Name
+
+      use iconStream =
+         NXUI.AssetLoader.Open(new Uri $"avares://{assemblyName}/Assets/app_icon.png")
+
+      window.Icon <- new WindowIcon(new Avalonia.Media.Imaging.Bitmap(iconStream))
+
    let initialize (services: ServiceContainer) (window: Window) : Window =
       window.Loaded.Add(fun _ ->
+         setWindowIcon window
+
          if not (services.SingleInstanceGuard.TryAcquireLock()) then
             task {
                match! services.NamedPipe.SendMessage NamedPipeMessage.showMainWindow with

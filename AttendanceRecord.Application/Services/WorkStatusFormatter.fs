@@ -38,9 +38,9 @@ module private FormatPlaceholder =
       let sign = if ts < TimeSpan.Zero then "-" else ""
 
       match format with
-      | Hours -> sign + Math.Abs(ts.TotalHours).ToString "0"
-      | Minutes -> sign + Math.Abs(ts.TotalMinutes).ToString "0"
-      | Seconds -> sign + Math.Abs(ts.TotalSeconds).ToString "0"
+      | Hours -> sign + (abs ts.Hours |> string)
+      | Minutes -> abs ts.Minutes |> string
+      | Seconds -> abs ts.Seconds |> string
 
    let formatValue (status: WorkStatusDto) (placeholder: FormatPlaceholder) : string =
       match placeholder with
